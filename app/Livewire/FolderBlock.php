@@ -4,9 +4,9 @@ namespace App\Livewire;
 
 class FolderBlock extends Block
 {
-    public function mount($id = null): void
+    public function mount($idb = null): void
     {
-        parent::mount($id);
+        parent::mount($idb);
 
     }
 }

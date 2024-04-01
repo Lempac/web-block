@@ -6,23 +6,21 @@ use App\Models\TextBlock as ModelTextBlock;
 
 class TextBlock extends Block
 {
-    protected $rules = [
-        'textBlock.text' => ''
-    ];
+    public string $title, $text,
+        $placeholderTitle = "Title here...",
+        $placeholderText = "Text here...";
 
-    public string $title;
-    public string $text;
     public ModelTextBlock $textBlock;
 
-    public function mount(int $id = null): void
+    public function mount(int $idb = null): void
     {
-        parent::mount($id);
-        $this->textBlock = $id == null ? new ModelTextBlock([
+        parent::mount($idb);
+        $this->textBlock = $idb == null ? new ModelTextBlock([
             'text' => $this->text ?? '',
-        ]) : ModelTextBlock::findOr($id, function () {
+        ]) : ModelTextBlock::findOr($idb, function ($idb) {
             return ModelTextBlock::create([
                 'text' => $this->text ?? '',
-                'block_id' => $this->block->id
+                'block_id' => \App\Models\Block::find($idb)
             ]);
         });
 
@@ -32,6 +30,7 @@ class TextBlock extends Block
 
     public function updated($property): void
     {
+        parent::updated($property);
         if($property != "text" && $property != "title") return;
         $this->textBlock->update([
             'title' => $this->title,

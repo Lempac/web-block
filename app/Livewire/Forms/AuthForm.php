@@ -6,6 +6,7 @@ use Livewire\Attributes\Validate;
 use Livewire\Form;
 
 enum CurrentScreen : int {
+
     case Auth = 0;
     case Register = 1;
     case Login = 2;
@@ -20,7 +21,7 @@ class AuthForm extends Form
     public function rules(): array
     {
         return [
-            "email" => $this->currentScreen == CurrentScreen::Login ? "required|email" : "required|unique:users|bail|email",
+            "email" => $this->currentScreen == CurrentScreen::Login ? "required|email" : "bail|required|unique:users|email",
             "password" => "required|string"
         ];
     }

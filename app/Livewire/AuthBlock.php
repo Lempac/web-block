@@ -3,27 +3,32 @@
 namespace App\Livewire;
 
 use App\Livewire\Forms\AuthForm;
+use App\Models\Settings;
 use App\Models\User;
 use App\Livewire\Forms\CurrentScreen;
 use Auth;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
-
 class AuthBlock extends Block
 {
     public AuthForm $form;
 
-    public function save(): RedirectResponse|Application|Redirector|\Illuminate\Foundation\Application
+    public function register(): void
     {
         $user = User::create($this->validate());
+        $user->settings()->create();
         Auth::login($user);
-        return redirect('/');
+        redirect('/');
     }
 
-    public function login()
+    public function login(): void
     {
-        return Auth::attempt($this->validate()) ? redirect('/') : $this->addError('fail', 'Invalid info!');
+        if(Auth::attempt($this->validate())) {
+            session()->regenerate();
+            redirect('/');
+        }
+        else $this->addError("form.fail", "Invalid info!");
     }
 
     public function rendering(): void

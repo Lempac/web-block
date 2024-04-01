@@ -1,10 +1,10 @@
 <?php
 
 namespace App\Livewire;
+use App\Models\Settings;
+use App\Models\User;
 use Auth;
-use Illuminate\Foundation\Application;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Routing\Redirector;
+use CzProject\GitPhp\Git;
 
 enum Menu : int {
     case None = 0;
@@ -16,9 +16,25 @@ class DashboardBlock extends Block
 {
     public Menu $menu = Menu::None;
 
-    public function logout(): Application|Redirector|RedirectResponse|\Illuminate\Contracts\Foundation\Application
+    public Settings $settings;
+
+    public function mount(int $idb = null): void
+    {
+        parent::mount($idb);
+        $this->settings = Auth::user()->settings;
+    }
+
+    private function getProjects()
+    {
+        $git = new Git;
+
+    }
+
+    public function logout(): void
     {
         Auth::logout();
-        return redirect('/');
+        session()->invalidate();
+        session()->regenerateToken();
+        redirect('/');
     }
 }

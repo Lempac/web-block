@@ -6,23 +6,24 @@ use App\Models\Block as ModelBlock;
 use Livewire\Attributes\Renderless;
 use Livewire\Component;
 
-class Block extends Component
+abstract class Block extends Component
 {
     #[Renderless]
-    public bool $selected = false;
+    public bool $selected = false, $resize = false;
 
-    public int $x, $y, $h, $w;
+    public int $x = 0, $y = 0, $h = 0, $w = 0;
+    public int $minH = 0, $minW = 0;
 
     public ModelBlock $block;
 
-    public function mount(int $id = null): void
+    public function mount(int $idb = null): void
     {
-        $this->block = $id == null ? new ModelBlock([
+        $this->block = $idb == null ? new ModelBlock([
             'x' => $this->x ?? 0,
             'y' => $this->y ?? 0,
             'w' => $this->w ?? 0,
             'h' => $this->h ?? 0,
-        ]) : ModelBlock::findOr($id, function () {
+        ]) : ModelBlock::findOr($idb, function () {
             return ModelBlock::create([
                 'x' => $this->x ?? 0,
                 'y' => $this->y ?? 0,
@@ -39,7 +40,7 @@ class Block extends Component
 
     public function updated($property): void
     {
-        if($property == "selected") return;
+        if($property == "selected" || $property == "resize") return;
         $this->block->update([
             'x' => $this->x,
             'y' => $this->y,
