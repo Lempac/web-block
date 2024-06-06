@@ -23,7 +23,7 @@ services:
             - sail
         depends_on:
             - mysql
-            - sftp
+#            - sftp
     mysql:
         image: 'mysql/mysql-server:8.0'
         ports:
@@ -48,23 +48,23 @@ services:
                 - '-p${DB_PASSWORD}'
             retries: 3
             timeout: 5s
-    sftp:
-        image: atmoz/sftp
-        ports:
-            - '${SFTP_PORT:-22}:${SFTP_PORT:-22}'
-        command:
-            - '${SFTP_USERNAME}:${SFTP_PASSWORD}:::${SFTP_ROOT}'
-        ulimits:
-            nofile:
-                soft: 65536
-                hard: 65536
-        networks:
-            - sail
+#    sftp:
+#        image: atmoz/sftp
+#        ports:
+#            - '${SFTP_PORT:-22}:${SFTP_PORT:-22}'
+#        command:
+#            - '${SFTP_USERNAME}:${SFTP_PASSWORD}:::${SFTP_ROOT}'
+#        ulimits:
+#            nofile:
+#                soft: 65536
+#                hard: 65536
+#        networks:
+#            - sail
 networks:
     sail:
         driver: bridge
 volumes:
     sail-mysql:
         driver: local
-    sail-sftp:
-        driver: local
+#    sail-sftp:
+#        driver: local
