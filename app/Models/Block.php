@@ -15,13 +15,14 @@ class Block extends Model
     protected $fillable = [
         'project_id',
         'block_id',
+        'sha',
+        'isPinned',
+        'path',
         'x',
         'y',
-        'h',
-        'w'
     ];
 
-    public function textblock(): HasOne
+    public function textBlock(): HasOne
     {
         return $this->hasOne(TextBlock::class);
     }

@@ -14,6 +14,7 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
+            $table->string('color')->default('');
             $table->timestamps();
             $table->foreignIdFor(User::class)->constrained()->onUpdate('cascade')->onDelete('cascade');
         });

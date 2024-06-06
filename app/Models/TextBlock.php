@@ -11,7 +11,8 @@ class TextBlock extends Model
     use HasFactory;
 
     protected $fillable = [
-        'text',
+        'title',
+        'content',
         'block_id'
     ];
 

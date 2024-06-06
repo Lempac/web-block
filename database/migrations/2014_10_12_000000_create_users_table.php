@@ -17,6 +17,11 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
+            $table->boolean('is_admin')->default(false);
+            $table->string('github_id')->nullable()->unique();
+            $table->string('github_name')->nullable();
+            $table->string('github_token')->nullable();
+            $table->string('github_refresh_token')->nullable();
             $table->timestamps();
         });
     }

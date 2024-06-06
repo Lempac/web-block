@@ -14,7 +14,8 @@ return new class extends Migration
     {
         Schema::create('text_blocks', function (Blueprint $table) {
             $table->id();
-            $table->string('text');
+            $table->text('title')->nullable();
+            $table->text('content')->nullable();
             $table->timestamps();
             $table->foreignIdFor(Block::class)->constrained()->onUpdate('cascade')->onDelete('cascade');
         });

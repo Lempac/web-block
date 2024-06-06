@@ -1,2 +1,0 @@
-@extends('livewire.text-block')
-

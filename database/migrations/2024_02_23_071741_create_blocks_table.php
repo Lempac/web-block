@@ -15,10 +15,11 @@ return new class extends Migration
     {
         Schema::create('blocks', function (Blueprint $table) {
             $table->id();
-            $table->integer('x');
-            $table->integer('y');
-            $table->integer('w');
-            $table->integer('h');
+            $table->integer('x')->default(0);
+            $table->integer('y')->default(0);
+            $table->boolean('isPinned')->default(false);
+            $table->string('sha', 40)->nullable();
+            $table->string('path')->nullable();
             $table->timestamps();
             $table->foreignIdFor(Block::class)->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->foreignIdFor(Project::class)->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
