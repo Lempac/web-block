@@ -23,10 +23,10 @@
             @foreach(Auth::user()->projects as $project)
                 <livewire:blocks.project-block :key="$project->id" :$project/>
             @endforeach
-            <livewire:blocks.project-block :name="$newProject->name" :visibility="$newProject->visibility" :description="$newProject->description" :full-description="$newProject->full_description"/>
-            <div wire:click="new" class="p-2 shadow rounded-lg border-2 hover:border-4 transition-[border-width] duration-300 ease-linear border-b-gray-600 hover:bg-gray-700 border-dashed pointer-events-auto">
+            <livewire:blocks.project-block :name="$newProject->name" :visibility="$newProject->visibility" :description="$newProject->description" :fullDescription="$newProject->full_description"/>
+        {{--    <div wire:click="new" class="p-2 shadow rounded-lg border-2 hover:border-4 transition-[border-width] duration-300 ease-linear border-b-gray-600 hover:bg-gray-700 border-dashed pointer-events-auto"> --}}
 
-            </div>
+        {{--    </div> --}}
         </div>
     @endif
     @if($menu == \App\Livewire\Blocks\Menu::Settings)

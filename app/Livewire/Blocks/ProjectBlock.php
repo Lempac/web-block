@@ -21,7 +21,8 @@ class ProjectBlock extends Component
 
     #[Validate('regex:(^[\w\.-]+$)', message: 'Invalid project name!')]
     #[Validate('required')]
-    public string $name;
+    public ?string $name;
+
     public ?string $description;
     public ?string $fullDescription;
     public visibilityType $visibility;
@@ -31,22 +32,26 @@ class ProjectBlock extends Component
     public function getFullDescription() : string
     {
         $user = Auth::user();
-        if (!$user->hasGithub()) return "";
+        //if (!$user->hasGithub()) return "";
         $client = new Client();
         $client->authenticate($user->github_id, $user->github_token, AuthMethod::CLIENT_ID);
-        $res = $client->repo()->contents()->exists($user->github_name, $this->project->name, 'README.md') ? base64_decode($client->repo()->contents()->readme($user->github_name, $this->project->name)['content']) : $this->fullDescription ?? "";
-        $this->project->full_description = $res;
-        $this->project->save();
+        $res = $client->repo()->contents()->exists($user->github_name, $this->project->name, 'README.md') ? base64_decode($client->repo()->contents()->readme($user->github_name, $this->project->name)['content']) : "";
+	if(isset($this->project)){
+	$this->project->full_description = $res;
+	$this->project->save();
+	}
+	//\Log::info($res);
         return $res;
     }
 
     public function mount(): void
     {
-        if (!isset($this->project)) return;
-        $this->name = $name ?? $this->project->name;
-        $this->description = $description ?? $this->project->description;
-        $this->fullDescription = $fullDescription ?? $this->project->full_description ?? $this->getFullDescription() ?? "";
-        $this->visibility = $visibility ?? visibilityType::from($this->project->visibility);
+	//\Log::Info(Auth::user()->github_name);
+	if(!isset($this->project)) return;
+        $this->name = $this->project->name;
+        //$this->description = $this->project->desription;
+       	$this->fullDescription = $this->project->full_description ?? $this->getFullDescription();
+	$this->visibility = $this->visibility ?? visibilityType::from($this?->project->visibility);
     }
 
     public function open(): void

@@ -7,7 +7,7 @@
                     <input type="image" class="group-hover:blur-sm transition-[filter] hover:bg-gray-700 border rounded-lg shadow bg-gray-800 border-gray-700 font-normal text-gray-400 pointer-events-auto" width="64" height="64" wire:click="$set('form.currentScreen', 1)" src="{{ Vite::asset('resources/images/register.svg') }}" alt="Register"/>
                 </div>
                 <div class="group">
-                    <h2 class="relative top-1/2 z-20 text-nowrap text-gray-400 opacity-0 group-hover:opacity-100 font-bold max-w-[64px] max-h-[64px] transition-[opacity] text-clip">Login-in</h2>
+                    <h2 class="relative top-1/2 z-20 text-nowrap text-center  text-gray-400 opacity-0 group-hover:opacity-100 font-bold max-w-[64px] max-h-[64px] transition-[opacity] text-clip">Log-in</h2>
                     <input type="image" class="group-hover:blur-sm transition-[filter] hover:bg-gray-700 border rounded-lg shadow bg-gray-800 border-gray-700 font-normal text-gray-400 pointer-events-auto" width="64" height="64" wire:click="$set('form.currentScreen', 2)" src="{{ Vite::asset('resources/images/log-in.svg') }}" alt="Login"/>
                 </div>
             </div>
@@ -33,7 +33,7 @@
             @break
         @case(\App\Livewire\Forms\CurrentScreen::Login)
             <button class="p-2 px-3 justify-self-end  border rounded-lg shadow bg-gray-800 border-gray-700 hover:bg-gray-700 font-normal text-gray-400 pointer-events-auto" wire:click="$set('form.currentScreen', 0)">X</button>
-            <form class="grid pointer-events-none" @submit="$wire.login()">
+            <form class="grid pointer-events-none" wire:submit="login">
                 <label class="pl-1 p-2 font-normal text-gray-400 pointer-events-auto max-w-fit" for="email">Email:</label>
                 <input class="font-normal text-gray-400 bg-gray-700 rounded-lg shadow p-1 pointer-events-auto" type="email" wire:model.change="form.email" name="email" id="email">
                 <label class="pl-1 p-2 font-normal text-gray-400 pointer-events-auto max-w-fit" for="password">Password:</label>

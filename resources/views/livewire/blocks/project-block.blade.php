@@ -33,7 +33,7 @@
     </div>
 
     @if($moreInfo)
-    <textarea wire:model.change="fullDescription" class="@if($fullDescription != $project?->full_description) !border-amber-200 !border-2 @endif shadow rounded-lg font-normal text-gray-400 bg-gray-900 hover:bg-gray-700 border border-gray-700 resize-none overflow-hidden hover:overflow-auto p-2"></textarea>
+    <textarea wire:model.change="fullDescription" class="@if($fullDescription != $project?->full_description) !border-amber-200 !border-2 @endif shadow rounded-lg font-normal text-gray-400 bg-gray-900 hover:bg-gray-700 border border-gray-700 resize-none overflow-hidden hover:overflow-auto p-2 pb-[24px]"></textarea>
     @endif
 
 

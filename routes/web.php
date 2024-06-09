@@ -28,13 +28,14 @@ Route::get('/auth/github/callback', function () {
         return redirect('/', status: 301);
     }
     $githubUser = Socialite::driver('github')->stateless()->user();
-    if (Auth::check()){
+    //\Log::info($githubUser->nickname);
+if (Auth::check()){
         if (User::where('github_id', '=', $githubUser->getId())->count('github_id') > 0){
             session()->flash('register-github-error', 'Already have an account with same github!');
             return redirect('/', status: 301);
         }
         Auth::user()->update([
-            'name' => $githubUser->getName() ?? $githubUser->getNickname(),
+            'github_name' => $githubUser->nickname,
             'github_id' => $githubUser->getId(),
             'github_token' => $githubUser->token,
             'github_refresh_token' => $githubUser->refreshToken,
@@ -44,7 +45,7 @@ Route::get('/auth/github/callback', function () {
     {
         Auth::login(User::updateOrCreate(['github_id' => $githubUser->getId()],[
             'email' => $githubUser->getEmail(),
-            'name' => $githubUser->getName() ?? $githubUser->getNickname(),
+            'github_name' => $githubUser->nickname,
             'github_token' => $githubUser->token,
             'github_refresh_token' => $githubUser->refreshToken,
             'password' => bcrypt(request(Str::random()))

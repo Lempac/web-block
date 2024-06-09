@@ -12,11 +12,11 @@ class NewProject extends Form
 {
     #[Validate('regex:(^[\w\.-]+$)', message: 'Invalid project name!')]
     #[Validate('required')]
-    public string $name = "This";
+    public string $name = "New name";
     #[Validate('string')]
-    public string $description = "";
+    public string $description = "New description";
     #[Validate('string')]
-    public string $full_description = "";
+    public string $full_description = "New project";
     public \App\Models\visibilityType $visibility = \App\Models\visibilityType::private;
 
     public function save()
