@@ -9,5 +9,4 @@ use Livewire\Wireable;
 class Display extends Component
 {
     public int $x = 0, $y = 0;
-    public array $tree = [];
 }

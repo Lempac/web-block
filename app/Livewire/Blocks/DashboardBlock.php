@@ -41,11 +41,6 @@ class DashboardBlock extends Component
         \Log::info($value);
     }
 
-    public function add()
-    {
-        throw new Exception(ucfirst(__FUNCTION__).' not implemented!');
-    }
-
     public function logout(): void
     {
         Auth::logout();

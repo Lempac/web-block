@@ -135,6 +135,6 @@ class Project extends Model
         if (!$this->user->hasGithub()) return false;
         $client = new Client();
         $client->authenticate($this->user->github_id, $this->user->github_token, AuthMethod::CLIENT_ID);
-        return is_array($client->repos()->show($this->user->github_name, $this->name));
+        return in_array($this->name, array_map(function ($array) {return $array['name'];},$client->user()->repositories($this->user->github_name)));
     }
 }

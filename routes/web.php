@@ -19,6 +19,13 @@ use Laravel\Socialite\Facades\Socialite;
 Route::get('/', Display::class);
 
 Route::get('/auth/github', function () {
+    \Log::debug("Running");
+    // \Log::info(!str_starts_with(env('APP_URL'), env('GITHUB_REDIRECT_URL')) ||
+    // empty(env('GITHUB_REDIRECT_URL')) || empty(env('GITHUB_CLIENT_ID')) || empty(env('GITHUB_CLIENT_SECRET')));
+    // if(!str_starts_with(env('APP_URL'), env('GITHUB_REDIRECT_URL')) ||
+    // empty(env('GITHUB_REDIRECT_URL')) || empty(env('GITHUB_CLIENT_ID')) || empty(env('GITHUB_CLIENT_SECRET')))
+    // return redirect('/', status: 301);
+    
     return Socialite::driver('github')->scopes(['repo', 'user:email'])->redirect();
 })->name('auth.github');
 

@@ -5,13 +5,8 @@
             event.preventDefault();
             let deltaX = event.screenX - window.preX;
             let deltaY = event.screenY - window.preY;
-            let x = isNaN(parseInt($el.style.left)) ? $wire.x : parseInt($el.style.left);
-            let y = isNaN(parseInt($el.style.top)) ? $wire.y : parseInt($el.style.top);
-            // let x = parseInt(border.style.left);
-            // let y = parseInt(border.style.top);
-            // let scale = Livewire.all().find(e => e.name === 'display')?.$wire.get('scale') ?? 1;
-            $el.style.left = x + deltaX + 'px';
-            $el.style.top = y + deltaY + 'px';
+            $wire.x += deltaX;
+            $wire.y += deltaY;
             $el.style.rotate = Math.min(Math.max(deltaX * 1.2, -10), 10) + 'deg';
             if (this.rot_timeout) clearTimeout(this.rot_timeout);
             this.rot_timeout = setTimeout(() => {

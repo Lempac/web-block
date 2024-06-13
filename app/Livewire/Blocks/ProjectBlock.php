@@ -19,10 +19,11 @@ class ProjectBlock extends Component
 {
     public Project $project;
 
-    #[Validate('regex:(^[\w\.-]+$)', message: 'Invalid project name!')]
-    #[Validate('required')]
+    #[Validate("regex:(^[\w\.-]+$)", message: "Invalid project name!")]
+    #[Validate("required")]
     public ?string $name;
 
+    public bool $new = false;
     public ?string $description;
     public ?string $fullDescription;
     public visibilityType $visibility;
@@ -64,12 +65,11 @@ class ProjectBlock extends Component
             $this->project->bar_id = $barBlock->id;
             $this->project->save();
         }
-//        $this->dispatch('add', '');
     }
 
     public function delete(): void
     {
-        if (Auth::user()->hasGithub() && $this->project->isUploaded()){
+        if (Auth::user()->hasGithub() && isset($this->project) && $this->project->isUploaded()){
             $user = Auth::user();
             $client = new Client();
             $client->authenticate($user->github_id, $user->github_token, AuthMethod::CLIENT_ID);
@@ -84,18 +84,19 @@ class ProjectBlock extends Component
         if ($user->hasGithub()){
             $client = new Client();
             $client->authenticate($user->github_id, $user->github_token, AuthMethod::CLIENT_ID);
+            $isUploaded = $this->project->isUploaded();
         }
         if($this->project->visibility != $this->visibility) {
             $this->project->visibility = $this->visibility->value;
-            if ($user->hasGithub()) $client->repo()->update($user->github_name, $this->project->name, array('private' => $this->visibility->value == 'private'));
+            if ($user->hasGithub() && $isUploaded) $client->repo()->update($user->github_name, $this->project->name, array('private' => $this->visibility->value == 'private'));
         }
         if($this->project->name != $this->name) {
             $this->project->name = $this->name;
-            if ($user->hasGithub()) $client->repo()->update($user->github_name, $this->project->getOriginal('name'), array('name' => $this->project->name));
+            if ($user->hasGithub() && $isUploaded) $client->repo()->update($user->github_name, $this->project->getOriginal('name'), array('name' => $this->project->name));
         }
         if($this->project->full_description != $this->fullDescription) {
             $this->project->full_description = $this->fullDescription;
-            if($user->hasGithub()){
+            if($user->hasGithub() && $isUploaded){
                 $committer = array('name' => $user->github_name, 'email' => $user->email);
                 if ($client->repo()->contents()->exists($user->github_name, $this->project->name, 'README.md'))
                 {
@@ -112,8 +113,20 @@ class ProjectBlock extends Component
         $this->project->save();
     }
 
+    public function newProject(): void
+    {
+        Project::create([
+            'name' => $this->name,
+            'full_description' => $this->fullDescription,
+            'visibility' => $this->visibility->value,
+            'description' => $this->fullDescription,
+            'user_id' => Auth::user()->id,
+        ]);
+    }
+
     public function resetProject(): void
     {
+        if(!isset($this->project)) return;
         $this->name = $this->project->name;
         $this->visibility = visibilityType::from($this->project->visibility);
         $this->description = $this->project->description;

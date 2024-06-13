@@ -1,4 +1,4 @@
-<div class="pointer-events-none" x-init="$nextTick(() => { $wire.$parent.x = window.innerWidth / 2; $wire.$parent.y = window.innerHeight / 2; })">
+<div class="pointer-events-none" x-init="$nextTick(() => { $wire.$parent.x = $wire.$parent.x ?? window.innerWidth / 2; $wire.$parent.y = $wire.$parent.y ?? window.innerHeight / 2; })">
     <div class="pointer-events-none p-3 grid grid-cols-3 gap-x-4 bg-gray-800 rounded-lg">
         <button
             :class="$wire.menu == 1 ? 'bg-gray-700' : 'bg-gray-800'"
@@ -12,18 +12,20 @@
     </div>
     @if($menu == \App\Livewire\Blocks\Menu::Projects)
         <div class="flex grid-flow-col gap-2 justify-items-start">
-            <input type="search" x-model="$wire.search" class="@error('search') !border-red-600 !border-2 @enderror mt-2 p-3 border rounded-lg shadow bg-gray-800 border-gray-700 font-normal hover:bg-gray-700 text-gray-400 pointer-events-auto">
-            <button x-on:click="add" class="mt-2 p-3 border rounded-lg shadow bg-gray-800 border-gray-700 font-normal hover:bg-gray-700 text-gray-400 pointer-events-auto">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-            </button>
+            <h2 class="font-normal text-gray-400 pointer-events-none text-center p-3 mt-2">Search:</h2>
+            <input type="search" wire:model.change="search" class="@error('search') !border-red-600 !border-2 @enderror mt-2 p-3 border rounded-lg shadow bg-gray-800 border-gray-700 font-normal hover:bg-gray-700 text-gray-400 pointer-events-auto">
+{{--            <button @click="add" class="mt-2 p-3 border rounded-lg shadow bg-gray-800 border-gray-700 font-normal hover:bg-gray-700 text-gray-400 pointer-events-auto">--}}
+{{--                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">--}}
+{{--                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />--}}
+{{--                </svg>--}}
+{{--            </button>--}}
         </div>
         <div class="grid gap-2 p-3 pointer-events-none bg-gray-800 rounded-lg mt-2 grid-cols-3">
             @foreach(Auth::user()->projects as $project)
+                @continue(!str_contains($project->name, $search) && !empty($search))
                 <livewire:blocks.project-block :key="$project->id" :$project/>
             @endforeach
-            <livewire:blocks.project-block :name="$newProject->name" :visibility="$newProject->visibility" :description="$newProject->description" :fullDescription="$newProject->full_description"/>
+            <livewire:blocks.project-block :name="$newProject->name" :visibility="$newProject->visibility" :description="$newProject->description" :fullDescription="$newProject->full_description" new/>
         {{--    <div wire:click="new" class="p-2 shadow rounded-lg border-2 hover:border-4 transition-[border-width] duration-300 ease-linear border-b-gray-600 hover:bg-gray-700 border-dashed pointer-events-auto"> --}}
 
         {{--    </div> --}}

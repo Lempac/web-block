@@ -6,7 +6,6 @@ use Livewire\Attributes\Validate;
 use Livewire\Form;
 
 enum CurrentScreen : int {
-
     case Auth = 0;
     case Register = 1;
     case Login = 2;

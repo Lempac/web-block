@@ -12,7 +12,7 @@ class Base extends Component
         $pin = false,
         $hasPin = false;
     public string $blockType = "block";
-    public int $x = 0, $y = 0;
+    public ?int $x, $y;
     public ModelBlock $block;
 
     public function mount(): void
@@ -35,14 +35,5 @@ class Base extends Component
     {
         if (!isset($this->block) ) return;
         $this->save();
-    }
-
-    public function test(){
-        $this->js("alert('what the fuck? base')");
-    }
-
-    public function render()
-    {
-        return view('livewire.base');
     }
 }
