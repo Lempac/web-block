@@ -3,6 +3,11 @@
 ## About
 This is a website/platform where you can edit your project or project from GitHub and add some logic on top for a better development experience.
 
+![image](https://github.com/Lempac/web-block/assets/151722008/9fc2a8bc-8915-4560-8465-bda88b17969e)
+
+![image](https://github.com/Lempac/web-block/assets/151722008/893be7e8-8a2f-41c2-b38d-2ed5f98a7645)
+
+
 ## Getting Started
 
 ### Prerequisites
