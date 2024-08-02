@@ -15,13 +15,11 @@
         "laravel/socialite": "^5.12",
         "laravel/tinker": "^2.8",
         "league/flysystem-sftp-v3": "^3.23",
-        "livewire/livewire": "^3.4",
-        "livewire/volt": "^1.6"
+        "livewire/livewire": "^3.4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
         "laravel/pint": "^1.13",
-        "laravel/sail": "^1.29",
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^7.0",
         "phpunit/phpunit": "^10.1",

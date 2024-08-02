@@ -1,29 +1,56 @@
 # Web-Block
 
 ## About
-This is a website/platform where you can edit your project or project from GitHub and add some logic on top for a better development experience.
+
+This is a website/platform where you can edit your project or project from GitHub and add some logic on top for a better
+development experience.
 
 ![image](https://github.com/Lempac/web-block/assets/151722008/9fc2a8bc-8915-4560-8465-bda88b17969e)
 
 ![image](https://github.com/Lempac/web-block/assets/151722008/893be7e8-8a2f-41c2-b38d-2ed5f98a7645)
 
-
 ## Getting Started
 
 ### Prerequisites
-To use, you will need:
-- Node.js
-- PHP
+
+Use Devbox to install all dependency and build the project:
+
+[![Built with Devbox](https://www.jetify.com/img/devbox/shield_galaxy.svg)](https://www.jetify.com/devbox/docs/contributor-quickstart/)
+
+After installing devbox:
+
+```bash
+git clone https://github.com/Lempac/web-block.git && cd web-block && devbox run setup
+```
+
+And if you want to be in the environment everytime you open folder:
+
+```bash
+devbox generate direnv
+```
+
+#### Or you will need:
+
+- Node.js => 18
+- PHP => 8.3
 - Composer
-- A Code Editor
+- A Code Editor(Development)
 
-For Windows also you'll need:
-- XAMPP Control Panel (for hosting)
+#### For Windows also you'll need:
 
-For Linux also you'll need:
-- Docker (for environment and hosting)
+- XAMPP Control Panel (Hosting database and webserver)
+
+#### For Linux also you'll need(better to just use Devbox):
+
+- Setup sail:
+    ```bash
+  composer require laravel/sail
+  php artisan sail:install
+  ```
+- Docker (Hosting database, webserver and environment)
 
 ### Installation
+
 1. **Clone the repository:**
     ```bash
     git clone https://github.com/Lempac/web-block.git
@@ -47,19 +74,28 @@ For Linux also you'll need:
     # Edit .env file to match your environment settings
     ```
 
-5. **Migrate the database(Need to run first to run this command):**
+5. **Migrate the database(***Only works if database server is running***):**
     ```bash
     php artisan migrate
     ```
+   **To migrate and create default admin account and some test users:**
+    ```bash
+    php artisan migrate --seed
+   ```
 
 ## Usage
+
 1. **Launch the project:**
     ```bash
     php artisan serve
     ```
+   **Launch the project with sail(If you set it up):**
+    ```bash
+   ./vendor/bin/sail up -d 
+   ```
 
 2. **View the project:**
-    Open your web browser and go to `http://localhost:8000`.
+   Open your web browser and go to `http://localhost:SERVER_PORT`, default server port is 8080.
 
 ## Technologies Used
 
@@ -72,6 +108,7 @@ For Linux also you'll need:
 - **PHPStorm**: An integrated development environment (IDE) for PHP and web development.
 - **Livewire**: A full-stack framework for Laravel that makes building dynamic interfaces simple.
 - **Alpine.js**: A minimal framework for composing JavaScript behavior in your HTML.
+- **Devbox**: Build dev environment.
 
 ---
 
