@@ -5,25 +5,24 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^8.3",
-        "beluga-php/docker-php": "^1.43",
-        "graham-campbell/github": "^12.6",
-        "guzzlehttp/guzzle": "^7.2",
-        "laravel/framework": "^10.10",
-        "laravel/pail": "^1.1",
-        "laravel/sanctum": "^3.3",
-        "laravel/socialite": "^5.12",
-        "laravel/tinker": "^2.8",
-        "league/flysystem-sftp-v3": "^3.23",
-        "livewire/livewire": "^3.4"
+        "php": "^8.2",
+        "inertiajs/inertia-laravel": "^1.0",
+        "laravel/framework": "^11.9",
+        "laravel/reverb": "^1.0",
+        "laravel/sanctum": "^4.0",
+        "laravel/socialite": "^5.16",
+        "laravel/tinker": "^2.9",
+        "tightenco/ziggy": "^2.0"
     },
     "require-dev": {
-        "fakerphp/faker": "^1.9.1",
+        "fakerphp/faker": "^1.23",
+        "laravel/breeze": "^2.2",
         "laravel/pint": "^1.13",
-        "mockery/mockery": "^1.4.4",
-        "nunomaduro/collision": "^7.0",
-        "phpunit/phpunit": "^10.1",
-        "spatie/laravel-ignition": "^2.0"
+        "laravel/sail": "^1.26",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.0",
+        "pestphp/pest": "^3.0",
+        "pestphp/pest-plugin-laravel": "^3.0"
     },
     "autoload": {
         "psr-4": {
@@ -49,7 +48,9 @@
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ],
         "post-create-project-cmd": [
-            "@php artisan key:generate --ansi"
+            "@php artisan key:generate --ansi",
+            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
+            "@php artisan migrate --graceful --ansi"
         ]
     },
     "extra": {

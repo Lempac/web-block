@@ -2,18 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-body{
-    min-height: 100vh;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    overflow: hidden;
-    @apply bg-gray-900;
-    background-size: 80px 80px;
-    background-image:
-      linear-gradient(to right, rgb(160, 137, 9) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(160, 137, 9) 1px, transparent 1px);
-    align-items: stretch;
-}
 
-
+/*html {*/
+/*    @apply block;*/
+/*    background-image: radial-gradient(rgb(94, 92, 100) 10%, transparent 10%),*/
+/*    radial-gradient(rgb(94, 92, 100) 10%, transparent 10%);*/
+/*    background-position: 0 0, 25px 25px;*/
+/*    background-size: 50px 50px;*/
+/*}*/

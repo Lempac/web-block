@@ -1,8 +1,0 @@
-version: "0.5"
-
-processes:
-  php-fpm:
-    command: "php-fpm -y /home/lempac/Github/web-block/devbox.d/php83/php-fpm.conf --nodaemonize"
-    availability:
-      restart: "always"
-  
