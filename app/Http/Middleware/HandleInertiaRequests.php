@@ -32,6 +32,10 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            'env'=> [
+                'GITHUB_CLIENT_REDIRECT' => env('GITHUB_CLIENT_REDIRECT'),
+                'APP_NAME' => env('APP_NAME'),
+            ],
             'auth' => [
                 'user' => $request->user(),
             ],

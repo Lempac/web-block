@@ -9,8 +9,10 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\GithubProvider;
 
 Route::middleware('guest')->group(function () {
 //    Route::get('register', [RegisteredUserController::class, 'create'])
@@ -35,14 +37,44 @@ Route::middleware('guest')->group(function () {
 //    Route::post('reset-password', [NewPasswordController::class, 'store'])
 //                ->name('password.store');
 //
-//    Route::get('redirect', function (){
-//        return Socialite::driver('github')->redirect();
-//    });
+});
+Route::get('/auth/redirect', function (){
+    if (empty(env('GITHUB_CLIENT_REDIRECT'))) {
+        return response()->json(['error' => 'GitHub client redirect not configured'], 400);
+    }
+    return Socialite::driver('github')->scopes(['repo', 'user:email'])->redirect();
+})->name('auth.redirect');
 
-//    Route::get('callback', function (){
-//        $user = Socialite::driver('github')->user();
-//
-//    });
+Route::get('auth/callback', function (){
+    if (request()->has('error')){
+        Log::error(request());
+        return redirect('/', status: 301);
+    }
+
+    $githubUser = Socialite::driver('github')->user();
+    if (Auth::check()){
+        if (User::where('github_id', '=', $githubUser->getId())->count('github_id') > 0){
+            session()->flash('register-github-error', 'Already have an account with same github!');
+            return response()->redirectTo('/', status: 301);
+        }
+        Auth::user()->update([
+            'github_name' => $githubUser->nickname,
+            'github_id' => $githubUser->getId(),
+            'github_token' => $githubUser->token,
+            'github_refresh_token' => $githubUser->refreshToken,
+        ]);
+    }
+    else
+    {
+        Auth::login(User::updateOrCreate(['github_id' => $githubUser->getId()],[
+            'email' => $githubUser->getEmail(),
+            'github_name' => $githubUser->nickname,
+            'github_token' => $githubUser->token,
+            'github_refresh_token' => $githubUser->refreshToken,
+            'password' => bcrypt(request(Str::random()))
+        ]));
+    }
+    return response()->redirectTo('/', status: 301);
 });
 
 Route::middleware('auth')->group(function () {

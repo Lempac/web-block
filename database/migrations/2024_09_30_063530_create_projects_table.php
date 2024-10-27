@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\VisibilityType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +19,7 @@ return new class extends Migration
             $table->text('full_description')->nullable();
             $table->string('default_branch')->default('master');
             $table->string('license')->default('');
-            $table->enum('visibility', ['public', 'private'])->default('private');
+            $table->enum('visibility', array_column(VisibilityType::cases(), 'value'))->default(VisibilityType::Private);
             $table->timestamps();
         });
     }
