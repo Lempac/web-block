@@ -36,9 +36,7 @@ class HandleInertiaRequests extends Middleware
                 'GITHUB_CLIENT_REDIRECT' => env('GITHUB_CLIENT_REDIRECT'),
                 'APP_NAME' => env('APP_NAME'),
             ],
-            'auth' => [
-                'user' => $request->user(),
-            ],
+            'user' => $request->user(),
             'ziggy' => fn () => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),

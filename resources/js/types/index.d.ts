@@ -6,6 +6,7 @@ export enum VisibilityType {
 }
 
 export interface Project {
+    id: number;
     name: string;
     description: string;
     visibility: VisibilityType
@@ -19,9 +20,7 @@ export interface User {
 }
 
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
-    auth: {
-        user: User;
-    };
+    user: User;
     env: {
         APP_NAME: string;
         GITHUB_CLIENT_REDIRECT: string;

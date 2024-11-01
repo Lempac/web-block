@@ -16,5 +16,11 @@ class Project extends Model
         'visibility',
         'default_branch',
         'license',
+        'user_id'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

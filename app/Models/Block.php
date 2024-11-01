@@ -10,6 +10,7 @@ class Block extends Model
     use HasFactory;
 
     protected $fillable = [
-
+        'x',
+        'y'
     ];
 }

@@ -13,10 +13,11 @@ import {
 } from "@xyflow/react";
 import {useCallback, useEffect, useMemo} from "react";
 import {Auth} from "@/Components/Auth";
-import { router } from '@inertiajs/react'
+import {router} from '@inertiajs/react'
 import {Projects} from "@/Components/Projects";
 import {Github} from "@/Components/Github";
 import {Welcome} from "@/Components/Welcome";
+import {Settings} from "@/Components/Settings";
 
 export default function Dashboard() {
     // const handleBodyMove = (event: MouseEvent) => {
@@ -35,30 +36,51 @@ export default function Dashboard() {
     // })
 
     // const [position, setPosition] = useState({x: 0, y: 0})
-    const {auth} = usePage().props
+    const props = usePage().props
     const reactFlowInstance = useReactFlow();
     const position = {x: 0, y: 0};
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
     useEffect(() => {
-        if(auth.user){
-            reactFlowInstance.setNodes([{id: '1', type: 'projects', position: {x: 0, y: 0}, data: {}}]);
+        if (props.user) {
+            reactFlowInstance.setNodes([{
+                id: 'projects',
+                type: 'projects',
+                position: {x: 0, y: 0},
+                data: {projects: props.projects}
+            }]);
         } else {
             reactFlowInstance.setNodes([
-                {id: '2', type: 'auth', position: position, data: {}},
-                {id: '3', type: 'github', position: {x: position.x - 50, y: position.y - 150}, data: {}},
-                {id: '4', type: 'welcome', position: {x: position.x + 170, y: position.y - 210}, data: {}}
+                {id: 'auth', type: 'auth', position: position, data: {}},
+                {id: 'github', type: 'github', position: {x: position.x - 50, y: position.y - 150}, data: {}},
+                {id: 'welcome', type: 'welcome', position: {x: position.x + 170, y: position.y - 210}, data: {}}
             ]);
-            reactFlowInstance.setEdges([{id: 'e3-2', source: '3', target: '2'}, {id: 'e4-2', source: '4', target: '2'}]);
+            reactFlowInstance.setEdges([
+                {
+                    id: 'github-auth',
+                    source: 'github',
+                    target: 'auth'
+                },
+                {
+                    id: 'welcome-auth',
+                    source: 'welcome',
+                    target: 'auth'
+                }]);
         }
-    }, [auth.user])
+    }, [props.user])
 
     const onConnect = useCallback(
         (params: Connection) => setEdges((eds) => addEdge(params, eds)),
         [setEdges],
     );
-    const nodeTypes = useMemo(() => ({auth: Auth, projects: Projects, github: Github, welcome: Welcome}), []);
+    const nodeTypes = useMemo(() => ({
+        auth: Auth,
+        projects: Projects,
+        github: Github,
+        welcome: Welcome,
+        settings: Settings
+    }), []);
 
     return <div style={{height: '100vh', width: '100vw', margin: 0}}>
         <ReactFlow
