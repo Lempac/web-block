@@ -1,32 +1,5 @@
 {
-    "private": true,
-    "type": "module",
-    "scripts": {
-        "dev": "vite",
-        "build": "tsc && vite build && vite build --ssr"
-    },
-    "devDependencies": {
-        "@headlessui/react": "^2.2.0",
-        "@inertiajs/react": "^1.2.0",
-        "@types/node": "^22.8.7",
-        "@types/react": "^18.3.12",
-        "@types/react-dom": "^18.3.1",
-        "@vitejs/plugin-react": "^4.3.3",
-        "autoprefixer": "^10.4.20",
-        "axios": "^1.7.7",
-        "daisyui": "^4.12.14",
-        "laravel-echo": "^1.16.1",
-        "laravel-vite-plugin": "^1.0.5",
-        "postcss": "^8.4.47",
-        "pusher-js": "^8.4.0-rc2",
-        "react": "^18.3.1",
-        "react-dom": "^18.3.1",
-        "tailwindcss": "^3.4.14",
-        "typescript": "^5.6.3",
-        "vite": "^5.4.10"
-    },
-    "dependencies": {
-        "@xyflow/react": "^12.3.4",
-        "react-icons": "^5.3.0"
-    }
+  "dependencies": {
+    "@tanstack/react-query-devtools": "^5.62.3"
+  }
 }
