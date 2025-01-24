@@ -5,86 +5,100 @@ import clsx from "clsx";
 import { Project, VisibilityType } from "@/index";
 import { useRoute } from "ziggy-js";
 import { useForm } from "@tanstack/react-form";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useQueryClient } from "@tanstack/react-query";
 
 export function ProjectCard({ project }: { project: Project }) {
-  const route = useRoute();
-  const queryClient = useQueryClient();
-  const form = useForm<Project>({
-    defaultValues: {
-      id: project.id,
-      name: project.name,
-      description: project.description,
-      visibility: project.visibility,
-    },
-    onSubmit: async ({ value }) => {
-      await axios.patch(route("projects.update", { id: value.id! }), value);
-      await queryClient.invalidateQueries({ queryKey: ["projects"] });
-    },
-  });
+	const route = useRoute();
+	const queryClient = useQueryClient();
+	
+	async function deleteCard(id: number){
+		await axios.delete(route("projects.destroy", {project: id}));
+		await queryClient.invalidateQueries({ queryKey: ["projects"] });
+	}
 
-  return (
-    <div className="card border p-4 gap-2">
-      <div className="flex-row card-title">
-        <form.Field
-          name="name"
-          children={(field) => (
-            <Input
-              className="nodrag input input-bordered"
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(e) => field.handleChange(e.target.value)}
-            />
-          )}
-        />
-        <form.Field
-          name="visibility"
-          children={(field) => (
-            <Button
-              className={clsx(
-                "nodrag btn btn-info",
-                field.state.value === VisibilityType.Private &&
-                  "btn-outline border-2"
-              )}
-              onClick={() =>
-                field.state.value === VisibilityType.Private
-                  ? field.setValue(VisibilityType.Public)
-                  : field.setValue(VisibilityType.Private)
-              }
-            >
-              {field.state.value == VisibilityType.Public ? (
-                <MdVisibility />
-              ) : (
-                <MdVisibilityOff />
-              )}
-            </Button>
-          )}
-        />
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
-            <Button
-              type="submit"
-              disabled={!canSubmit || isSubmitting}
-              className="nodrag btn btn-error btn-outline"
-            >
-              <FaTrashCan />
-            </Button>
-          )}
-        />
-      </div>
-      <form.Field
-        name="description"
-        children={(field) => (
-          <Textarea
-            className="nodrag textarea textarea-bordered"
-            value={field.state.value}
-            onBlur={field.handleBlur}
-            onChange={(e) => field.handleChange(e.target.value)}
-          />
-        )}
-      />
-    </div>
-  );
+	const form = useForm({
+		defaultValues: project,
+		validators: {
+			onSubmitAsync: async ({ value }) => {
+				const res = await axios
+					.patch(route("projects.update", { id: value.id! }), value)
+					.catch(
+						(
+							err: AxiosError<{
+								message: string;
+								errors: Record<string, string[]>;
+							}>
+						) => err
+					);
+
+				if (axios.isAxiosError(res) && res.response) {
+					return { fields: res.response.data.errors };
+				}
+
+				await queryClient.invalidateQueries({ queryKey: ["projects"] });
+
+				return null;
+			},
+		},
+	});
+
+	return (
+		<div className="card border p-4 gap-2">
+			<div className="flex-row card-title">
+				<form.Field
+					name="name"
+					children={(field) => (
+						<Input
+							className="nodrag input input-bordered"
+							value={field.state.value}
+							onBlur={field.handleBlur}
+							onChange={(e) => field.handleChange(e.target.value)}
+						/>
+					)}
+				/>
+				<form.Field
+					name="visibility"
+					children={(field) => (
+						<Button
+							className={clsx(
+								"nodrag btn btn-info",
+								field.state.value === VisibilityType.Private &&
+									"btn-outline border-2"
+							)}
+							onClick={() =>
+								field.state.value === VisibilityType.Private
+									? field.setValue(VisibilityType.Public)
+									: field.setValue(VisibilityType.Private)
+							}
+						>
+							{field.state.value == VisibilityType.Public ? (
+								<MdVisibility />
+							) : (
+								<MdVisibilityOff />
+							)}
+						</Button>
+					)}
+				/>
+				<Button
+					type="submit"
+					className="nodrag btn btn-error btn-outline"
+					onClick={() => deleteCard(project.id)}
+				>
+					<FaTrashCan />
+				</Button>
+			</div>
+			<form.Field
+				name="description"
+				children={(field) => (
+					<Textarea
+						className="nodrag textarea textarea-bordered"
+						value={field.state.value}
+						onBlur={field.handleBlur}
+						onChange={(e) => field.handleChange(e.target.value)}
+					/>
+				)}
+			/>
+		</div>
+	);
 }

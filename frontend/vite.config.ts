@@ -1,13 +1,23 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 import * as path from "node:path";
 
+const ReactCompilerConfig = {
+	target: "19", // '17' | '18' | '19'
+};
+
 export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      "@/index": path.resolve(__dirname, "./src/index.d.ts"),
-      "@": path.resolve(__dirname, "src/"),
-    }
-  }
-})
+	plugins: [
+		react({
+			babel: {
+				plugins: [["babel-plugin-react-compiler", ReactCompilerConfig]],
+			},
+		}),
+	],
+	resolve: {
+		alias: {
+			"@/index": path.resolve(__dirname, "./src/index.d.ts"),
+			"@": path.resolve(__dirname, "src/"),
+		},
+	},
+});

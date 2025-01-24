@@ -4,5 +4,5 @@ use SocialiteProviders\Manager\ServiceProvider;
 
 return [
     App\Providers\AppServiceProvider::class,
-    ServiceProvider::class
+    ServiceProvider::class,
 ];

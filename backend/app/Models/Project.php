@@ -19,7 +19,7 @@ class Project extends Model
         'visibility',
         'default_branch',
         'license',
-        'user_id'
+        'user_id',
     ];
 
     public function user(): BelongsTo

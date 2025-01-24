@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\VisibilityType;
 use Auth;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;

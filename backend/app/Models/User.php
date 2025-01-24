@@ -3,9 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Auth;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -56,5 +58,15 @@ class User extends Authenticatable
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);
+    }
+
+    public function settings(): HasOne
+    {
+        return $this->hasOne(Settings::class);
+    }
+
+    public function hasGithub(): bool
+    {
+        return Auth::user()->github_token != null;
     }
 }

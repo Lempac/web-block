@@ -1,5 +1,45 @@
-const Ziggy = {"url":"http:\/\/localhost:8000","port":8000,"defaults":{},"routes":{"sanctum.csrf-cookie":{"uri":"sanctum\/csrf-cookie","methods":["GET","HEAD"]},"user":{"uri":"api\/user","methods":["GET","HEAD"]},"projects.index":{"uri":"api\/projects","methods":["GET","HEAD"]},"projects.store":{"uri":"api\/projects","methods":["POST"]},"projects.show":{"uri":"api\/projects\/{project}","methods":["GET","HEAD"],"parameters":["project"]},"projects.update":{"uri":"api\/projects\/{project}","methods":["PATCH"],"parameters":["project"]},"projects.destroy":{"uri":"api\/projects\/{project}","methods":["DELETE"],"parameters":["project"]},"register":{"uri":"register","methods":["POST"]},"login":{"uri":"login","methods":["POST"]},"auth.redirect":{"uri":"auth\/redirect","methods":["GET","HEAD"]},"logout":{"uri":"logout","methods":["POST"]},"storage.local":{"uri":"storage\/{path}","methods":["GET","HEAD"],"wheres":{"path":".*"},"parameters":["path"]}}};
-if (typeof window !== 'undefined' && typeof window.Ziggy !== 'undefined') {
-  Object.assign(Ziggy.routes, window.Ziggy.routes);
+
+const Ziggy = {
+	url: "http://localhost:8000",
+	port: 8000,
+	defaults: {},
+	routes: {
+		"sanctum.csrf-cookie": {
+			uri: "sanctum/csrf-cookie",
+			methods: ["GET", "HEAD"],
+		},
+		user: { uri: "api/user", methods: ["GET", "HEAD"] },
+		test: { uri: "api/test", methods: ["GET", "HEAD"] },
+		"projects.index": { uri: "api/projects", methods: ["GET", "HEAD"] },
+		"projects.store": { uri: "api/projects", methods: ["POST"] },
+		"projects.show": {
+			uri: "api/projects/{project}",
+			methods: ["GET", "HEAD"],
+			parameters: ["project"],
+		},
+		"projects.update": {
+			uri: "api/projects/{project}",
+			methods: ["PATCH"],
+			parameters: ["project"],
+		},
+		"projects.destroy": {
+			uri: "api/projects/{project}",
+			methods: ["DELETE"],
+			parameters: ["project"],
+		},
+		register: { uri: "register", methods: ["POST"] },
+		login: { uri: "login", methods: ["POST"] },
+		"auth.redirect": { uri: "auth/redirect", methods: ["GET", "HEAD"] },
+		logout: { uri: "logout", methods: ["POST"] },
+		"storage.local": {
+			uri: "storage/{path}",
+			methods: ["GET", "HEAD"],
+			wheres: { path: ".*" },
+			parameters: ["path"],
+		},
+	},
+};
+if (typeof window !== "undefined" && typeof window.Ziggy !== "undefined") {
+	Object.assign(Ziggy.routes, window.Ziggy.routes);
 }
 export { Ziggy };

@@ -34,7 +34,7 @@ class ProjectController extends Controller
     {
         $val = Project::find($id);
 
-        if (null === $val) {
+        if ($val === null) {
             abort(404);
         }
 
@@ -48,10 +48,11 @@ class ProjectController extends Controller
     {
         $val = Project::find($id);
 
-        if (null === $val) {
+        if ($val === null) {
             abort(404);
         }
         $val->update($request->validated());
+
         return response()->json(['message' => 'Project updated']);
     }
 
@@ -61,10 +62,11 @@ class ProjectController extends Controller
     public function destroy(string $id)
     {
         $val = Project::find($id);
-        if (null === $val) {
+        if ($val === null) {
             abort(404);
         }
         $val->delete();
+
         return response()->json(['message' => 'Project deleted']);
     }
 }

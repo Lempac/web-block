@@ -15,6 +15,6 @@ class Block extends Model
         'x',
         'y',
         'sha',
-        'path'
+        'path',
     ];
 }

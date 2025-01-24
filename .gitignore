@@ -28,3 +28,4 @@ devenv.local.nix
 
 .devdbrc
 .idea
+web-block.code-workspace
