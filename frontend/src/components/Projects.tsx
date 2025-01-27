@@ -97,9 +97,9 @@ export default function Projects() {
 
 	return (
 		<div className="card bg-base-content p-4 gap-2">
-			<div className="navbar p-4 bg-base-100 rounded-xl">
-				<h1 className="navbar-start text-2xl font-bold pl-4">Projects</h1>
-				<div className="navbar-end gap-2 ml-2">
+			<div className="navbar p-4 bg-base-100 rounded-2xl">
+				<h1 className="navbar-start text-2xl font-bold">Projects</h1>
+				<div className="navbar-end gap-2">
 					<Button
 						className="nodrag btn"
 						onClick={toggleSettings}
@@ -122,7 +122,7 @@ export default function Projects() {
 			<div
 				className={clsx(
 					"card p-4 bg-base-100 gap-2 flex-row",
-					projects?.data && projects.data.length !== 0 && ""
+					// projects?.data && projects.data.length !== 0 && "xl:flex-wrap"
 				)}
 			>
 				{projects?.data?.map((project) => (
