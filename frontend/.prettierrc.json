@@ -1,3 +1,6 @@
 {
-    "useTabs": true
+	"trailingComma": "all",
+	"useTabs": true,
+	"plugins": ["prettier-plugin-tailwindcss"],
+	"tailwindStylesheet": "./src/index.css"
 }

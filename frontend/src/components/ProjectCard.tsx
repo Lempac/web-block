@@ -11,9 +11,9 @@ import { useQueryClient } from "@tanstack/react-query";
 export function ProjectCard({ project }: { project: Project }) {
 	const route = useRoute();
 	const queryClient = useQueryClient();
-	
-	async function deleteCard(id: number){
-		await axios.delete(route("projects.destroy", {project: id}));
+
+	async function deleteCard(id: number) {
+		await axios.delete(route("projects.destroy", { project: id }));
 		await queryClient.invalidateQueries({ queryKey: ["projects"] });
 	}
 
@@ -28,8 +28,8 @@ export function ProjectCard({ project }: { project: Project }) {
 							err: AxiosError<{
 								message: string;
 								errors: Record<string, string[]>;
-							}>
-						) => err
+							}>,
+						) => err,
 					);
 
 				if (axios.isAxiosError(res) && res.response) {
@@ -44,13 +44,13 @@ export function ProjectCard({ project }: { project: Project }) {
 	});
 
 	return (
-		<div className="card border p-4 gap-2">
-			<div className="flex-row card-title">
+		<div className="card gap-2 border p-4">
+			<div className="card-title flex-row">
 				<form.Field
 					name="name"
 					children={(field) => (
 						<Input
-							className="nodrag input input-bordered"
+							className="nodrag input-bordered input"
 							value={field.state.value}
 							onBlur={field.handleBlur}
 							onChange={(e) => field.handleChange(e.target.value)}
@@ -64,7 +64,7 @@ export function ProjectCard({ project }: { project: Project }) {
 							className={clsx(
 								"nodrag btn btn-info",
 								field.state.value === VisibilityType.Private &&
-									"btn-outline border-2"
+									"border-2 btn-outline",
 							)}
 							onClick={() =>
 								field.state.value === VisibilityType.Private
@@ -92,7 +92,7 @@ export function ProjectCard({ project }: { project: Project }) {
 				name="description"
 				children={(field) => (
 					<Textarea
-						className="nodrag textarea textarea-bordered"
+						className="nodrag textarea-bordered textarea"
 						value={field.state.value}
 						onBlur={field.handleBlur}
 						onChange={(e) => field.handleChange(e.target.value)}

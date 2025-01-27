@@ -94,7 +94,7 @@ function App() {
 
 	const onConnect = useCallback(
 		(params: Connection) => setEdges((eds) => addEdge(params, eds)),
-		[setEdges]
+		[setEdges],
 	);
 	const nodeTypes = useMemo(
 		() => ({
@@ -108,7 +108,7 @@ function App() {
 			folder: Folder,
 			file: File,
 		}),
-		[]
+		[],
 	);
 
 	useEffect(() => {
@@ -119,7 +119,7 @@ function App() {
 	}, [isSuccess]);
 
 	return (
-		<div className="h-[100vh] w-[100vw] m-0">
+		<div className="m-0 h-[100vh] w-[100vw]">
 			<ReactFlow
 				nodeTypes={nodeTypes}
 				nodes={nodes}

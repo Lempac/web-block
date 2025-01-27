@@ -28,8 +28,8 @@ export default function Projects() {
 						err: AxiosError<{
 							message: string;
 							errors: Record<string, string[]>;
-						}>
-					) => err
+						}>,
+					) => err,
 				);
 
 				if (axios.isAxiosError(res) && res.response) {
@@ -56,7 +56,7 @@ export default function Projects() {
 						(node) =>
 							node.id === "settings" ||
 							node.id === "profile" ||
-							node.id === "theme"
+							node.id === "theme",
 					),
 				edges: [reactFlowInstance.getEdge("settings-projects")!],
 			});
@@ -96,8 +96,8 @@ export default function Projects() {
 	};
 
 	return (
-		<div className="card bg-base-content p-4 gap-2">
-			<div className="navbar p-4 bg-base-100 rounded-2xl">
+		<div className="card gap-2 bg-base-content p-4">
+			<div className="navbar rounded-2xl bg-base-100 p-4">
 				<h1 className="navbar-start text-2xl font-bold">Projects</h1>
 				<div className="navbar-end gap-2">
 					<Button
@@ -121,7 +121,7 @@ export default function Projects() {
 			</div>
 			<div
 				className={clsx(
-					"card p-4 bg-base-100 gap-2 flex-row",
+					"card flex-row gap-2 bg-base-100 p-4",
 					// projects?.data && projects.data.length !== 0 && "xl:flex-wrap"
 				)}
 			>
@@ -129,14 +129,14 @@ export default function Projects() {
 					<ProjectCard project={project} key={project.id} />
 				))}
 				<form
-					className="card border-2 border-dashed p-4 gap-2"
+					className="card gap-2 border-2 border-dashed p-4"
 					onSubmit={(e) => {
 						e.preventDefault();
 						e.stopPropagation();
 						newProject.handleSubmit();
 					}}
 				>
-					<div className="flex-row card-title">
+					<div className="card-title flex-row">
 						<newProject.Field
 							name="name"
 							children={(field) => (
@@ -146,8 +146,8 @@ export default function Projects() {
 									value={field.state.value}
 									onChange={(e) => field.handleChange(e.target.value)}
 									className={clsx(
-										"nodrag input input-bordered",
-										field.state.meta.errors.length !== 0 && "input-error"
+										"nodrag input-bordered input",
+										field.state.meta.errors.length !== 0 && "input-error",
 									)}
 								/>
 							)}
@@ -160,13 +160,13 @@ export default function Projects() {
 									className={clsx(
 										"nodrag btn btn-info",
 										field.state.value === VisibilityType.Private &&
-											"btn-outline border-2"
+											"border-2 btn-outline",
 									)}
 									onClick={() =>
 										field.setValue(
 											field.state.value === VisibilityType.Private
 												? VisibilityType.Public
-												: VisibilityType.Private
+												: VisibilityType.Private,
 										)
 									}
 								>
@@ -183,7 +183,7 @@ export default function Projects() {
 							children={([canSubmit, isSubmitting]) => (
 								<Button
 									type="submit"
-									className="nodrag btn btn-success btn-outline px-2"
+									className="nodrag btn px-2 btn-outline btn-success"
 									disabled={!canSubmit || isSubmitting}
 									title="Create project"
 								>
@@ -196,7 +196,7 @@ export default function Projects() {
 						name="description"
 						children={(field) => (
 							<Textarea
-								className="nodrag textarea textarea-bordered"
+								className="nodrag textarea-bordered textarea"
 								defaultValue={field.state.value}
 								onChange={(e) => field.handleChange(e.target.value)}
 								onBlur={field.handleBlur}
@@ -208,7 +208,7 @@ export default function Projects() {
 			<Handle
 				type={"target"}
 				position={Position.Left}
-				className="p-1 hover:p-2 transition-[padding]"
+				className="p-1 transition-[padding] hover:p-2"
 			/>
 		</div>
 	);

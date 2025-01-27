@@ -37,8 +37,8 @@ export default function Auth() {
 							err: AxiosError<{
 								message: string;
 								errors: Record<string, string[]>;
-							}>
-						) => err
+							}>,
+						) => err,
 					);
 				if (axios.isAxiosError(res) && res.response) {
 					return { fields: res.response.data.errors };
@@ -49,11 +49,14 @@ export default function Auth() {
 		},
 	});
 
-	const t = useMemo(() => toggle ? "To login" : "To register", [toggle])
-	const t2 = useMemo(() => toggle ? <FaArrowLeft /> : <FaArrowRight />, [toggle])
+	const t = useMemo(() => (toggle ? "To login" : "To register"), [toggle]);
+	const t2 = useMemo(
+		() => (toggle ? <FaArrowLeft /> : <FaArrowRight />),
+		[toggle],
+	);
 	return (
 		<form
-			className="card bg-base-300 p-4 form-control"
+			className="form-control card bg-base-300 p-4"
 			onSubmit={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
@@ -63,11 +66,11 @@ export default function Auth() {
 			<Handle
 				type="target"
 				position={Position.Top}
-				className="p-1 hover:p-2 transition-[padding]"
+				className="p-1 transition-[padding] hover:p-2"
 			/>
 			<div className={clsx(!toggle && "flex justify-end")}>
 				<Button
-					className="btn btn-sm nodrag"
+					className="nodrag btn btn-sm"
 					onClick={(e) => {
 						e.preventDefault();
 						setToggle(!toggle);
@@ -94,13 +97,13 @@ export default function Auth() {
 									onChange={(e) => field.handleChange(e.target.value)}
 									type="text"
 									className={clsx(
-										"input input-sm input-bordered nodrag",
-										field.state.meta.errors.length !== 0 && "input-error"
+										"input-bordered nodrag input input-sm",
+										field.state.meta.errors.length !== 0 && "input-error",
 									)}
 									invalid={field.state.meta.errors !== undefined}
 								/>
 								{field.state.meta.errors && (
-									<Description className="text-error w-fit">
+									<Description className="w-fit text-error">
 										{field.state.meta.errors}
 									</Description>
 								)}
@@ -122,13 +125,13 @@ export default function Auth() {
 								onChange={(e) => field.handleChange(e.target.value)}
 								type="email"
 								className={clsx(
-									"input input-sm input-bordered nodrag",
-									field.state.meta.errors.length !== 0 && "input-error"
+									"input-bordered nodrag input input-sm",
+									field.state.meta.errors.length !== 0 && "input-error",
 								)}
 								invalid={field.state.meta.errors !== undefined}
 							/>
 							{field.state.meta.errors && (
-								<Description className="text-error w-fit">
+								<Description className="w-fit text-error">
 									{field.state.meta.errors}
 								</Description>
 							)}
@@ -149,13 +152,13 @@ export default function Auth() {
 								onChange={(e) => field.handleChange(e.target.value)}
 								type="password"
 								className={clsx(
-									"input input-sm input-bordered nodrag",
-									field.state.meta.errors.length !== 0 && "input-error"
+									"input-bordered nodrag input input-sm",
+									field.state.meta.errors.length !== 0 && "input-error",
 								)}
 								invalid={field.state.meta.errors !== undefined}
 							/>
 							{field.state.meta.errors && (
-								<Description className="text-error w-fit">
+								<Description className="w-fit text-error">
 									{field.state.meta.errors}
 								</Description>
 							)}
@@ -177,13 +180,13 @@ export default function Auth() {
 									onChange={(e) => field.handleChange(e.target.value)}
 									type="password"
 									className={clsx(
-										"input input-sm input-bordered nodrag",
-										field.state.meta.errors.length !== 0 && "input-error"
+										"input-bordered nodrag input input-sm",
+										field.state.meta.errors.length !== 0 && "input-error",
 									)}
 									invalid={field.state.meta.errors !== undefined}
 								/>
 								{field.state.meta.errors && (
-									<Description className="text-error w-fit">
+									<Description className="w-fit text-error">
 										{field.state.meta.errors}
 									</Description>
 								)}
@@ -198,7 +201,7 @@ export default function Auth() {
 							<Checkbox
 								id={field.name}
 								name={field.name}
-								className="checkbox nodrag px-2"
+								className="nodrag checkbox px-2"
 								checked={field.state.value}
 								onChange={(e) => field.handleChange(e)}
 							/>
@@ -214,7 +217,7 @@ export default function Auth() {
 				children={([canSubmit, isSubmitting]) => (
 					<Button
 						disabled={!canSubmit || isSubmitting}
-						className="btn nodrag mt-3"
+						className="nodrag btn mt-3"
 						type="submit"
 					>
 						{toggle ? "Register" : "Login"}

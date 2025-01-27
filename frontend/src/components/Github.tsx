@@ -19,7 +19,7 @@ export default function Github() {
 			<Handle
 				type="source"
 				position={Position.Bottom}
-				className="p-1 hover:p-2 transition-[padding]"
+				className="p-1 transition-[padding] hover:p-2"
 			/>
 		</div>
 	);
