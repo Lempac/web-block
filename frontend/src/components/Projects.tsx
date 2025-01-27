@@ -1,4 +1,3 @@
-import { Button, Input, Textarea } from "@headlessui/react";
 import { Handle, Position, useReactFlow } from "@xyflow/react";
 import { FaGear } from "react-icons/fa6";
 import { FaSignOutAlt } from "react-icons/fa";
@@ -100,14 +99,14 @@ export default function Projects() {
 			<div className="navbar rounded-2xl bg-base-100 p-4">
 				<h1 className="navbar-start text-2xl font-bold">Projects</h1>
 				<div className="navbar-end gap-2">
-					<Button
+					<button
 						className="nodrag btn"
 						onClick={toggleSettings}
 						title="Settings"
 					>
 						<FaGear />
-					</Button>
-					<Button
+					</button>
+					<button
 						className="nodrag btn btn-info"
 						onClick={async () => {
 							await axios.post(route("logout"));
@@ -116,7 +115,7 @@ export default function Projects() {
 						title="Logout"
 					>
 						<FaSignOutAlt />
-					</Button>
+					</button>
 				</div>
 			</div>
 			<div
@@ -140,7 +139,8 @@ export default function Projects() {
 						<newProject.Field
 							name="name"
 							children={(field) => (
-								<Input
+								<input
+									type="text"
 									name={field.name}
 									onBlur={field.handleBlur}
 									value={field.state.value}
@@ -156,7 +156,7 @@ export default function Projects() {
 						<newProject.Field
 							name="visibility"
 							children={(field) => (
-								<Button
+								<button
 									className={clsx(
 										"nodrag btn btn-info",
 										field.state.value === VisibilityType.Private &&
@@ -175,27 +175,27 @@ export default function Projects() {
 									) : (
 										<MdVisibilityOff />
 									)}
-								</Button>
+								</button>
 							)}
 						/>
 						<newProject.Subscribe
 							selector={(state) => [state.canSubmit, state.isSubmitting]}
 							children={([canSubmit, isSubmitting]) => (
-								<Button
+								<button
 									type="submit"
 									className="nodrag btn px-2 btn-outline btn-success"
 									disabled={!canSubmit || isSubmitting}
 									title="Create project"
 								>
 									<IoIosAdd size="2em" />
-								</Button>
+								</button>
 							)}
 						/>
 					</div>
 					<newProject.Field
 						name="description"
 						children={(field) => (
-							<Textarea
+							<textarea
 								className="nodrag textarea-bordered textarea"
 								defaultValue={field.state.value}
 								onChange={(e) => field.handleChange(e.target.value)}

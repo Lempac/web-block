@@ -1,4 +1,3 @@
-import { Button, Input, Textarea } from "@headlessui/react";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { FaTrashCan } from "react-icons/fa6";
 import clsx from "clsx";
@@ -49,7 +48,8 @@ export function ProjectCard({ project }: { project: Project }) {
 				<form.Field
 					name="name"
 					children={(field) => (
-						<Input
+						<input
+							type="text"
 							className="nodrag input-bordered input"
 							value={field.state.value}
 							onBlur={field.handleBlur}
@@ -60,7 +60,7 @@ export function ProjectCard({ project }: { project: Project }) {
 				<form.Field
 					name="visibility"
 					children={(field) => (
-						<Button
+						<button
 							className={clsx(
 								"nodrag btn btn-info",
 								field.state.value === VisibilityType.Private &&
@@ -77,21 +77,21 @@ export function ProjectCard({ project }: { project: Project }) {
 							) : (
 								<MdVisibilityOff />
 							)}
-						</Button>
+						</button>
 					)}
 				/>
-				<Button
+				<button
 					type="submit"
 					className="nodrag btn btn-error btn-outline"
 					onClick={() => deleteCard(project.id)}
 				>
 					<FaTrashCan />
-				</Button>
+				</button>
 			</div>
 			<form.Field
 				name="description"
 				children={(field) => (
-					<Textarea
+					<textarea
 						className="nodrag textarea-bordered textarea"
 						value={field.state.value}
 						onBlur={field.handleBlur}

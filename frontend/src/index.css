@@ -1,6 +1,9 @@
 @import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
 
-@plugin 'daisyui';
+@plugin "daisyui" {
+	themes: all;
+}
 
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,

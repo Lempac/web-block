@@ -1,15 +1,6 @@
 import { Handle, Position } from "@xyflow/react";
 import { useMemo, useState } from "react";
 import clsx from "clsx";
-import {
-	Button,
-	Checkbox,
-	Description,
-	Field,
-	Fieldset,
-	Input,
-	Label,
-} from "@headlessui/react";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
 import { useRoute } from "ziggy-js";
 import { useForm } from "@tanstack/react-form";
@@ -69,7 +60,7 @@ export default function Auth() {
 				className="p-1 transition-[padding] hover:p-2"
 			/>
 			<div className={clsx(!toggle && "flex justify-end")}>
-				<Button
+				<button
 					className="nodrag btn btn-sm"
 					onClick={(e) => {
 						e.preventDefault();
@@ -78,19 +69,19 @@ export default function Auth() {
 					title={t}
 				>
 					{t2}
-				</Button>
+				</button>
 			</div>
 
-			<Fieldset>
+			<fieldset>
 				{toggle && (
 					<form.Field
 						name="name"
 						children={(field) => (
-							<Field>
-								<Label htmlFor={field.name} className="label w-min">
+							<div>
+								<label htmlFor={field.name} className="label w-min">
 									Name:
-								</Label>
-								<Input
+								</label>
+								<input
 									id={field.name}
 									name={field.name}
 									value={field.state.value}
@@ -100,25 +91,24 @@ export default function Auth() {
 										"input-bordered nodrag input input-sm",
 										field.state.meta.errors.length !== 0 && "input-error",
 									)}
-									invalid={field.state.meta.errors !== undefined}
 								/>
 								{field.state.meta.errors && (
-									<Description className="w-fit text-error">
+									<div className="w-fit text-error">
 										{field.state.meta.errors}
-									</Description>
+									</div>
 								)}
-							</Field>
+							</div>
 						)}
 					/>
 				)}
 				<form.Field
 					name="email"
 					children={(field) => (
-						<Field>
-							<Label htmlFor={field.name} className="label w-min">
+						<div>
+							<label htmlFor={field.name} className="label w-min">
 								Email:
-							</Label>
-							<Input
+							</label>
+							<input
 								id={field.name}
 								name={field.name}
 								value={field.state.value}
@@ -128,24 +118,23 @@ export default function Auth() {
 									"input-bordered nodrag input input-sm",
 									field.state.meta.errors.length !== 0 && "input-error",
 								)}
-								invalid={field.state.meta.errors !== undefined}
 							/>
 							{field.state.meta.errors && (
-								<Description className="w-fit text-error">
+								<div className="w-fit text-error">
 									{field.state.meta.errors}
-								</Description>
+								</div>
 							)}
-						</Field>
+						</div>
 					)}
 				/>
 				<form.Field
 					name="password"
 					children={(field) => (
-						<Field>
-							<Label htmlFor={field.name} className="label w-min">
+						<div>
+							<label htmlFor={field.name} className="label w-min">
 								Password:
-							</Label>
-							<Input
+							</label>
+							<input
 								id={field.name}
 								name={field.name}
 								value={field.state.value}
@@ -155,73 +144,72 @@ export default function Auth() {
 									"input-bordered nodrag input input-sm",
 									field.state.meta.errors.length !== 0 && "input-error",
 								)}
-								invalid={field.state.meta.errors !== undefined}
 							/>
 							{field.state.meta.errors && (
-								<Description className="w-fit text-error">
+								<div className="w-fit text-error">
 									{field.state.meta.errors}
-								</Description>
+								</div>
 							)}
-						</Field>
+						</div>
 					)}
 				/>
 				{toggle && (
 					<form.Field
 						name="password_confirmation"
 						children={(field) => (
-							<Field>
-								<Label htmlFor={field.name} className="label w-fit">
+							<div>
+								<label htmlFor={field.name} className="label w-fit">
 									Reenter password:
-								</Label>
-								<Input
+								</label>
+								<input
 									id={field.name}
 									name={field.name}
 									value={field.state.value}
 									onChange={(e) => field.handleChange(e.target.value)}
 									type="password"
 									className={clsx(
-										"input-bordered nodrag input input-sm",
-										field.state.meta.errors.length !== 0 && "input-error",
+										"input-bordered nodrag input input-sm validator",
+										field.state.meta.errors.length !== 0 && "",
 									)}
-									invalid={field.state.meta.errors !== undefined}
 								/>
 								{field.state.meta.errors && (
-									<Description className="w-fit text-error">
+									<div className="w-fit text-error validator-hint">
 										{field.state.meta.errors}
-									</Description>
+									</div>
 								)}
-							</Field>
+							</div>
 						)}
 					/>
 				)}
 				<form.Field
 					name="remember"
 					children={(field) => (
-						<Field className="mt-2">
-							<Checkbox
+						<div className="mt-2">
+							<input
+								type="checkbox"
 								id={field.name}
 								name={field.name}
-								className="nodrag checkbox px-2"
+								className="nodrag checkbox"
 								checked={field.state.value}
-								onChange={(e) => field.handleChange(e)}
+								onChange={(e) => field.handleChange(e.currentTarget.checked)}
 							/>
-							<Label htmlFor={field.name} className="nodrag ml-1 w-min">
+							<label htmlFor={field.name} className="nodrag ml-1 w-min cursor-pointer">
 								Remember Me
-							</Label>
-						</Field>
+							</label>
+						</div>
 					)}
 				/>
-			</Fieldset>
+			</fieldset>
 			<form.Subscribe
 				selector={(state) => [state.canSubmit, state.isSubmitting]}
 				children={([canSubmit, isSubmitting]) => (
-					<Button
+					<button
 						disabled={!canSubmit || isSubmitting}
 						className="nodrag btn mt-3"
 						type="submit"
 					>
 						{toggle ? "Register" : "Login"}
-					</Button>
+					</button>
 				)}
 			/>
 		</form>

@@ -121,6 +121,7 @@ function App() {
 	return (
 		<div className="m-0 h-[100vh] w-[100vw]">
 			<ReactFlow
+				colorMode="system"
 				nodeTypes={nodeTypes}
 				nodes={nodes}
 				edges={edges}

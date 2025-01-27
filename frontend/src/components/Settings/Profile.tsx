@@ -1,4 +1,3 @@
-import { Input } from "@headlessui/react";
 import Resize from "../Resize";
 
 export default function Profile() {
@@ -9,9 +8,9 @@ export default function Profile() {
 					Profile
 				</h2>
 			</div>
-			<Input className="input-bordered input" />
-			<Input className="input-bordered input" />
-			<Input className="input-bordered input" />
+			<input className="input-bordered input" />
+			<input className="input-bordered input" />
+			<input className="input-bordered input" />
 			<Resize />
 		</div>
 	);
