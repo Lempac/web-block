@@ -3,7 +3,7 @@
 {
 #    dotenv.enable = true;
     languages.php.enable = true;
-    languages.php.version = "8.3";
+    languages.php.version = "8.4";
     languages.php.extensions = [ "xdebug" "pdo_mysql" "pdo_sqlite" ];
     languages.php.ini = ''
         xdebug.mode = debug
@@ -27,7 +27,7 @@
             name = "laravel";
             password = "laravel123";
             ensurePermissions = {
-              "laravel.*" = "ALL PRIVILEGES";
+                "laravel.*" = "ALL PRIVILEGES";
             };
         }
     ];
