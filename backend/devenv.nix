@@ -1,6 +1,7 @@
 { pkgs, lib, config, inputs, ... }:
 
 {
+    name = "web-block-backend";
 #    dotenv.enable = true;
     languages.php.enable = true;
     languages.php.version = "8.4";
@@ -20,15 +21,15 @@
         php-reverb.exec = "php artisan reverb:start";
     };
 
-    services.mailpit.enable = false;
-    services.mysql.enable = false;
-    services.mysql.ensureUsers = [
-        {
-            name = "laravel";
-            password = "laravel123";
-            ensurePermissions = {
-                "laravel.*" = "ALL PRIVILEGES";
-            };
-        }
-    ];
+    # services.mailpit.enable = false;
+    # services.mysql.enable = false;
+    # services.mysql.ensureUsers = [
+    #     {
+    #         name = "laravel";
+    #         password = "laravel123";
+    #         ensurePermissions = {
+    #             "laravel.*" = "ALL PRIVILEGES";
+    #         };
+    #     }
+    # ];
 }
