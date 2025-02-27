@@ -7,7 +7,7 @@ export default function Resize() {
 			position="bottom-right"
 			style={{ background: "transparent", border: "none" }}
 		>
-			<IoMdResize className="relative -top-5 -left-5 rotate-90" />
+			<IoMdResize className="relative -top-5 -left-5 rotate-90 text-base-200" />
 		</NodeResizeControl>
 	);
 }

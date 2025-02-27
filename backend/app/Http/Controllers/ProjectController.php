@@ -6,6 +6,8 @@ use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
 use Auth;
+use Gitonomy\Git\Admin;
+use Gitonomy\Git\Repository;
 
 class ProjectController extends Controller
 {
@@ -14,7 +16,7 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        return Auth::user()->projects ?? [];
+        return Auth::user()->projects;
     }
 
     /**
@@ -22,9 +24,25 @@ class ProjectController extends Controller
      */
     public function store(StoreProjectRequest $request)
     {
-        Auth::user()->projects()->create($request->validated());
+        $val = $request->validated();
 
-        return response()->json(['message' => 'Project created']);
+        if (filter_var($val['name'], FILTER_VALIDATE_URL)) {
+            $repo = Admin::isValidRepository($val['name']);
+            if (! $repo) {
+                return response()->json(['error' => 'Invalid repository url'], 400);
+            }
+            $parseUrl = parse_url($val['name'], PHP_URL_PATH);
+            $parseUrl = explode('/', $parseUrl);
+            $name = end($parseUrl);
+            /** @var Project $project */
+            $repo = Admin::cloneRepository(storage_path('app/private').'/'.$name, $val['name']);
+            $project = Auth::user()->projects()->create(['name' => $name, 'description' => '']);
+            $project->generateGitProject();
+        } else {
+            $project = Auth::user()->getGithubProject($val['name']);
+            $repo = Admin::cloneRepository(storage_path('app/private').'/'.$project->name, $project->url);
+        }
+        return response()->json(['message' => 'Project created successfully'], 201);
     }
 
     /**
@@ -32,13 +50,7 @@ class ProjectController extends Controller
      */
     public function show(string $id)
     {
-        $val = Project::find($id);
-
-        if ($val === null) {
-            abort(404);
-        }
-
-        return response()->json(['project' => $val]);
+        return response()->json(Project::findOrFail($id));
     }
 
     /**
@@ -46,14 +58,8 @@ class ProjectController extends Controller
      */
     public function update(UpdateProjectRequest $request, string $id)
     {
-        $val = Project::find($id);
-
-        if ($val === null) {
-            abort(404);
-        }
-        $val->update($request->validated());
-
-        return response()->json(['message' => 'Project updated']);
+        Project::findOrFail($id)->update($request->validated());
+        return response()->noContent();
     }
 
     /**
@@ -61,12 +67,7 @@ class ProjectController extends Controller
      */
     public function destroy(string $id)
     {
-        $val = Project::find($id);
-        if ($val === null) {
-            abort(404);
-        }
-        $val->delete();
-
-        return response()->json(['message' => 'Project deleted']);
+        Project::findOrFail($id)->delete();
+        return response()->noContent();
     }
 }

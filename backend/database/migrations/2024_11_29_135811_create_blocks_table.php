@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Block;
+use App\Models\Project;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,9 +17,12 @@ return new class extends Migration
             $table->id();
             $table->integer('x')->default(0);
             $table->integer('y')->default(0);
-            $table->string('sha', 40)->nullable();
+            $table->string('title');
+            $table->string('content');
             $table->string('path')->nullable();
             $table->timestamps();
+            $table->foreignIdFor(Block::class)->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignIdFor(Project::class)->constrained()->onUpdate('cascade')->onDelete('cascade');
         });
     }
 

@@ -17,10 +17,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->text('full_description')->nullable();
             $table->string('default_branch')->default('master');
-            $table->string('license')->default('');
-            $table->enum('visibility', array_column(VisibilityType::cases(), 'value'))->default(VisibilityType::Private);
+            $table->string('url')->nullable();
             $table->timestamps();
             $table->foreignIdFor(User::class)->constrained()->onUpdate('cascade')->onDelete('cascade');
         });

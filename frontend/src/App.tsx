@@ -1,125 +1,177 @@
-import { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
 	addEdge,
 	Background,
 	BackgroundVariant,
-	Connection,
+	BuiltInNode,
 	Controls,
+	MiniMap,
+	NodeTypes,
+	OnConnect,
 	ReactFlow,
 	useEdgesState,
 	useNodesState,
 	useReactFlow,
 } from "@xyflow/react";
-import Auth from "@/components/Auth.tsx";
-import Projects from "@/components/Projects.tsx";
-import Github from "@/components/Github.tsx";
-import Welcome from "@/components/Welcome.tsx";
-import Settings from "@/components/Settings";
-import Profile from "@/components/Settings/Profile";
-import Theme from "@/components/Settings/Theme";
-import Folder from "@/components/Folder";
+import Auth, { AuthNode } from "@/components/Auth.tsx";
+import Projects, { ProjectsNode } from "@/components/Projects.tsx";
+import Github, { GithubNode } from "@/components/Github.tsx";
+import Welcome, { WelcomeNode } from "@/components/Welcome.tsx";
+import Settings, { SettingsNode } from "@/components/Settings";
+import Profile, { ProfileNode } from "@/components/Settings/Profile";
+import Theme, { ThemeNode } from "@/components/Settings/Theme";
+import Folder, { FolderNode } from "@/components/Folder";
 import { User } from "@/index";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "ziggy-js";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import File from "./components/File";
-import { Path } from "./components/Path";
+import File, { FileNode } from "@/components/File";
+import Path from "@/components/Path";
+import NodeInspector from "./components/NodeInspector";
+import ContextMenu, { ContextMenuNode } from "@/components/ContextMenu";
 
+export type CustomNodeType =
+	| BuiltInNode
+	| AuthNode
+	| ProjectsNode
+	| GithubNode
+	| WelcomeNode
+	| SettingsNode
+	| ProfileNode
+	| ThemeNode
+	| FolderNode
+	| FileNode
+	| ContextMenuNode;
+
+const nodeTypes: NodeTypes = {
+	auth: Auth,
+	welcome: Welcome,
+	profile: Profile,
+	theme: Theme,
+	folder: Folder,
+	settings: Settings,
+	file: File,
+	projects: Projects,
+	github: Github,
+	contextMenu: ContextMenu,
+} as const;
 function App() {
 	const route = useRoute();
-	const reactFlowInstance = useReactFlow();
-	const [nodes, , onNodesChange] = useNodesState([]);
-	const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-	const { data: user, isSuccess } = useQuery<AxiosResponse<User>, AxiosError>({
+	const { isSuccess } = useQuery<AxiosResponse<User>, AxiosError>({
 		queryKey: ["user"],
 		queryFn: async () => axios.get(route("user")),
 		retry: 1,
 		refetchInterval: 2 * 1000 * 60,
 	});
+	const { setNodes, setEdges, fitView, addNodes, deleteElements, screenToFlowPosition } = useReactFlow<CustomNodeType>();
+	const [nodes, , onNodesChange] = useNodesState([]);
 
+	// Show welcome node if user is not logged in or if user is logged in shows projects node
 	useEffect(() => {
-		const position = { x: 0, y: 0 };
-		if (isSuccess && !reactFlowInstance.getNode("projects")) {
-			reactFlowInstance.setNodes([
-				{
-					id: "projects",
-					type: "projects",
-					position: { x: 0, y: 0 },
-					data: {},
-				},
-				{
-					id: "folder",
-					type: "folder",
-					position: { x: 0, y: -200 },
-					data: { name: "Test" },
-				},
-				{
-					id: "file",
-					type: "file",
-					position: { x: -200, y: 0 },
-					data: {},
-				},
-			]);
-		} else {
-			reactFlowInstance.setNodes([
-				{ id: "auth", type: "auth", position: position, data: {} },
-				{
-					id: "github",
-					type: "github",
-					position: { x: position.x - 50, y: position.y - 150 },
-					data: {},
-				},
-				{
-					id: "welcome",
-					type: "welcome",
-					position: { x: position.x + 170, y: position.y - 210 },
-					data: {},
-				},
-			]);
-			reactFlowInstance.setEdges([
-				{
-					id: "github-auth",
-					source: "github",
-					target: "auth",
-				},
-				{
-					id: "welcome-auth",
-					source: "welcome",
-					target: "auth",
-				},
-			]);
-		}
-	}, [user?.data, isSuccess]);
-
-	const onConnect = useCallback(
-		(params: Connection) => setEdges((eds) => addEdge(params, eds)),
-		[setEdges],
-	);
-	const nodeTypes = useMemo(
-		() => ({
-			auth: Auth,
-			projects: Projects,
-			github: Github,
-			welcome: Welcome,
-			settings: Settings,
-			profile: Profile,
-			theme: Theme,
-			folder: Folder,
-			file: File,
-		}),
-		[],
-	);
-
-	useEffect(() => {
-		reactFlowInstance.fitView({
-			includeHiddenNodes: false,
+		setNodes(
+			isSuccess
+				? [
+						{
+							id: "projects",
+							type: "projects",
+							position: { x: 0, y: 0 },
+							data: {},
+						},
+						{
+							id: "folder",
+							type: "folder",
+							position: { x: 0, y: -200 },
+							data: { name: "Test" },
+						},
+						{
+							id: "file",
+							type: "file",
+							position: { x: -200, y: 0 },
+							data: {
+								title: "Test.txt",
+								content: "Hello World!",
+							},
+						},
+					]
+				: [
+						{ id: "auth", type: "auth", position: { x: 0, y: 0 }, data: {} },
+						{
+							id: "github",
+							type: "github",
+							position: { x: 0 - 50, y: 0 - 150 },
+							data: {},
+						},
+						{
+							id: "welcome",
+							type: "welcome",
+							position: { x: 0 + 170, y: 0 - 210 },
+							data: {},
+						},
+					],
+		);
+		setEdges(
+			!isSuccess
+				? [
+						{
+							id: "github-auth",
+							source: "github",
+							target: "auth",
+						},
+						{
+							id: "welcome-auth",
+							source: "welcome",
+							target: "auth",
+						},
+					]
+				: [],
+		);
+		// Add padding to fit view, so when user authenticates, the view is not zoomed in.
+		fitView({
 			padding: isSuccess ? 1.1 : 0.1,
 		});
-	}, [isSuccess]);
+	}, [fitView, isSuccess, setEdges, setNodes]);
+	const [edges, setEdgeInternal, onEdgesChange] = useEdgesState([]);
+
+	const onConnect: OnConnect = useCallback(
+		(connection) => setEdgeInternal((eds) => addEdge(connection, eds)),
+		[setEdgeInternal],
+	);
+
+	const onPaneClick = useCallback(() => {
+		deleteElements({
+			nodes: [{ id: "context" }],
+		})
+	}, [deleteElements]);
+
+	const onPaneContextMenu = useCallback(
+		(event: React.MouseEvent | MouseEvent) => {
+			event.preventDefault();
+			// Calculate position of the context menu. We want to make sure it
+			// doesn't get positioned off-screen.
+			const position = screenToFlowPosition({x: event.clientX, y: event.clientY })
+			addNodes([
+				{
+					id: "context",
+					type: "contextMenu",
+					position: {
+						x: position.x,
+						y: position.y,
+					},
+					data: {
+						onClick: onPaneClick,
+					},
+				},
+			])
+		},
+		[addNodes, onPaneClick, screenToFlowPosition],
+	);
 
 	return (
-		<div className="m-0 h-[100vh] w-[100vw]">
+		<div
+			className="absolute m-0 overflow-hidden"
+			style={{ width: "100vw", height: "100vh" }}
+		>
 			<ReactFlow
 				colorMode="system"
 				nodeTypes={nodeTypes}
@@ -128,18 +180,27 @@ function App() {
 				onNodesChange={onNodesChange}
 				onEdgesChange={onEdgesChange}
 				onConnect={onConnect}
+				onPaneContextMenu={onPaneContextMenu}
+				onPaneClick={onPaneClick}
 				fitView
 				snapToGrid={true}
 				snapGrid={[5, 5]}
 				onlyRenderVisibleElements={true}
 				fitViewOptions={{
-					includeHiddenNodes: false,
 					padding: isSuccess ? 1.1 : 0.1,
 				}}
+				proOptions={{ hideAttribution: true }}
 			>
-				<Path path="123/123/123" size={2} />
+				{!process.env.NODE_ENV ||
+					(process.env.NODE_ENV === "development" && <NodeInspector />)}
 				<Background variant={BackgroundVariant.Dots} />
-				<Controls />
+				{isSuccess && (
+					<>
+						<Controls />
+						<MiniMap zoomable pannable />
+						<Path path="123/123/123" />
+					</>
+				)}
 			</ReactFlow>
 			<ReactQueryDevtools initialIsOpen={false} />
 		</div>

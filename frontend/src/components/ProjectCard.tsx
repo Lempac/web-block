@@ -1,25 +1,41 @@
-import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 import { FaTrashCan } from "react-icons/fa6";
 import clsx from "clsx";
-import { Project, VisibilityType } from "@/index";
+import { Project } from "@/index";
 import { useRoute } from "ziggy-js";
 import { useForm } from "@tanstack/react-form";
 import axios, { AxiosError } from "axios";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 
 export function ProjectCard({ project }: { project: Project }) {
 	const route = useRoute();
 	const queryClient = useQueryClient();
+	const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+	const [value, setValue] = useState<string>();
+
+	const textAreaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+		setValue(event.target.value);
+	};
+
+	useEffect(() => {
+		if (textareaRef && textareaRef.current) {
+			textareaRef.current.style.height = "0px";
+			const scrollHeight = textareaRef.current.scrollHeight;
+			textareaRef.current.style.height = scrollHeight + "px";
+		}
+	}, [value]);
 
 	async function deleteCard(id: number) {
 		await axios.delete(route("projects.destroy", { project: id }));
 		await queryClient.invalidateQueries({ queryKey: ["projects"] });
 	}
 
-	const form = useForm({
+	const { Field} = useForm({
 		defaultValues: project,
 		validators: {
-			onSubmitAsync: async ({ value }) => {
+			onChangeAsyncDebounceMs: 500,
+			onChangeAsync: async ({ value }) => {
 				const res = await axios
 					.patch(route("projects.update", { id: value.id! }), value)
 					.catch(
@@ -43,27 +59,30 @@ export function ProjectCard({ project }: { project: Project }) {
 	});
 
 	return (
-		<div className="card gap-2 border p-4">
-			<div className="card-title flex-row">
-				<form.Field
+		<div className="grid flex-none content-start gap-2 rounded-box border-2 border-base-300 p-4 shadow">
+			<div className="flex gap-2">
+				<Field
 					name="name"
 					children={(field) => (
 						<input
 							type="text"
-							className="nodrag input-bordered input"
+							className={clsx(
+								"nodrag input",
+								field.state.meta.errors.length !== 0 && "input-error",
+							)}
 							value={field.state.value}
 							onBlur={field.handleBlur}
 							onChange={(e) => field.handleChange(e.target.value)}
 						/>
 					)}
 				/>
-				<form.Field
+				{/* <form.Field
 					name="visibility"
 					children={(field) => (
 						<button
 							className={clsx(
 								"nodrag btn btn-info",
-								field.state.value === VisibilityType.Private &&
+								field.state.value === ProjectVisibility.PRIVATE &&
 									"border-2 btn-outline",
 							)}
 							onClick={() =>
@@ -79,23 +98,28 @@ export function ProjectCard({ project }: { project: Project }) {
 							)}
 						</button>
 					)}
-				/>
+				/> */}
 				<button
-					type="submit"
 					className="nodrag btn btn-error btn-outline"
 					onClick={() => deleteCard(project.id)}
 				>
 					<FaTrashCan />
 				</button>
 			</div>
-			<form.Field
+			<Field
 				name="description"
+				asyncDebounceMs={1000}
 				children={(field) => (
 					<textarea
-						className="nodrag textarea-bordered textarea"
-						value={field.state.value}
+						ref={textareaRef}
+						className="nodrag textarea-bordered textarea resize-none overflow-hidden flex-none"
+						value={field.state.value ?? ""}
 						onBlur={field.handleBlur}
-						onChange={(e) => field.handleChange(e.target.value)}
+						onChange={(e) => {
+							field.handleChange(e.target.value);
+							textAreaChange(e);
+						}}
+						placeholder=""
 					/>
 				)}
 			/>

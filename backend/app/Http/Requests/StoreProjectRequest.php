@@ -26,8 +26,8 @@ class StoreProjectRequest extends FormRequest
     {
         return [
             'name' => 'required|string',
-            'visibility' => 'required|in:'.implode(',', array_column(VisibilityType::cases(), 'value')),
-            'description' => 'nullable|string',
+            // 'visibility' => 'required|in:'.implode(',', array_column(VisibilityType::cases(), 'value')),
+            // 'description' => 'nullable|string',
         ];
     }
 }

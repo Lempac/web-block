@@ -1,66 +1,128 @@
-import { Handle, Position, useReactFlow } from "@xyflow/react";
+import { useReactFlow } from "@xyflow/react";
+import type { Node } from "@xyflow/react";
 import { FaGear } from "react-icons/fa6";
 import { FaSignOutAlt } from "react-icons/fa";
 import { ProjectCard } from "@/components/ProjectCard.tsx";
-import { Project, VisibilityType } from "@/index";
+import { Project } from "@/index";
 import clsx from "clsx";
-import { MdVisibility, MdVisibilityOff } from "react-icons/md";
-import { IoIosAdd } from "react-icons/io";
+import { IoIosAdd, IoMdSearch } from "react-icons/io";
 import { useRoute } from "ziggy-js";
-import { useForm } from "@tanstack/react-form";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios, { AxiosError, AxiosResponse } from "axios";
+import { useCallback, useState } from "react";
+
+export type ProjectsNode = Node<Record<never, never>, "projects">;
 
 export default function Projects() {
 	const route = useRoute();
 	const queryClient = useQueryClient();
-	const newProject = useForm<Omit<Project, "id">>({
-		defaultValues: {
-			name: "New project",
-			description: "Project with ideas",
-			visibility: VisibilityType.Private,
-		},
-		validators: {
-			onSubmitAsync: async ({ value }) => {
-				const res = await axios.post(route("projects.store"), value).catch(
-					(
-						err: AxiosError<{
-							message: string;
-							errors: Record<string, string[]>;
-						}>,
-					) => err,
-				);
-
-				if (axios.isAxiosError(res) && res.response) {
-					return { fields: res.response.data.errors };
-				}
-
-				await queryClient.invalidateQueries({ queryKey: ["projects"] });
-
-				return null;
-			},
+	const [search, setSearch] = useState("");
+	const { getNode, getNodes, getEdge, addNodes, addEdges, deleteElements } = useReactFlow();
+	const { data: repos } = useQuery<AxiosResponse<string[], AxiosError>>({
+		queryKey: ["repos"],
+		queryFn: async () => await axios.get(route("user.repos")),
+	});
+	
+	const { mutateAsync : createProject, isPending: isCreating } = useMutation({
+		mutationFn: async (name: string) =>
+			await axios.post(route("projects.store"), {
+				name: name,
+			}),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["projects"] });
+			setSearch("");
 		},
 	});
-	const reactFlowInstance = useReactFlow();
-	const { data: projects } = useQuery<AxiosResponse<Project[]>, AxiosError>({
+
+	// const createProject = useMutation<string, AxiosError>(route("projects.store"), {
+	// 	onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] }),
+	// })
+
+	// async function createProject(name: string) {
+	// 	await axios
+	// 		.post<
+	// 			AxiosResponse<string>,
+	// 			AxiosError<{
+	// 				message: string;
+	// 				errors: Record<string, string[]>;
+	// 			}>
+	// 		>(route("projects.store"), {
+	// 			name,
+	// 		})
+	// 		.catch((err) => console.log(err));
+	// 	await queryClient.invalidateQueries({ queryKey: ["projects"] });
+	// }
+
+	// const newProject = useForm<Omit<Project, "id">>({
+	// 	defaultValues: {
+	// 		name: "New project",
+	// 		description: "Project with ideas",
+	// 		visibility: VisibilityType.Private,
+	// 	},
+	// 	validators: {
+	// 		onSubmitAsync: async ({ value }) => {
+	// 			const res = await axios.post(route("projects.store"), value).catch(
+	// 				(
+	// 					err: AxiosError<{
+	// 						message: string;
+	// 						errors: Record<string, string[]>;
+	// 					}>,
+	// 				) => err,
+	// 			);
+
+	// 			if (axios.isAxiosError(res) && res.response) {
+	// 				return { fields: res.response.data.errors };
+	// 			}
+
+	// 			await queryClient.invalidateQueries({ queryKey: ["projects"] });
+
+	// 			return null;
+	// 		},
+	// 	},
+	// });
+
+	const filteredRepos = useCallback(
+		() =>
+			repos?.data
+				.filter((repo) => repo.toLowerCase().includes(search.toLowerCase()))
+				.map((repo, i) => (
+					<li key={i}>
+						<button
+							className="btn"
+							onClick={() => createProject(repo)}
+						>
+							{repo}
+						</button>
+					</li>
+				)),
+		[createProject, repos?.data, search],
+	);
+	const { data: projects, isSuccess } = useQuery<
+		AxiosResponse<Project[]>,
+		AxiosError
+	>({
 		queryKey: ["projects"],
 		queryFn: async () => await axios.get(route("projects.index")),
 	});
+
+	const filteredProjects = useCallback(
+		() =>
+			projects?.data
+				.filter((project) =>
+					project.name.toLowerCase().includes(search.toLowerCase()),
+				)
+				.map((project) => <ProjectCard project={project} key={project.id} />),
+		[projects?.data, search],
+	);
 	const toggleSettings = () => {
-		if (reactFlowInstance.getNode("settings")) {
-			reactFlowInstance.deleteElements({
-				nodes: reactFlowInstance
-					.getNodes()
-					.filter(
-						(node) =>
-							node.id === "settings" ||
-							node.id === "profile" ||
-							node.id === "theme",
-					),
-				edges: [reactFlowInstance.getEdge("settings-projects")!],
+		if (getNode("settings")) {
+			deleteElements({
+				nodes: getNodes()
+					.filter((node) => ["settings", "profile", "theme"].includes(node.id)),
+				edges: [getEdge("settings-projects")!],
 			});
 		} else {
-			reactFlowInstance.addNodes([
+			addNodes([
 				{
 					id: "settings",
 					type: "settings",
@@ -86,7 +148,7 @@ export default function Projects() {
 					expandParent: false,
 				},
 			]);
-			reactFlowInstance.addEdges({
+			addEdges({
 				id: "settings-projects",
 				source: "settings",
 				target: "projects",
@@ -95,19 +157,50 @@ export default function Projects() {
 	};
 
 	return (
-		<div className="card gap-2 bg-base-content p-4">
-			<div className="navbar rounded-2xl bg-base-100 p-4">
-				<h1 className="navbar-start text-2xl font-bold">Projects</h1>
-				<div className="navbar-end gap-2">
+		<div className="grid gap-2 rounded-box bg-base-300 p-4 shadow">
+			<div className="navbar gap-2 rounded-box bg-base-200 p-4">
+				<h1 className="flex-1 text-2xl font-bold">Projects</h1>
+				<div className="flex gap-2">
+					<div className="dropdown dropdown-start">
+						<div className="join">
+							<label tabIndex={0} className="input join-item">
+								<IoMdSearch />
+								<input
+									className=""
+									type="search"
+									placeholder=""
+									value={search}
+									disabled={isCreating}
+									onChange={(e) => setSearch(e.target.value)}
+								/>
+							</label>
+							<button
+								className="btn join-item btn-success"
+								onClick={() => createProject(search)}
+							>
+								<IoIosAdd size="1.5em" />
+							</button>
+						</div>
+						<ul
+							tabIndex={0}
+							className="dropdown-content menu gap-0.5 rounded-box bg-base-100 p-2 shadow"
+						>
+							{filteredRepos()?.length === 0 ? (
+								<p>No results found.</p>
+							) : (
+								filteredRepos()
+							)}
+						</ul>
+					</div>
 					<button
-						className="nodrag btn"
+						className="nodrag btn btn-neutral"
 						onClick={toggleSettings}
 						title="Settings"
 					>
 						<FaGear />
 					</button>
 					<button
-						className="nodrag btn btn-info"
+						className="nodrag btn btn-primary"
 						onClick={async () => {
 							await axios.post(route("logout"));
 							await queryClient.resetQueries({ queryKey: ["user"] });
@@ -120,14 +213,17 @@ export default function Projects() {
 			</div>
 			<div
 				className={clsx(
-					"card flex-row gap-2 bg-base-100 p-4",
-					// projects?.data && projects.data.length !== 0 && "xl:flex-wrap"
+					"grid min-w-max items-start gap-2 rounded-box bg-base-200 p-4",
+					projects && projects.data.length == 2 && "grid-cols-2",
+					projects && projects.data.length >= 3 && "grid-cols-3",
 				)}
 			>
-				{projects?.data?.map((project) => (
-					<ProjectCard project={project} key={project.id} />
-				))}
-				<form
+				{isSuccess && filteredProjects()?.length === 0 ? (
+					<p>No results found.</p>
+				) : (
+					filteredProjects()
+				)}
+				{/* <form
 					className="card gap-2 border-2 border-dashed p-4"
 					onSubmit={(e) => {
 						e.preventDefault();
@@ -146,7 +242,7 @@ export default function Projects() {
 									value={field.state.value}
 									onChange={(e) => field.handleChange(e.target.value)}
 									className={clsx(
-										"nodrag input-bordered input",
+										"nodrag  input",
 										field.state.meta.errors.length !== 0 && "input-error",
 									)}
 								/>
@@ -203,13 +299,13 @@ export default function Projects() {
 							/>
 						)}
 					/>
-				</form>
+				</form> */}
 			</div>
-			<Handle
-				type={"target"}
+			{/* <Handle
+				type="target"
 				position={Position.Left}
 				className="p-1 transition-[padding] hover:p-2"
-			/>
+			/> */}
 		</div>
 	);
 }

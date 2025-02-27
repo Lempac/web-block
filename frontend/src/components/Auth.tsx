@@ -1,11 +1,14 @@
 import { Handle, Position } from "@xyflow/react";
-import { useMemo, useState } from "react";
+import type { Node } from "@xyflow/react";
+import { useState } from "react";
 import clsx from "clsx";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
 import { useRoute } from "ziggy-js";
 import { useForm } from "@tanstack/react-form";
 import axios, { AxiosError } from "axios";
 import { useQueryClient } from "@tanstack/react-query";
+
+export type AuthNode = Node<Record<never, never>, "auth">;
 
 export default function Auth() {
 	const route = useRoute();
@@ -40,14 +43,9 @@ export default function Auth() {
 		},
 	});
 
-	const t = useMemo(() => (toggle ? "To login" : "To register"), [toggle]);
-	const t2 = useMemo(
-		() => (toggle ? <FaArrowLeft /> : <FaArrowRight />),
-		[toggle],
-	);
 	return (
 		<form
-			className="form-control card bg-base-300 p-4"
+			className="card bg-base-100 p-4 shadow"
 			onSubmit={(e) => {
 				e.preventDefault();
 				e.stopPropagation();
@@ -66,137 +64,147 @@ export default function Auth() {
 						e.preventDefault();
 						setToggle(!toggle);
 					}}
-					title={t}
+					title={toggle ? "To login" : "To register"}
 				>
-					{t2}
+					{toggle ? <FaArrowLeft /> : <FaArrowRight />}
 				</button>
 			</div>
 
-			<fieldset>
+			<fieldset className="fieldset">
 				{toggle && (
 					<form.Field
 						name="name"
 						children={(field) => (
-							<div>
-								<label htmlFor={field.name} className="label w-min">
-									Name:
+							<>
+								<label className="floating-label">
+									<span className="!scale-100">Name</span>
+									<input
+										type="text"
+										id={field.name}
+										name={field.name}
+										value={field.state.value}
+										placeholder=""
+										onChange={(e) => field.handleChange(e.target.value)}
+										className={clsx(
+											"nodrag input input-sm",
+											field.state.meta.errors.length !== 0 && "input-error",
+										)}
+									/>
 								</label>
-								<input
-									id={field.name}
-									name={field.name}
-									value={field.state.value}
-									onChange={(e) => field.handleChange(e.target.value)}
-									type="text"
-									className={clsx(
-										"input-bordered nodrag input input-sm",
-										field.state.meta.errors.length !== 0 && "input-error",
-									)}
-								/>
-								{field.state.meta.errors && (
-									<div className="w-fit text-error">
-										{field.state.meta.errors}
+								{field.state.meta.errors.length !== 0 && (
+									<div className="flex flex-col">
+										{field.state.meta.errors.flat().map((x) => (
+											<div className="fieldset-label text-error">{x}</div>
+										))}
 									</div>
 								)}
-							</div>
+							</>
 						)}
 					/>
 				)}
 				<form.Field
 					name="email"
 					children={(field) => (
-						<div>
-							<label htmlFor={field.name} className="label w-min">
-								Email:
+						<>
+							<label className="floating-label">
+								<span className="!scale-100">Email</span>
+								<input
+									type="email"
+									id={field.name}
+									name={field.name}
+									value={field.state.value}
+									placeholder=""
+									onChange={(e) => field.handleChange(e.target.value)}
+									className={clsx(
+										"nodrag input input-sm",
+										field.state.meta.errors.length !== 0 && "input-error",
+									)}
+								/>
 							</label>
-							<input
-								id={field.name}
-								name={field.name}
-								value={field.state.value}
-								onChange={(e) => field.handleChange(e.target.value)}
-								type="email"
-								className={clsx(
-									"input-bordered nodrag input input-sm",
-									field.state.meta.errors.length !== 0 && "input-error",
-								)}
-							/>
-							{field.state.meta.errors && (
-								<div className="w-fit text-error">
-									{field.state.meta.errors}
+							{field.state.meta.errors.length !== 0 && (
+								<div className="text-error">
+									{field.state.meta.errors.flat().map((x) => (
+										<div className="flex flex-wrap">{x}</div>
+									))}
 								</div>
 							)}
-						</div>
+						</>
 					)}
 				/>
 				<form.Field
 					name="password"
 					children={(field) => (
-						<div>
-							<label htmlFor={field.name} className="label w-min">
-								Password:
+						<>
+							<label className="floating-label">
+								<span className="!scale-100">Password</span>
+								<input
+									type="password"
+									id={field.name}
+									name={field.name}
+									value={field.state.value}
+									placeholder=""
+									onChange={(e) => field.handleChange(e.target.value)}
+									className={clsx(
+										"nodrag input input-sm",
+										field.state.meta.errors.length !== 0 && "input-error",
+									)}
+								/>
 							</label>
-							<input
-								id={field.name}
-								name={field.name}
-								value={field.state.value}
-								onChange={(e) => field.handleChange(e.target.value)}
-								type="password"
-								className={clsx(
-									"input-bordered nodrag input input-sm",
-									field.state.meta.errors.length !== 0 && "input-error",
-								)}
-							/>
-							{field.state.meta.errors && (
-								<div className="w-fit text-error">
-									{field.state.meta.errors}
+							{field.state.meta.errors.length !== 0 && (
+								<div className="flex flex-col">
+									{field.state.meta.errors.flat().map((x) => (
+										<div className="fieldset-label text-error">{x}</div>
+									))}
 								</div>
 							)}
-						</div>
+						</>
 					)}
 				/>
 				{toggle && (
 					<form.Field
 						name="password_confirmation"
 						children={(field) => (
-							<div>
-								<label htmlFor={field.name} className="label w-fit">
-									Reenter password:
+							<>
+								<label className="floating-label">
+									<span className="!scale-100">Reenter password</span>
+									<input
+										type="password"
+										id={field.name}
+										name={field.name}
+										value={field.state.value}
+										placeholder=""
+										onChange={(e) => field.handleChange(e.target.value)}
+										className={clsx(
+											"nodrag input input-sm",
+											field.state.meta.errors.length !== 0 && "input-error",
+										)}
+									/>
 								</label>
-								<input
-									id={field.name}
-									name={field.name}
-									value={field.state.value}
-									onChange={(e) => field.handleChange(e.target.value)}
-									type="password"
-									className={clsx(
-										"input-bordered nodrag input input-sm validator",
-										field.state.meta.errors.length !== 0 && "",
-									)}
-								/>
-								{field.state.meta.errors && (
-									<div className="w-fit text-error validator-hint">
-										{field.state.meta.errors}
+								{field.state.meta.errors.length !== 0 && (
+									<div className="flex flex-row text-error">
+										{field.state.meta.errors.flat().map((x) => (
+											<div className="flex flex-wrap">{x}</div>
+										))}
 									</div>
 								)}
-							</div>
+							</>
 						)}
 					/>
 				)}
 				<form.Field
 					name="remember"
 					children={(field) => (
-						<div className="mt-2">
+						<label className="fieldset-label">
 							<input
 								type="checkbox"
 								id={field.name}
 								name={field.name}
-								className="nodrag checkbox"
 								checked={field.state.value}
 								onChange={(e) => field.handleChange(e.currentTarget.checked)}
+								className="checkbox"
 							/>
-							<label htmlFor={field.name} className="nodrag ml-1 w-min cursor-pointer">
-								Remember Me
-							</label>
-						</div>
+							Remember me
+						</label>
 					)}
 				/>
 			</fieldset>

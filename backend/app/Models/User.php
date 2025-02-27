@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Auth;
+use Github\AuthMethod;
+use Github\Client;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -22,14 +24,14 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'github_id',
-        'github_name',
-        'github_token',
-        'is_admin',
-        'github_refresh_token',
         'name',
         'email',
         'password',
+        'github_id',
+        'github_token',
+        'github_refresh_token',
+        'is_admin',
+        'settings'
     ];
 
     /**
@@ -52,6 +54,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'settings' => 'array',
         ];
     }
 
@@ -68,5 +71,29 @@ class User extends Authenticatable
     public function hasGithub(): bool
     {
         return Auth::user()->github_token != null;
+    }
+
+    public function getGithubProjects()
+    {
+        if (! $this->hasGithub())
+            return [];
+        $client = new Client();
+        $client->authenticate($this->github_id, $this->github_token, AuthMethod::CLIENT_ID);
+        $repos = $client->currentUser()->repositories();
+        // dd($repos);
+        return array_map(fn ($repo) => $repo["name"], $repos);
+    }
+
+    public function getGithubProject(string $repoName)
+    {
+        if (!$this->hasGithub()) return null;
+        $client = new Client();
+        $client->authenticate($this->github_id, $this->github_token, AuthMethod::CLIENT_ID);
+        $repo = $client->repo()->show($this->name, $repoName);
+        return $this->projects()->create([
+            'name' => $repo['name'],
+            'description' => $repo['description'],
+            'url' => $repo['html_url']
+        ]);
     }
 }

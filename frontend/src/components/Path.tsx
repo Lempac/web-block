@@ -1,9 +1,19 @@
 import { Panel } from "@xyflow/react";
+import type { PanelPosition } from "@xyflow/react";
 
-export function Path({ path, size }: { path?: string; size?: number }) {
-	const segments = path?.split("/");
+export type PathProps = {
+	path: string;
+	position?: PanelPosition;
+	size?: number;
+};
+
+export default function Path({ path, position, size }: PathProps) {
+	const segments = path.split("/");
 	return (
-		<Panel className="breadcrumbs rounded-t-md rounded-br-3xl rounded-bl-md bg-slate-700 pr-5 pl-2 shadow-2xl">
+		<Panel
+			className="breadcrumbs rounded-t-md rounded-br-3xl rounded-bl-md bg-base-300 pr-5 pl-2 shadow"
+			position={position ?? "top-left"}
+		>
 			<ul className="transition-all">
 				{size !== undefined && segments?.length && size < segments?.length ? (
 					<li>

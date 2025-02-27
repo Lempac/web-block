@@ -52,9 +52,9 @@ Route::get('auth/callback', function () {
 
             return response()->redirectTo(config('app.frontend_url'), status: 301);
         }
-        Auth::user()->update(['github_name' => $githubUser->nickname, 'github_id' => $githubUser->getId(), 'github_token' => $githubUser->token, 'github_refresh_token' => $githubUser->refreshToken]);
+        Auth::user()->update(['name' => $githubUser->nickname, 'github_id' => $githubUser->getId(), 'github_token' => $githubUser->token, 'github_refresh_token' => $githubUser->refreshToken]);
     } else {
-        Auth::login(User::updateOrCreate(['github_id' => $githubUser->getId()], ['email' => $githubUser->getEmail(), 'github_name' => $githubUser->nickname, 'github_token' => $githubUser->token, 'github_refresh_token' => $githubUser->refreshToken]));
+        Auth::login(User::updateOrCreate(['github_id' => $githubUser->getId()], ['email' => $githubUser->getEmail(), 'name' => $githubUser->nickname, 'github_token' => $githubUser->token, 'github_refresh_token' => $githubUser->refreshToken]));
     }
 
     return response()->redirectTo(config('app.frontend_url'), status: 301);

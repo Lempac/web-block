@@ -1,27 +1,34 @@
-export enum VisibilityType {
-	Public = "public",
-	Private = "private",
-}
+const ProjectVisibility = {
+	PUBLIC: "public",
+	PRIVATE: "private",
+} as const;
 
-export interface Project {
+export type ProjectVisibility =
+	(typeof ProjectVisibility)[keyof typeof ProjectVisibility];
+
+export type Project = {
 	readonly id: number;
 	name: string;
 	description: string;
-	visibility: VisibilityType;
-}
+	visibility: ProjectVisibility;
+};
 
-export interface User {
+type test = {
+	visibility: ProjectVisibility;
+};
+
+export type User = {
 	readonly id: number;
 	name: string;
 	email: string;
 	email_verified_at?: string;
-}
+};
 
-export interface Node {
+export type Node = {
 	readonly id: number;
-	name: string;
+	name?: string;
 	position: {
 		x: number;
 		y: number;
 	};
-}
+};
