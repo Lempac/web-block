@@ -26,7 +26,7 @@ class UpdateProjectRequest extends FormRequest
     {
         return [
             'name' => 'required|string',
-            'visibility' => 'required|in:'.implode(',', array_column(VisibilityType::cases(), 'value')),
+            // 'visibility' => 'required|in:'.implode(',', array_column(VisibilityType::cases(), 'value')),
             'description' => 'nullable|string',
         ];
     }

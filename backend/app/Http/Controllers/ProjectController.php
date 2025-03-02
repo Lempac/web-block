@@ -37,11 +37,11 @@ class ProjectController extends Controller
             /** @var Project $project */
             $repo = Admin::cloneRepository(storage_path('app/private').'/'.$name, $val['name']);
             $project = Auth::user()->projects()->create(['name' => $name, 'description' => '']);
-            $project->generateGitProject();
         } else {
             $project = Auth::user()->getGithubProject($val['name']);
             $repo = Admin::cloneRepository(storage_path('app/private').'/'.$project->name, $project->url);
         }
+        $project->generateGitProject();
         return response()->json(['message' => 'Project created successfully'], 201);
     }
 

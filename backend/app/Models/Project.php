@@ -64,6 +64,10 @@ class Project extends Model
         }
     
         foreach ($rootTree->getBlobEntries() as $name => [$mode, $blob]) {
+            if($parent === null && str_ends_with($name, '.md') && $blob->isText()){
+                $this->description = $blob->getContent();
+                $this->save();
+            }
             $newBlob = $this->blocks()->create([
                 'title' => $name,
                 'content' => $blob->getContent(),

@@ -90,12 +90,13 @@ export default function Projects() {
 						<button
 							className="btn"
 							onClick={() => createProject(repo)}
+							disabled={isCreating}
 						>
 							{repo}
 						</button>
 					</li>
 				)),
-		[createProject, repos?.data, search],
+		[createProject, isCreating, repos?.data, search],
 	);
 	const { data: projects, isSuccess } = useQuery<
 		AxiosResponse<Project[]>,
