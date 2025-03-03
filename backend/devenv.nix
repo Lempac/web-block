@@ -11,7 +11,9 @@
         xdebug.discover_client_host = 1
         xdebug.client_host = 127.0.0.1
     '';
-    #languages.javascript.enable = true;
+    
+    languages.javascript.enable = true;
+    languages.javascript.npm.enable = true;
     #languages.javascript.package = pkgs.nodejs_20;
 
     processes = {
