@@ -9,7 +9,6 @@ use Github\Client;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -42,6 +41,9 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'github_token',
+        'github_refresh_token',
+        'github_id',
     ];
 
     /**
@@ -63,11 +65,6 @@ class User extends Authenticatable
         return $this->hasMany(Project::class);
     }
 
-    public function settings(): HasOne
-    {
-        return $this->hasOne(Settings::class);
-    }
-
     public function hasGithub(): bool
     {
         return Auth::user()->github_token != null;
@@ -80,7 +77,6 @@ class User extends Authenticatable
         $client = new Client();
         $client->authenticate($this->github_id, $this->github_token, AuthMethod::CLIENT_ID);
         $repos = $client->currentUser()->repositories();
-        // dd($repos);
         return array_map(fn ($repo) => $repo["name"], $repos);
     }
 
@@ -93,7 +89,7 @@ class User extends Authenticatable
         return $this->projects()->create([
             'name' => $repo['name'],
             'description' => $repo['description'],
-            'url' => $repo['html_url']
+            'url' => $repo['html_url'],
         ]);
     }
 }

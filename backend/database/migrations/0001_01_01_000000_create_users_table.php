@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\PanelPosition;
+use App\Enums\Themes;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -22,7 +24,18 @@ return new class extends Migration
             $table->string('github_id')->nullable()->unique();
             $table->string('github_token')->nullable();
             $table->string('github_refresh_token')->nullable();
-            $table->json('settings')->default('{}');
+            $table->json('settings')->default(json_encode([
+                'hideExtensions' => true,
+                'defaultBranch' => 'master',
+                'lang' => 'en',
+                'style' => [
+                    'controlPosition' => PanelPosition::BottomLeft,
+                    'minimapPosition' => PanelPosition::BottomRight,
+                    'pathPosition' => PanelPosition::TopLeft,
+                    'baseLightTheme' => Themes::Light,
+                    'baseDarkTheme' => Themes::Dark
+                ],
+            ]));
             $table->timestamps();
         });
 
