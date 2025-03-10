@@ -8,6 +8,9 @@ const ReactCompilerConfig = {
 };
 
 export default defineConfig({
+	preview: {
+		port: 3000,
+	},
 	plugins: [
 		react({
 			babel: {
