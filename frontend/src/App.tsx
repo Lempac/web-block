@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect } from "react";
+import ELK from 'elkjs/lib/elk-api';
+import React, { useCallback, useEffect, useState } from "react";
 import {
 	addEdge,
 	Background,
@@ -21,15 +22,53 @@ import Settings, { SettingsNode } from "@/components/Settings";
 import Profile, { ProfileNode } from "@/components/Settings/Profile";
 import Theme, { ThemeNode } from "@/components/Settings/Theme";
 import Folder, { FolderNode } from "@/components/Folder";
-import { User } from "@/index";
+import { Block, User } from "@/index";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "ziggy-js";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import File, { FileNode } from "@/components/File";
 import Path from "@/components/Path";
-import NodeInspector from "./components/NodeInspector";
 import ContextMenu, { ContextMenuNode } from "@/components/ContextMenu";
+
+const elk = new ELK({workerUrl: './elk-worker.min.js'});
+
+const defaultOptions = {
+	"elk.algorithm": "layered",
+	"elk.layered.spacing.nodeNodeBetweenLayers": 100,
+	"elk.spacing.nodeNode": 80,
+};
+const useLayoutedElements = () => {
+	const { getNodes, setNodes, getEdges, fitView } = useReactFlow<CustomNodeType>();
+
+	const getLayoutedElements = useCallback((options: Record<string, unknown>) => {
+		const layoutOptions = { ...defaultOptions, ...options };
+		const graph = {
+			id: "root",
+			layoutOptions: layoutOptions,
+			children: getNodes().map((node) => ({
+				...node,
+				width: node.measured?.width,
+				height: node.measured?.height,
+			})),
+			edges: getEdges(),
+		};
+
+		elk.layout(graph).then(({ children }) => {
+			if(!children) return;
+			// By mutating the children in-place we saves ourselves from creating a
+			// needless copy of the nodes array.
+			const nodes = children.map(node => ({ position: { x: node.x, y: node.y }, ...node }));
+
+			setNodes(nodes);
+			window.requestAnimationFrame(() => {
+				fitView();
+			});
+		});
+	}, [fitView, getEdges, getNodes, setNodes]);
+
+	return { getLayoutedElements };
+};
 
 export type CustomNodeType =
 	| BuiltInNode
@@ -58,14 +97,43 @@ const nodeTypes: NodeTypes = {
 } as const;
 function App() {
 	const route = useRoute();
+	const [currentProject, setCurrentProject] = useState(0);
+	const { getLayoutedElements } = useLayoutedElements();
 	const { isSuccess } = useQuery<AxiosResponse<User>, AxiosError>({
 		queryKey: ["user"],
 		queryFn: async () => axios.get(route("user")),
 		retry: 1,
 		refetchInterval: 2 * 1000 * 60,
 	});
-	const { setNodes, setEdges, fitView, addNodes, deleteElements, screenToFlowPosition } = useReactFlow<CustomNodeType>();
+	const {
+		setNodes,
+		setEdges,
+		fitView,
+		addNodes,
+		deleteElements,
+		screenToFlowPosition,
+	} = useReactFlow<CustomNodeType>();
 	const [nodes, , onNodesChange] = useNodesState([]);
+	const { isSuccess: hasOpenProject, data: blocks } = useQuery<
+		AxiosResponse<Block[]>,
+		AxiosError
+	>({
+		queryKey: [currentProject, "blocks"],
+		queryFn: async () =>
+			axios.get(route("blocks.index", { project: currentProject })),
+		enabled: currentProject !== 0,
+	});
+	useEffect(() => {
+		if (blocks === undefined) return;
+		addNodes(
+			blocks.data.map((block) => ({
+				id: block.path,
+				type: block.is_file ? "file" : "folder",
+				data: { title: block.path, content: block.content ?? "" },
+				position: { x: block.x, y: block.y },
+			})),
+		);
+	}, [addNodes, blocks, blocks?.data, hasOpenProject]);
 
 	// Show welcome node if user is not logged in or if user is logged in shows projects node
 	useEffect(() => {
@@ -76,22 +144,7 @@ function App() {
 							id: "projects",
 							type: "projects",
 							position: { x: 0, y: 0 },
-							data: {},
-						},
-						{
-							id: "folder",
-							type: "folder",
-							position: { x: 0, y: -200 },
-							data: { name: "Test" },
-						},
-						{
-							id: "file",
-							type: "file",
-							position: { x: -200, y: 0 },
-							data: {
-								title: "Test.txt",
-								content: "Hello World!",
-							},
+							data: { currentProject, setCurrentProject },
 						},
 					]
 				: [
@@ -130,7 +183,7 @@ function App() {
 		fitView({
 			padding: isSuccess ? 1.1 : 0.1,
 		});
-	}, [fitView, isSuccess, setEdges, setNodes]);
+	}, [currentProject, fitView, isSuccess, setEdges, setNodes]);
 	const [edges, setEdgeInternal, onEdgesChange] = useEdgesState([]);
 
 	const onConnect: OnConnect = useCallback(
@@ -141,15 +194,19 @@ function App() {
 	const onPaneClick = useCallback(() => {
 		deleteElements({
 			nodes: [{ id: "context" }],
-		})
+		});
 	}, [deleteElements]);
 
 	const onPaneContextMenu = useCallback(
 		(event: React.MouseEvent | MouseEvent) => {
+			if (!isSuccess) return;
 			event.preventDefault();
 			// Calculate position of the context menu. We want to make sure it
 			// doesn't get positioned off-screen.
-			const position = screenToFlowPosition({x: event.clientX, y: event.clientY })
+			const position = screenToFlowPosition({
+				x: event.clientX,
+				y: event.clientY,
+			});
 			addNodes([
 				{
 					id: "context",
@@ -160,11 +217,13 @@ function App() {
 					},
 					data: {
 						onClick: onPaneClick,
+						currentProject,
+						setCurrentProject,
 					},
 				},
-			])
+			]);
 		},
-		[addNodes, onPaneClick, screenToFlowPosition],
+		[addNodes, currentProject, isSuccess, onPaneClick, screenToFlowPosition],
 	);
 
 	return (
@@ -191,14 +250,14 @@ function App() {
 				}}
 				proOptions={{ hideAttribution: true }}
 			>
-				{!process.env.NODE_ENV ||
-					(process.env.NODE_ENV === "development" && <NodeInspector />)}
+				{/* {!process.env.NODE_ENV ||
+					(process.env.NODE_ENV === "development" && <NodeInspector />)} */}
 				<Background variant={BackgroundVariant.Dots} />
 				{isSuccess && (
 					<>
 						<Controls />
 						<MiniMap zoomable pannable />
-						<Path path="123/123/123" />
+						{currentProject !== 0 && <Path path="123/123/123" />}
 					</>
 				)}
 			</ReactFlow>

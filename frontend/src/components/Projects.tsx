@@ -1,8 +1,8 @@
 import { useReactFlow } from "@xyflow/react";
-import type { Node } from "@xyflow/react";
+import type { Node, NodeProps } from "@xyflow/react";
 import { FaGear } from "react-icons/fa6";
 import { FaSignOutAlt } from "react-icons/fa";
-import { ProjectCard } from "@/components/ProjectCard.tsx";
+import ProjectCard from "@/components/ProjectCard.tsx";
 import { Project } from "@/index";
 import clsx from "clsx";
 import { IoIosAdd, IoMdSearch } from "react-icons/io";
@@ -10,23 +10,31 @@ import { useRoute } from "ziggy-js";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { useCallback, useState } from "react";
+import { CustomNodeType } from "@/App";
 
-export type ProjectsNode = Node<Record<never, never>, "projects">;
+export type ProjectProps = { currentProject: number, setCurrentProject: (v: number) => void };
+export type ProjectsNode = Node<ProjectProps, "projects">;
 
-export default function Projects() {
+export default function Projects({ data }: NodeProps<ProjectsNode>) {
+	const { currentProject, setCurrentProject } = data;
 	const route = useRoute();
 	const queryClient = useQueryClient();
 	const [search, setSearch] = useState("");
-	const { getNode, getNodes, getEdge, addNodes, addEdges, deleteElements } = useReactFlow();
+	const {
+		getNode,
+		getNodes,
+		addNodes,
+		deleteElements,
+	} = useReactFlow<CustomNodeType>();
 	const { data: repos } = useQuery<AxiosResponse<string[], AxiosError>>({
 		queryKey: ["repos"],
 		queryFn: async () => await axios.get(route("user.repos")),
 	});
-	
-	const { mutateAsync : createProject, isPending: isCreating } = useMutation({
+
+	const { mutateAsync: createProject, isPending: isCreating } = useMutation({
 		mutationFn: async (name: string) =>
 			await axios.post(route("projects.store"), {
-				name: name,
+				nameOrUrl: name,
 			}),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["projects"] });
@@ -112,17 +120,24 @@ export default function Projects() {
 				.filter((project) =>
 					project.name.toLowerCase().includes(search.toLowerCase()),
 				)
-				.map((project) => <ProjectCard project={project} key={project.id} />),
-		[projects?.data, search],
+				.map((project) => (
+					<ProjectCard
+						project={project}
+						key={project.id}
+						currentProject={{value: currentProject === project.id, set: setCurrentProject}}
+					/>
+				)),
+		[currentProject, projects?.data, search, setCurrentProject],
 	);
 	const toggleSettings = () => {
 		if (getNode("settings")) {
 			deleteElements({
-				nodes: getNodes()
-					.filter((node) => ["settings", "profile", "theme"].includes(node.id)),
-				edges: [getEdge("settings-projects")!],
+				nodes: getNodes().filter((node) =>
+					["settings", "profile", "theme"].includes(node.id),
+				),
 			});
 		} else {
+			//TODO: add settings resizing
 			addNodes([
 				{
 					id: "settings",
@@ -137,7 +152,7 @@ export default function Projects() {
 					data: {},
 					parentId: "settings",
 					extent: "parent",
-					expandParent: false,
+					expandParent: true,
 				},
 				{
 					id: "theme",
@@ -146,19 +161,14 @@ export default function Projects() {
 					data: {},
 					parentId: "settings",
 					extent: "parent",
-					expandParent: false,
+					expandParent: true,
 				},
 			]);
-			addEdges({
-				id: "settings-projects",
-				source: "settings",
-				target: "projects",
-			});
 		}
 	};
-
+	const filRepoLen = filteredRepos()?.length;
 	return (
-		<div className="grid gap-2 rounded-box bg-base-300 p-4 shadow">
+		<div className="grid gap-2 rounded-box bg-base-300 p-4 shadow in-[.selected]:ring-4 ring-neutral">
 			<div className="navbar gap-2 rounded-box bg-base-200 p-4">
 				<h1 className="flex-1 text-2xl font-bold">Projects</h1>
 				<div className="flex gap-2">
@@ -184,13 +194,12 @@ export default function Projects() {
 						</div>
 						<ul
 							tabIndex={0}
-							className="dropdown-content menu gap-0.5 rounded-box bg-base-100 p-2 shadow"
-						>
-							{filteredRepos()?.length === 0 ? (
-								<p>No results found.</p>
-							) : (
-								filteredRepos()
+							className={clsx(
+								"nowheel nodarg dropdown-content menu flex-nowrap gap-0.5 overflow-y-scroll rounded-box bg-base-100 p-2 shadow sm:h-32 md:h-64",
+								filRepoLen && filRepoLen < 6 && "h-auto!",
 							)}
+						>
+							{filRepoLen === 0 ? <p>No results found.</p> : filteredRepos()}
 						</ul>
 					</div>
 					<button

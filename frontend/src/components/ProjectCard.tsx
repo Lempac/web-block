@@ -1,4 +1,5 @@
 import { FaTrashCan } from "react-icons/fa6";
+import { MdOutlineOpenInNew } from "react-icons/md";
 import clsx from "clsx";
 import { Project } from "@/index";
 import { useRoute } from "ziggy-js";
@@ -21,29 +22,30 @@ import {
 	UndoRedo,
 } from "@mdxeditor/editor";
 import { headingsPlugin } from "@mdxeditor/editor";
+import { useReactFlow } from "@xyflow/react";
+import { CustomNodeType } from "@/App";
 
-export function ProjectCard({ project }: { project: Project }) {
+export default function ProjectCard({
+	project,
+	currentProject,
+}: {
+	project: Project;
+	currentProject: { value: boolean; set: (v: number) => void };
+}) {
 	const route = useRoute();
 	const queryClient = useQueryClient();
-	// const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-	// const [value, setValue] = useState<string>();
-
-	// const textAreaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-	// 	setValue(event.target.value);
-	// };
-
-	// useEffect(() => {
-	// 	if (textareaRef && textareaRef.current) {
-	// 		textareaRef.current.style.height = "0px";
-	// 		const scrollHeight = textareaRef.current.scrollHeight;
-	// 		textareaRef.current.style.height = scrollHeight + "px";
-	// 	}
-	// }, [value]);
+	const { deleteElements } = useReactFlow<CustomNodeType>();
 
 	async function deleteCard(id: number) {
 		await axios.delete(route("projects.destroy", { project: id }));
 		await queryClient.invalidateQueries({ queryKey: ["projects"] });
+	}
+
+	function openProject(id: number) {
+		currentProject.set(id);
+		deleteElements({
+			nodes: [{ id: "projects" }],
+		});
 	}
 
 	const { Field } = useForm({
@@ -74,7 +76,12 @@ export function ProjectCard({ project }: { project: Project }) {
 	});
 
 	return (
-		<div className="grid flex-none content-start gap-2 rounded-box border-2 border-base-300 p-4 shadow">
+		<div
+			className={clsx(
+				"grid flex-none content-start gap-2 rounded-box border-2 border-base-300 p-4 shadow",
+				currentProject.value && "border-8 border-double",
+			)}
+		>
 			<div className="flex gap-2">
 				<Field
 					name="name"
@@ -82,7 +89,7 @@ export function ProjectCard({ project }: { project: Project }) {
 						<input
 							type="text"
 							className={clsx(
-								"nodrag input",
+								"nodrag input grow",
 								field.state.meta.errors.length !== 0 && "input-error",
 							)}
 							value={field.state.value}
@@ -91,79 +98,61 @@ export function ProjectCard({ project }: { project: Project }) {
 						/>
 					)}
 				/>
-				{/* <form.Field
-					name="visibility"
-					children={(field) => (
-						<button
-							className={clsx(
-								"nodrag btn btn-info",
-								field.state.value === ProjectVisibility.PRIVATE &&
-									"border-2 btn-outline",
-							)}
-							onClick={() =>
-								field.state.value === VisibilityType.Private
-									? field.setValue(VisibilityType.Public)
-									: field.setValue(VisibilityType.Private)
-							}
-						>
-							{field.state.value == VisibilityType.Public ? (
-								<MdVisibility />
-							) : (
-								<MdVisibilityOff />
-							)}
-						</button>
-					)}
-				/> */}
+				<button
+					className="nodrag btn btn-outline btn-success"
+					onClick={() => openProject(project.id)}
+					title="Open project"
+				>
+					<MdOutlineOpenInNew size={20} />
+				</button>
 				<button
 					className="nodrag btn btn-outline btn-error"
 					onClick={() => deleteCard(project.id)}
+					title="Delete project"
 				>
 					<FaTrashCan />
 				</button>
 			</div>
-			<Field
-				name="description"
-				asyncDebounceMs={1000}
-				children={(field) => (
-					// <Editor height="90vh" onChange={(e) => field.handleChange(e ?? "")} defaultLanguage="markdown" defaultValue={field.state.value ?? "// some comment"} />
-					<MDXEditor
-						className="nodrag"
-						contentEditableClassName="prose"
-						onBlur={field.handleBlur}
-						onChange={(e, init) => !init && field.handleChange(e)}
-						markdown={field.state.value ?? "# some comment"}
-						plugins={[
-							toolbarPlugin({
-								toolbarContents: () => (
-									<>
-										<UndoRedo />
-										<BoldItalicUnderlineToggles />
-										<BlockTypeSelect/>
-										<CreateLink />
-										<CodeToggle/>
-									</>
-								),
-							}),
-							headingsPlugin(),
-							listsPlugin(),
-							quotePlugin(),
-							linkPlugin(),
-							codeBlockPlugin({ defaultCodeBlockLanguage: "markdown" }),
-						]}
+			<div className="collapse collapse-arrow shadow">
+				<input type="checkbox" />
+				<div className="collapse-title font-semibold">
+					Description
+				</div>
+				<div className="collapse-content shadow">
+					<Field
+						name="description"
+						asyncDebounceMs={1000}
+						children={(field) => (
+							// <Editor height="90vh" onChange={(e) => field.handleChange(e ?? "")} defaultLanguage="markdown" defaultValue={field.state.value ?? "// some comment"} />
+							<MDXEditor
+								className="nodrag"
+								contentEditableClassName="prose"
+								onBlur={field.handleBlur}
+								onChange={(e, init) => !init && field.handleChange(e)}
+								markdown={field.state.value ?? "# some comment"}
+								plugins={[
+									toolbarPlugin({
+										toolbarContents: () => (
+											<>
+												<UndoRedo />
+												<BoldItalicUnderlineToggles />
+												<BlockTypeSelect />
+												<CreateLink />
+												<CodeToggle />
+											</>
+										),
+									}),
+									headingsPlugin(),
+									listsPlugin(),
+									quotePlugin(),
+									linkPlugin(),
+									codeBlockPlugin({ defaultCodeBlockLanguage: "markdown" }),
+								]}
+							/>
+						)}
 					/>
-					// <textarea
-					// 	ref={textareaRef}
-					// 	className="nodrag textarea-bordered textarea resize-none overflow-hidden flex-none"
-					// 	value={field.state.value ?? ""}
-					// 	onBlur={field.handleBlur}
-					// 	onChange={(e) => {
-					// 		field.handleChange(e.target.value);
-					// 		textAreaChange(e);
-					// 	}}
-					// 	placeholder=""
-					// />
-				)}
-			/>
+				</div>
+			</div>
 		</div>
 	);
 }
