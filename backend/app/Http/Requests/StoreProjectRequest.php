@@ -25,7 +25,7 @@ class StoreProjectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
+            'nameOrUrl' => 'required|string',
             // 'visibility' => 'required|in:'.implode(',', array_column(VisibilityType::cases(), 'value')),
             // 'description' => 'nullable|string',
         ];

@@ -37,6 +37,8 @@ class Project extends Model
     public function generateGitProject()
     {
         $repo = new Repository(storage_path('app/private').'/'.$this->name);
+        $this->url = $repo->run('remote',['get-url', 'origin']);
+        $this->save();
         $tree = $repo->getHeadCommit()->getTree();
         $this->gitToBlocks($tree);
     }
@@ -49,15 +51,13 @@ class Project extends Model
             Storage::disk('local')->deleteDirectory($project->name);
         });
     }
-    function gitToBlocks(Tree $rootTree, ?Block $parent = null)
+    private function gitToBlocks(Tree $rootTree, ?Block $parent = null)
     {
         foreach ($rootTree->getTreeEntries() as $name => [$mode, $tree]) {
             $newRoot = $this->blocks()->create([
-                'title' => $name,
+                'path' => $name,
                 'content' => '',
-                // 'path' => $tree->resolvePath(''),
             ]);
-            // $parent?->attach($newRoot);
             $newRoot->block()->associate($parent);
             $newRoot->save();
             $this->gitToBlocks($tree, $newRoot);
@@ -69,11 +69,10 @@ class Project extends Model
                 $this->save();
             }
             $newBlob = $this->blocks()->create([
-                'title' => $name,
+                'path' => $name,
                 'content' => $blob->getContent(),
-                // 'path' => $blob,
+                // 'path' => ,
             ]);
-            // $parent?->attach($newBlob);
             $newBlob->block()->associate($parent);
             $newBlob->save();
         }

@@ -5,23 +5,16 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreBlockRequest;
 use App\Http\Requests\UpdateBlockRequest;
 use App\Models\Block;
+use App\Models\Project;
 
 class BlockController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(int $project)
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return Project::findOrFail($project)->blocks;
     }
 
     /**
@@ -29,7 +22,8 @@ class BlockController extends Controller
      */
     public function store(StoreBlockRequest $request)
     {
-        //
+        $val = $request->validated();
+
     }
 
     /**
@@ -37,15 +31,15 @@ class BlockController extends Controller
      */
     public function show(Block $block)
     {
-        //
+        return Project::findOrFail($block);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Display the specified resource childern.
      */
-    public function edit(Block $block)
+    public function showBlocks(Block $block)
     {
-        //
+        return Block::findOrFail($block)->blocks;
     }
 
     /**
@@ -53,7 +47,8 @@ class BlockController extends Controller
      */
     public function update(UpdateBlockRequest $request, Block $block)
     {
-        //
+        Block::findOrFail($block)->update($request->validated());
+        return response()->noContent();
     }
 
     /**
@@ -61,6 +56,7 @@ class BlockController extends Controller
      */
     public function destroy(Block $block)
     {
-        //
+        Block::findOrFail($block)->delete();
+        return response()->noContent();
     }
 }

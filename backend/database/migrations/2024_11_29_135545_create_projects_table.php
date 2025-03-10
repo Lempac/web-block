@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('default_branch')->default('master');
             $table->string('url')->nullable();
             $table->timestamps();
-            $table->foreignIdFor(User::class)->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignIdFor(User::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
         });
     }
 

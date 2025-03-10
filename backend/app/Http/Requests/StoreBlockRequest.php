@@ -24,7 +24,10 @@ class StoreBlockRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'x' => 'require|integer',
+            'y' => 'require|integer',
+            'path' => 'require|string',
+            'content' => 'nullable|string'
         ];
     }
 }

@@ -26,19 +26,19 @@ class ProjectController extends Controller
     {
         $val = $request->validated();
 
-        if (filter_var($val['name'], FILTER_VALIDATE_URL)) {
-            $repo = Admin::isValidRepository($val['name']);
+        if (filter_var($val['nameOrUrl'], FILTER_VALIDATE_URL)) {
+            $repo = Admin::isValidRepository($val['nameOrUrl']);
             if (! $repo) {
                 return response()->json(['error' => 'Invalid repository url'], 400);
             }
-            $parseUrl = parse_url($val['name'], PHP_URL_PATH);
+            $parseUrl = parse_url($val['nameOrUrl'], PHP_URL_PATH);
             $parseUrl = explode('/', $parseUrl);
             $name = end($parseUrl);
             /** @var Project $project */
-            $repo = Admin::cloneRepository(storage_path('app/private').'/'.$name, $val['name']);
             $project = Auth::user()->projects()->create(['name' => $name, 'description' => '']);
+            $repo = Admin::cloneRepository(storage_path('app/private').'/'.$name, $val['nameOrUrl']);
         } else {
-            $project = Auth::user()->getGithubProject($val['name']);
+            $project = Auth::user()->getGithubProject($val['nameOrUrl']);
             $repo = Admin::cloneRepository(storage_path('app/private').'/'.$project->name, $project->url);
         }
         $project->generateGitProject();
@@ -50,7 +50,7 @@ class ProjectController extends Controller
      */
     public function show(string $id)
     {
-        return response()->json(Project::findOrFail($id));
+        return Project::findOrFail($id);
     }
 
     /**
