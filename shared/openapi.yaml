@@ -1,0 +1,709 @@
+openapi: 3.1.0
+info:
+  title: 'Web-block openapi'
+  license:
+    name: MIT
+    identifier: MIT
+  version: 1.0.0
+servers:
+  -
+    url: 'http://localhost:8000/'
+    description: 'Backend server'
+paths:
+  /login:
+    post:
+      tags:
+        - auth
+      summary: 'Handle an incoming authentication request.'
+      operationId: 42f77e072dec84b0e1094cca1228298e
+      requestBody:
+        description: 'Login the user'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '204':
+          description: 'User successfully logged in.'
+        '401':
+          description: 'Error with login.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+  /logout:
+    delete:
+      tags:
+        - auth
+      summary: 'Destroy an authenticated session.'
+      operationId: c1f1a7fee7db3c314778d7d6f7d715ab
+      responses:
+        '204':
+          description: 'User successfully logged out.'
+  /auth/redirect:
+    get:
+      tags:
+        - github
+        - auth
+      operationId: 90d17f2f0d31d7f84408f6b27d7dde7e
+      responses:
+        '302':
+          description: 'Redirects to GitHub for authentication.'
+        '400':
+          description: 'GitHub client redirect not configured.'
+  /auth/callback:
+    get:
+      tags:
+        - github
+        - auth
+      operationId: 28e91517417a79e205bd570a4c5fa14f
+      responses:
+        '301':
+          description: 'Redirects to the frontend URL after authentication.'
+        '400':
+          description: 'Error during GitHub authentication.'
+  /register:
+    post:
+      tags:
+        - auth
+      summary: 'Handle an incoming registration request.'
+      operationId: 573de1fed352c1205a32c4d1b9877375
+      requestBody:
+        description: 'Create user model and login in user.'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '204':
+          description: 'User successfully registered.'
+        '401':
+          description: 'Error with registering.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+  '/api/blocks/{project}/blocks':
+    get:
+      tags:
+        - block
+      summary: 'Display a listing of the resource.'
+      operationId: 10eca818648caf716977d244ad606c5f
+      parameters:
+        -
+          name: project
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'All blocks, 1 deep, project has.'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Block'
+        '404':
+          description: 'Project not found.'
+  /api/blocks:
+    post:
+      tags:
+        - block
+      summary: 'Store a newly created resource in storage.'
+      operationId: 1dd0ffd5fff7170b9eb63bc88abafb8e
+      requestBody:
+        description: 'Name to crate the project'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreBlockRequest'
+      responses:
+        '204':
+          description: 'Block created.'
+  '/api/blocks/{block}':
+    get:
+      tags:
+        - block
+      summary: 'Display the specified resource.'
+      operationId: 620ba86a781f786819b86f7659a2ace8
+      parameters:
+        -
+          name: block
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 'Return block by id.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Block'
+        '404':
+          description: 'Block not found.'
+    put:
+      tags:
+        - block
+      summary: 'Update the specified resource in storage.'
+      operationId: 6d6ed5337b57e93ccfc607d3ae3ead93
+      parameters:
+        -
+          name: block
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'Data to update block.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBlockRequest'
+      responses:
+        '204':
+          description: 'Block updated.'
+        '401':
+          description: Unauthenticated/Invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+    delete:
+      tags:
+        - block
+      summary: 'Remove the specified resource from storage.'
+      operationId: 78f914110185aacb3dee70019e5a6e6b
+      parameters:
+        -
+          name: block
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'Block deleted.'
+    patch:
+      tags:
+        - block
+      operationId: cc10f4e526e45e01f129e6568eb2aff6
+      parameters:
+        -
+          name: block
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'Data to update block.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBlockRequest'
+      responses:
+        '204':
+          description: 'Block updated.'
+        '401':
+          description: Unauthenticated/Invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+  '/api/blocks/{block}/blocks':
+    get:
+      tags:
+        - block
+      summary: 'Display the specified resource childern.'
+      operationId: c857e2bdf63b37450c516ae264893aae
+      parameters:
+        -
+          name: block
+          in: path
+          required: true
+          schema:
+            type: interger
+      responses:
+        '200':
+          description: 'All blocks, from blocks deep.'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Block'
+        '404':
+          description: 'Project not found.'
+  /api/projects:
+    get:
+      tags:
+        - project
+      summary: 'Display a listing of the resource.'
+      operationId: 8d4a13ef3fc773ff4031e515460919ea
+      responses:
+        '200':
+          description: test
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+    post:
+      tags:
+        - project
+      summary: 'Store a newly created resource in storage.'
+      operationId: a4dd4c17bf5fc24c224357f03dcc848a
+      requestBody:
+        description: 'Name to crate the project'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreProjectRequest'
+      responses:
+        '201':
+          description: 'Project created successfully'
+          content:
+            application/json:
+              schema:
+                properties:
+                  message: { type: string }
+                type: object
+  '/api/projects/{project}':
+    get:
+      tags:
+        - project
+      summary: 'Display the specified resource.'
+      operationId: 1352e06e55f6ab10d3702509cd385918
+      parameters:
+        -
+          name: project
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: test
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+    put:
+      tags:
+        - project
+      summary: 'Update the specified resource in storage.'
+      operationId: a93b65e3037bfd5ea5cdc1b3dd11ba53
+      parameters:
+        -
+          name: project
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'Date to update project.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectRequest'
+      responses:
+        '204':
+          description: 'Project updated.'
+        '401':
+          description: Unauthenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+    delete:
+      tags:
+        - project
+      summary: 'Remove the specified resource from storage.'
+      operationId: 63c289a907902132dd95dd7ecb50143f
+      parameters:
+        -
+          name: project
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'Project deleted.'
+    patch:
+      tags:
+        - project
+      operationId: ee35632abc0168537257bd8f5baa9f30
+      parameters:
+        -
+          name: project
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: 'Date to update project.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectRequest'
+      responses:
+        '204':
+          description: 'Project updated.'
+        '401':
+          description: Unauthenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+  /api/translations:
+    get:
+      operationId: 434a55804ca50c9845bd4781c222a539
+      parameters:
+        -
+          name: locale
+          in: query
+          description: 'Set website lang.'
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: test
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LangObject'
+  /api/user:
+    get:
+      tags:
+        - user
+      operationId: 971db9bc974c0e607288cfe7ecc10096
+      responses:
+        '200':
+          description: 'User data.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+  /api/user/settings:
+    get:
+      tags:
+        - user
+      operationId: f0600d450d13d8f338e39fd52193e7a8
+      responses:
+        '200':
+          description: 'User settings.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+        '401':
+          description: Unauthenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+  /api/user/repos:
+    get:
+      tags:
+        - user
+      operationId: 395814df2599dc7a564535035ede73fb
+      responses:
+        '200':
+          description: 'User repos from github.'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '401':
+          description: Unauthenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+components:
+  schemas:
+    PanelPosition:
+      type: string
+      enum:
+        - top-left
+        - top-right
+        - top-center
+        - bottom-left
+        - bottom-center
+        - bottom-right
+    Themes:
+      type: string
+      enum:
+        - light
+        - dark
+        - cupcake
+        - bumblebee
+        - emerald
+        - corporate
+        - synthwave
+        - retro
+        - cyberpunk
+        - valentine
+        - halloween
+        - garden
+        - forest
+        - aqua
+        - lofi
+        - pastel
+        - fantasy
+        - wireframe
+        - black
+        - luxury
+        - dracula
+        - cmyk
+        - autumn
+        - business
+        - acid
+        - lemonade
+        - night
+        - coffee
+        - winter
+        - dim
+        - nord
+        - sunset
+    VisibilityType:
+      type: string
+      enum:
+        - private
+        - public
+      deprecated: true
+    RegisterRequest:
+      required:
+        - name
+      properties:
+        name:
+          type: string
+      type: object
+    ErrorObject:
+      required:
+        - message
+        - errors
+      properties:
+        message:
+          type: string
+          example: 'Validation failed.'
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+              example: 'Field is required'
+      type: object
+    LangObject:
+      type: object
+      additionalProperties:
+        oneOf:
+          -
+            type: string
+          -
+            $ref: '#/components/schemas/LangObject'
+    LoginRequest:
+      required:
+        - email
+        - password
+        - password_confirmation
+        - remember
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+        password_confirmation:
+          type: string
+          format: password
+          minLength: 8
+        remember:
+          type: boolean
+          default: true
+      type: object
+    StoreBlockRequest:
+      required:
+        - x
+        - 'y'
+        - path
+        - content
+      properties:
+        x:
+          type: integer
+        'y':
+          type: integer
+        path:
+          type: string
+        content:
+          type:
+            - string
+            - 'null'
+      type: object
+    StoreProjectRequest:
+      required:
+        - nameOrUrl
+      properties:
+        nameOrUrl:
+          type: string
+      type: object
+    UpdateBlockRequest:
+      required:
+        - x
+        - 'y'
+        - path
+        - content
+      properties:
+        x:
+          type: integer
+        'y':
+          type: integer
+        path:
+          type: string
+        content:
+          type:
+            - string
+            - 'null'
+      type: object
+    UpdateProjectRequest:
+      required:
+        - name
+        - description
+      properties:
+        name:
+          type: string
+        description:
+          type:
+            - string
+            - 'null'
+      type: object
+    Block:
+      required:
+        - id
+        - x
+        - 'y'
+        - path
+        - content
+        - is_file
+        - is_folder
+      properties:
+        id:
+          type: integer
+        x:
+          type: integer
+          default: 0
+        'y':
+          type: integer
+          default: 0
+        path:
+          type: string
+        content:
+          type: string
+        is_file:
+          type: boolean
+        is_folder:
+          type: boolean
+        block_id:
+          type:
+            - integer
+            - 'null'
+        project_id:
+          type: integer
+      type: object
+    Project:
+      required:
+        - id
+        - name
+        - description
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type:
+            - string
+            - 'null'
+        url:
+          type: string
+        user_id:
+          type: integer
+      type: object
+    Settings:
+      description: 'User settings.'
+      properties:
+        hideExtensions:
+          type: boolean
+          default: true
+        defaultBranch:
+          type: string
+          default: master
+        lang:
+          type: string
+          default: en
+        style:
+          properties:
+            controlPosition:
+              allOf:
+                -
+                  $ref: '#/components/schemas/PanelPosition'
+                -
+                  type: string
+                  default: bottom-left
+            minimapPosition:
+              $ref: '#/components/schemas/PanelPosition'
+            pathPosition:
+              $ref: '#/components/schemas/PanelPosition'
+            baseLightTheme:
+              $ref: '#/components/schemas/Themes'
+            baseDarkTheme:
+              $ref: '#/components/schemas/Themes'
+          type: object
+      type: object
+    User:
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        is_admin:
+          type: boolean
+        settings:
+          $ref: '#/components/schemas/Settings'
+      type: object
+tags:
+  -
+    name: auth
+    description: auth
+  -
+    name: github
+    description: github
+  -
+    name: block
+    description: block
+  -
+    name: project
+    description: project
+  -
+    name: user
+    description: user

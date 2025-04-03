@@ -10,7 +10,11 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use OpenApi\Attributes\{Schema, Post, Response as R, RequestBody, JsonContent, Property};
 
+#[Schema(schema: 'RegisterRequest', properties: [
+    new Property(property: 'name', type: 'string'),
+], required: [ 'name' ])]
 class RegisteredUserController extends Controller
 {
     /**
@@ -18,6 +22,12 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
+    #[Post(path: '/register', tags: ['auth'])]
+    #[RequestBody(description: 'Create user model and login in user.', required: true, content: new JsonContent(
+        ref: '#/components/schemas/RegisterRequest'
+    ))]
+    #[R(response: '204', description: 'User successfully registered.')]
+    #[R(response: '401', description: 'Error with registering.', content: new JsonContent(ref: '#/components/schemas/ErrorObject'))]
     public function store(Request $request): Response
     {
         $request->validate([

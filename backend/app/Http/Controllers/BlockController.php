@@ -4,59 +4,85 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreBlockRequest;
 use App\Http\Requests\UpdateBlockRequest;
+use App\Http\Resources\BlockResource;
 use App\Models\Block;
 use App\Models\Project;
+use OpenApi\Attributes\{Get, Response, Post, Put, Patch, JsonContent, Items, Delete, PathParameter, Schema, RequestBody};
 
 class BlockController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(int $project)
+    #[Get(path: '/api/blocks/{project}/blocks', tags: ['block'])]
+    #[PathParameter(name: 'project', required: true, schema: new Schema(type: 'integer'))]
+    #[Response(response: 200, description: 'All blocks, 1 deep, project has.', content: new JsonContent(type: 'array', items: new Items(ref: '#/components/schemas/Block')))]
+    #[Response(response: 404, description: 'Project not found.')]
+    public function index(Project $project)
     {
-        return Project::findOrFail($project)->blocks;
+        return $project->blocks;
     }
 
     /**
      * Store a newly created resource in storage.
      */
+    #[Post(path: '/api/blocks', tags: ['block'])]
+    #[RequestBody(description: 'Name to crate the project', content: new JsonContent(ref: '#/components/schemas/StoreBlockRequest'))]
+    #[Response(response: 204, description: 'Block created.')]
     public function store(StoreBlockRequest $request)
     {
-        $val = $request->validated();
-
+        Block::create($request->validated());
+        return response()->noContent();
     }
 
     /**
      * Display the specified resource.
      */
+    #[Get(path: '/api/blocks/{block}', tags: ['block'])]
+    #[PathParameter(name: 'block', required: true, schema: new Schema(type: 'integer'))]
+    #[Response(response: 200, description: 'Return block by id.', content: new JsonContent(ref: '#/components/schemas/Block'))]
+    #[Response(response: 404, description: 'Block not found.')]
     public function show(Block $block)
     {
-        return Project::findOrFail($block);
+        return $block;
     }
 
     /**
      * Display the specified resource childern.
      */
+    #[Get(path: '/api/blocks/{block}/blocks', tags: ['block'])]
+    #[PathParameter(name: 'block', required: true, schema: new Schema(type: 'interger'))]
+    #[Response(response: 200, description: 'All blocks, from blocks deep.', content: new JsonContent(type: 'array', items: new Items(ref: '#/components/schemas/Block')))]
+    #[Response(response: 404, description: 'Project not found.')]
     public function showBlocks(Block $block)
     {
-        return Block::findOrFail($block)->blocks;
+        return $block->blocks;
     }
-
+    
     /**
      * Update the specified resource in storage.
      */
+    #[Put(path: '/api/blocks/{block}', tags: ['block'])]
+    #[Patch(path: '/api/blocks/{block}', tags: ['block'])]
+    #[RequestBody(description: 'Data to update block.', content: new JsonContent(ref: '#/components/schemas/UpdateBlockRequest'))]
+    #[PathParameter(name: 'block', required: true, schema: new Schema(type: 'integer'))]
+    #[Response(response: 204, description: 'Block updated.')]
+    #[Response(response: 401, description: 'Unauthenticated/Invalid.', content: new JsonContent(ref: '#/components/schemas/ErrorObject'))]
     public function update(UpdateBlockRequest $request, Block $block)
     {
-        Block::findOrFail($block)->update($request->validated());
+        $block->update($request->validated());
         return response()->noContent();
     }
 
     /**
      * Remove the specified resource from storage.
      */
+    #[Delete(path: '/api/blocks/{block}', tags: ['block'])]
+    #[PathParameter(name: 'block', required: true, schema: new Schema(type: 'integer'))]
+    #[Response(response: 204, description: 'Block deleted.')]
     public function destroy(Block $block)
     {
-        Block::findOrFail($block)->delete();
+        $block->delete();
         return response()->noContent();
     }
 }

@@ -1,9 +1,15 @@
 import type { Node } from "@xyflow/react";
 import Resize from "../Resize";
+import { $api } from "@/bootstrap";
+import { useForm } from "@tanstack/react-form";
 
 export type ProfileNode = Node<Record<never, never>, "profile">;
 
 export default function Profile() {
+	const { data: user } = $api.useQuery("get", "/api/user");
+	const { Field } = useForm({
+		defaultValues: user,
+	});
 	return (
 		<div className="card gap-2 border-2 p-4">
 			<div className="mb-3">
@@ -11,9 +17,79 @@ export default function Profile() {
 					Profile
 				</h2>
 			</div>
-			<input className="nodrag input" />
-			<input className="nodrag input" />
-			<input className="nodrag input" />
+			<Field
+				name={"name"}
+				children={(field) => (
+					<input
+						className="nodrag input"
+						type="text"
+						id={field.name}
+						name={field.name}
+						value={field.state.value}
+						onChange={e => field.handleChange(e.target.value)}
+						onBlur={field.handleBlur}
+					/>
+				)}
+			/>
+			<Field
+				name={"email"}
+				children={(field) => (
+					<input
+						className="nodrag input"
+						type="text"
+						id={field.name}
+						name={field.name}
+						value={field.state.value}
+						onChange={e => field.handleChange(e.target.value)}
+						onBlur={field.handleBlur}
+					/>
+				)}
+			/>
+			<Field
+				name={"settings.lang"}
+				children={(field) => (
+					// <select id={field.name} name={field.name} value={field.state.value} onBlur={field.handleBlur} onChange={(e) => field.handleChange(e.target.value as components["schemas"]["Themes"])} className="nodrag select">
+					// 	{themes}
+					// </select>
+					<input
+						className="nodrag input"
+						type="text"
+						id={field.name}
+						name={field.name}
+						value={field.state.value}
+						onChange={e => field.handleChange(e.target.value)}
+						onBlur={field.handleBlur}
+					/>
+				)}
+			/>
+			<Field
+				name={"settings.defaultBranch"}
+				children={(field) => (
+					<input
+						className="nodrag input"
+						type="text"
+						id={field.name}
+						name={field.name}
+						value={field.state.value}
+						onChange={e => field.handleChange(e.target.value)}
+						onBlur={field.handleBlur}
+					/>
+				)}
+			/>
+			<Field
+				name={"settings.hideExtensions"}
+				children={(field) => (
+					<input
+						className="nodrag checkbox"
+						type="checkbox"
+						id={field.name}
+						name={field.name}
+						checked={field.state.value}
+						onChange={e => field.handleChange(e.target.checked)}
+						onBlur={field.handleBlur}
+					/>
+				)}
+			/>
 			<Resize />
 		</div>
 	);

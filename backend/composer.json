@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.4",
+        "darkaonline/l5-swagger": "^9.0",
         "gitonomy/gitlib": "^1.5",
         "graham-campbell/github": "^13.0",
         "laravel/framework": "^12.0",
@@ -13,8 +14,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.16",
         "laravel/tinker": "^2.9",
-        "socialiteproviders/github": "^4.1",
-        "tightenco/ziggy": "^2.4"
+        "socialiteproviders/github": "^4.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

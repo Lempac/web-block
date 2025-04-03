@@ -6,7 +6,12 @@ use App\Enums\VisibilityType;
 use Auth;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use OpenApi\Attributes\{Schema, Property};
 
+#[Schema(properties: [
+    new Property(property: 'name', type: 'string'),
+    new Property(property: 'description', type: 'string', nullable: true)
+], required: ['name', 'description'])]
 class UpdateProjectRequest extends FormRequest
 {
     /**

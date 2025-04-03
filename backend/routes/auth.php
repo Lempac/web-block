@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\GithubAuthController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -30,35 +31,9 @@ Route::middleware('guest')->group(function () {
     //                ->name('password.store');
     //
 });
-Route::get('/auth/redirect', function () {
-    if (empty(config('services.github.redirect'))) {
-        return response()->json(['error' => 'GitHub client redirect not configured'], 400);
-    }
+Route::get('/auth/redirect', [GithubAuthController::class, 'redirect'])->name('auth.redirect');
 
-    return Socialite::driver('github')->scopes(['repo', 'user:email'])->redirect();
-})->name('auth.redirect');
-
-Route::get('auth/callback', function () {
-    if (request()->has('error')) {
-        Log::error(request());
-
-        return redirect(config('app.frontend_url'), status: 301);
-    }
-
-    $githubUser = Socialite::driver('github')->user();
-    if (Auth::check()) {
-        if (User::where('github_id', '=', $githubUser->getId())->count('github_id') > 0) {
-            session()->flash('register-github-error', 'Already have an account with same github!');
-
-            return response()->redirectTo(config('app.frontend_url'), status: 301);
-        }
-        Auth::user()->update(['name' => $githubUser->nickname, 'github_id' => $githubUser->getId(), 'github_token' => $githubUser->token, 'github_refresh_token' => $githubUser->refreshToken]);
-    } else {
-        Auth::login(User::updateOrCreate(['github_id' => $githubUser->getId()], ['email' => $githubUser->getEmail(), 'name' => $githubUser->nickname, 'github_token' => $githubUser->token, 'github_refresh_token' => $githubUser->refreshToken]));
-    }
-
-    return response()->redirectTo(config('app.frontend_url'), status: 301);
-});
+Route::get('auth/callback', [GithubAuthController::class, 'callback']);
 
 Route::middleware('auth')->group(function () {
 
@@ -80,5 +55,5 @@ Route::middleware('auth')->group(function () {
     //
     //    Route::put('password', [PasswordController::class, 'update'])->name('password.update');
     //
-    Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+    Route::delete('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });

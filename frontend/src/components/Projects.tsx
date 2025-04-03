@@ -3,172 +3,89 @@ import type { Node, NodeProps } from "@xyflow/react";
 import { FaGear } from "react-icons/fa6";
 import { FaSignOutAlt } from "react-icons/fa";
 import ProjectCard from "@/components/ProjectCard.tsx";
-import { Project } from "@/index";
 import clsx from "clsx";
 import { IoIosAdd, IoMdSearch } from "react-icons/io";
-import { useRoute } from "ziggy-js";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios, { AxiosError, AxiosResponse } from "axios";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
-import { CustomNodeType } from "@/App";
+import { CustomNodeType } from "@/bootstrap";
+import { $api, fetchClient } from "@/bootstrap";
 
-export type ProjectProps = { currentProject: number, setCurrentProject: (v: number) => void };
+export type ProjectProps = {
+	currentProject: number;
+	setCurrentProject: (v: number) => void;
+};
 export type ProjectsNode = Node<ProjectProps, "projects">;
 
 export default function Projects({ data }: NodeProps<ProjectsNode>) {
 	const { currentProject, setCurrentProject } = data;
-	const route = useRoute();
 	const queryClient = useQueryClient();
 	const [search, setSearch] = useState("");
-	const {
-		getNode,
-		getNodes,
-		addNodes,
-		deleteElements,
-	} = useReactFlow<CustomNodeType>();
-	const { data: repos } = useQuery<AxiosResponse<string[], AxiosError>>({
-		queryKey: ["repos"],
-		queryFn: async () => await axios.get(route("user.repos")),
-	});
+	const { getNode, addNodes, deleteElements } =
+		useReactFlow<CustomNodeType>();
 
-	const { mutateAsync: createProject, isPending: isCreating } = useMutation({
-		mutationFn: async (name: string) =>
-			await axios.post(route("projects.store"), {
-				nameOrUrl: name,
-			}),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["projects"] });
-			setSearch("");
-		},
-	});
-
-	// const createProject = useMutation<string, AxiosError>(route("projects.store"), {
-	// 	onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] }),
-	// })
-
-	// async function createProject(name: string) {
-	// 	await axios
-	// 		.post<
-	// 			AxiosResponse<string>,
-	// 			AxiosError<{
-	// 				message: string;
-	// 				errors: Record<string, string[]>;
-	// 			}>
-	// 		>(route("projects.store"), {
-	// 			name,
-	// 		})
-	// 		.catch((err) => console.log(err));
-	// 	await queryClient.invalidateQueries({ queryKey: ["projects"] });
-	// }
-
-	// const newProject = useForm<Omit<Project, "id">>({
-	// 	defaultValues: {
-	// 		name: "New project",
-	// 		description: "Project with ideas",
-	// 		visibility: VisibilityType.Private,
-	// 	},
-	// 	validators: {
-	// 		onSubmitAsync: async ({ value }) => {
-	// 			const res = await axios.post(route("projects.store"), value).catch(
-	// 				(
-	// 					err: AxiosError<{
-	// 						message: string;
-	// 						errors: Record<string, string[]>;
-	// 					}>,
-	// 				) => err,
-	// 			);
-
-	// 			if (axios.isAxiosError(res) && res.response) {
-	// 				return { fields: res.response.data.errors };
-	// 			}
-
-	// 			await queryClient.invalidateQueries({ queryKey: ["projects"] });
-
-	// 			return null;
-	// 		},
-	// 	},
-	// });
+	const { data: repos } = $api.useQuery("get", "/api/user/repos");
+	const { mutateAsync: createProject, isPending: isCreating } =
+		$api.useMutation("post", "/api/projects", {
+			onSuccess: () => {
+				queryClient.invalidateQueries({ queryKey: ["get", "/api/projects"] });
+				setSearch("");
+			},
+		});
 
 	const filteredRepos = useCallback(
 		() =>
-			repos?.data
-				.filter((repo) => repo.toLowerCase().includes(search.toLowerCase()))
+			repos
+				?.filter((repo) => repo.toLowerCase().includes(search.toLowerCase()))
 				.map((repo, i) => (
 					<li key={i}>
 						<button
 							className="btn"
-							onClick={() => createProject(repo)}
+							onClick={() => createProject({ body: { nameOrUrl: repo } })}
 							disabled={isCreating}
 						>
 							{repo}
 						</button>
 					</li>
 				)),
-		[createProject, isCreating, repos?.data, search],
+		[createProject, isCreating, repos, search],
 	);
-	const { data: projects, isSuccess } = useQuery<
-		AxiosResponse<Project[]>,
-		AxiosError
-	>({
-		queryKey: ["projects"],
-		queryFn: async () => await axios.get(route("projects.index")),
-	});
-
+	const { data: projects, isSuccess } = $api.useQuery("get", "/api/projects");
 	const filteredProjects = useCallback(
 		() =>
-			projects?.data
-				.filter((project) =>
+			projects
+				?.filter((project) =>
 					project.name.toLowerCase().includes(search.toLowerCase()),
 				)
 				.map((project) => (
 					<ProjectCard
 						project={project}
 						key={project.id}
-						currentProject={{value: currentProject === project.id, set: setCurrentProject}}
+						currentProject={{
+							value: currentProject === project.id,
+							set: setCurrentProject,
+						}}
 					/>
 				)),
-		[currentProject, projects?.data, search, setCurrentProject],
+		[currentProject, projects, search, setCurrentProject],
 	);
 	const toggleSettings = () => {
 		if (getNode("settings")) {
 			deleteElements({
-				nodes: getNodes().filter((node) =>
-					["settings", "profile", "theme"].includes(node.id),
-				),
-			});
+				nodes: [{ id: "settings" }, { id: "profile" }, { id: "theme" }],
+			})
 		} else {
 			//TODO: add settings resizing
-			addNodes([
-				{
-					id: "settings",
-					type: "settings",
-					position: { x: 0, y: 0 },
-					data: {},
-				},
-				{
-					id: "profile",
-					type: "profile",
-					position: { x: 0, y: 0 },
-					data: {},
-					parentId: "settings",
-					extent: "parent",
-					expandParent: true,
-				},
-				{
-					id: "theme",
-					type: "theme",
-					position: { x: 0, y: 0 },
-					data: {},
-					parentId: "settings",
-					extent: "parent",
-					expandParent: true,
-				},
-			]);
+			addNodes({
+				id: "settings",
+				type: "settings",
+				position: { x: 0, y: 0 },
+				data: {},
+			});
 		}
 	};
 	const filRepoLen = filteredRepos()?.length;
 	return (
-		<div className="grid gap-2 rounded-box bg-base-300 p-4 shadow in-[.selected]:ring-4 ring-neutral">
+		<div className="grid gap-2 rounded-box bg-base-300 p-4 shadow ring-neutral in-[.selected]:ring-4">
 			<div className="navbar gap-2 rounded-box bg-base-200 p-4">
 				<h1 className="flex-1 text-2xl font-bold">Projects</h1>
 				<div className="flex gap-2">
@@ -179,7 +96,7 @@ export default function Projects({ data }: NodeProps<ProjectsNode>) {
 								<input
 									className=""
 									type="search"
-									placeholder=""
+									placeholder="Search for repo"
 									value={search}
 									disabled={isCreating}
 									onChange={(e) => setSearch(e.target.value)}
@@ -187,7 +104,7 @@ export default function Projects({ data }: NodeProps<ProjectsNode>) {
 							</label>
 							<button
 								className="btn join-item btn-success"
-								onClick={() => createProject(search)}
+								onClick={() => createProject({ body: { nameOrUrl: search } })}
 							>
 								<IoIosAdd size="1.5em" />
 							</button>
@@ -212,8 +129,10 @@ export default function Projects({ data }: NodeProps<ProjectsNode>) {
 					<button
 						className="nodrag btn btn-primary"
 						onClick={async () => {
-							await axios.post(route("logout"));
-							await queryClient.resetQueries({ queryKey: ["user"] });
+							await fetchClient.DELETE("/logout");
+							await queryClient.resetQueries({
+								queryKey: ["get", "/api/user"],
+							});
 						}}
 						title="Logout"
 					>
@@ -224,8 +143,8 @@ export default function Projects({ data }: NodeProps<ProjectsNode>) {
 			<div
 				className={clsx(
 					"grid min-w-max items-start gap-2 rounded-box bg-base-200 p-4",
-					projects && projects.data.length == 2 && "grid-cols-2",
-					projects && projects.data.length >= 3 && "grid-cols-3",
+					projects && projects.length == 2 && "grid-cols-2",
+					projects && projects.length >= 3 && "grid-cols-3",
 				)}
 			>
 				{isSuccess && filteredProjects()?.length === 0 ? (

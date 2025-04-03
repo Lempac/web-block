@@ -1,110 +1,86 @@
-import ELK from 'elkjs/lib/elk-api';
 import React, { useCallback, useEffect, useState } from "react";
 import {
 	addEdge,
 	Background,
 	BackgroundVariant,
-	BuiltInNode,
+	Connection,
 	Controls,
 	MiniMap,
-	NodeTypes,
-	OnConnect,
 	ReactFlow,
 	useEdgesState,
 	useNodesState,
 	useReactFlow,
+	// useStore,
 } from "@xyflow/react";
-import Auth, { AuthNode } from "@/components/Auth.tsx";
-import Projects, { ProjectsNode } from "@/components/Projects.tsx";
-import Github, { GithubNode } from "@/components/Github.tsx";
-import Welcome, { WelcomeNode } from "@/components/Welcome.tsx";
-import Settings, { SettingsNode } from "@/components/Settings";
-import Profile, { ProfileNode } from "@/components/Settings/Profile";
-import Theme, { ThemeNode } from "@/components/Settings/Theme";
-import Folder, { FolderNode } from "@/components/Folder";
-import { Block, User } from "@/index";
-import { useQuery } from "@tanstack/react-query";
-import { useRoute } from "ziggy-js";
-import axios, { AxiosError, AxiosResponse } from "axios";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import File, { FileNode } from "@/components/File";
 import Path from "@/components/Path";
-import ContextMenu, { ContextMenuNode } from "@/components/ContextMenu";
+import { $api, CustomNodeType, nodeTypes } from "./bootstrap";
+import CloseProject from "@/components/CloseProject";
+// import ELK from "elkjs/lib/elk.bundled.js";
+import { loadTranslations } from "./i18n";
 
-const elk = new ELK({workerUrl: './elk-worker.min.js'});
+// const elk = new ELK();
 
-const defaultOptions = {
-	"elk.algorithm": "layered",
-	"elk.layered.spacing.nodeNodeBetweenLayers": 100,
-	"elk.spacing.nodeNode": 80,
-};
-const useLayoutedElements = () => {
-	const { getNodes, setNodes, getEdges, fitView } = useReactFlow<CustomNodeType>();
+// const defaultOptions = {
+// 	"elk.algorithm": "layered",
+// 	"elk.layered.spacing.nodeNodeBetweenLayers": 100,
+// 	"elk.spacing.nodeNode": 80,
+// };
 
-	const getLayoutedElements = useCallback((options: Record<string, unknown>) => {
-		const layoutOptions = { ...defaultOptions, ...options };
-		const graph = {
-			id: "root",
-			layoutOptions: layoutOptions,
-			children: getNodes().map((node) => ({
-				...node,
-				width: node.measured?.width,
-				height: node.measured?.height,
-			})),
-			edges: getEdges(),
-		};
+// const useLayoutedElements = () => {
+// 	const { getNodes, setNodes, getEdges, fitView } = useReactFlow();
 
-		elk.layout(graph).then(({ children }) => {
-			if(!children) return;
-			// By mutating the children in-place we saves ourselves from creating a
-			// needless copy of the nodes array.
-			const nodes = children.map(node => ({ position: { x: node.x, y: node.y }, ...node }));
+// 	const getLayoutedElements = useCallback((options: unknown) => {
+// 		const layoutOptions = { ...defaultOptions, ...options };
+// 		const graph = {
+// 			id: "root",
+// 			layoutOptions: layoutOptions,
+// 			children: getNodes().map((node) => ({
+// 				...node,
+// 				width: node.measured?.width,
+// 				height: node.measured?.height,
+// 			})),
+// 			edges: getEdges(),
+// 		};
+// 		if (graph.children.length === 0) return;
+// 		// console.log(graph);
+// 		elk.layout(graph).then(({ children }) => {
+// 			// By mutating the children in-place we saves ourselves from creating a
+// 			// needless copy of the nodes array.
+// 			children?.forEach((node) => {
+// 				node.position = { x: node.x, y: node.y };
+// 			});
 
-			setNodes(nodes);
-			window.requestAnimationFrame(() => {
-				fitView();
-			});
-		});
-	}, [fitView, getEdges, getNodes, setNodes]);
+// 			setNodes(children);
+// 			window.requestAnimationFrame(() => {
+// 				fitView();
+// 			});
+// 		});
+// 	}, [fitView, getEdges, getNodes, setNodes]);
 
-	return { getLayoutedElements };
-};
+// 	return { getLayoutedElements };
+// };
 
-export type CustomNodeType =
-	| BuiltInNode
-	| AuthNode
-	| ProjectsNode
-	| GithubNode
-	| WelcomeNode
-	| SettingsNode
-	| ProfileNode
-	| ThemeNode
-	| FolderNode
-	| FileNode
-	| ContextMenuNode;
-
-const nodeTypes: NodeTypes = {
-	auth: Auth,
-	welcome: Welcome,
-	profile: Profile,
-	theme: Theme,
-	folder: Folder,
-	settings: Settings,
-	file: File,
-	projects: Projects,
-	github: Github,
-	contextMenu: ContextMenu,
-} as const;
 function App() {
-	const route = useRoute();
+	loadTranslations('en'); // Load default language
+	loadTranslations('lv'); // Load additional languages
+	// const { t } = useTranslation();
+	// console.log(t('failed'));
+	// const { getLayoutedElements } = useLayoutedElements();
 	const [currentProject, setCurrentProject] = useState(0);
-	const { getLayoutedElements } = useLayoutedElements();
-	const { isSuccess } = useQuery<AxiosResponse<User>, AxiosError>({
-		queryKey: ["user"],
-		queryFn: async () => axios.get(route("user")),
-		retry: 1,
-		refetchInterval: 2 * 1000 * 60,
-	});
+
+	const { isSuccess, data: user } = $api.useQuery(
+		"get",
+		"/api/user",
+		{},
+		{
+			retry: 1,
+			refetchInterval: 2 * 1000 * 60,
+			//HACK: so we doest have two cache for user("get","/api/user",{})
+			queryKey: ["get", "/api/user"],
+		},
+	);
+
 	const {
 		setNodes,
 		setEdges,
@@ -113,30 +89,41 @@ function App() {
 		deleteElements,
 		screenToFlowPosition,
 	} = useReactFlow<CustomNodeType>();
-	const [nodes, , onNodesChange] = useNodesState([]);
-	const { isSuccess: hasOpenProject, data: blocks } = useQuery<
-		AxiosResponse<Block[]>,
-		AxiosError
-	>({
-		queryKey: [currentProject, "blocks"],
-		queryFn: async () =>
-			axios.get(route("blocks.index", { project: currentProject })),
-		enabled: currentProject !== 0,
-	});
+	const [nodes, , onNodesChange] = useNodesState<CustomNodeType>([]);
+	const [edges, setEdgeInternal, onEdgesChange] = useEdgesState([]);
+	// const r = useKeyPress('r');
+	// useEffect(() => {
+	// 	if(r === false) return;
+	// 	getLayoutedElements({
+	// 	'elk.algorithm': 'org.eclipse.elk.radial',
+	// })}, [r]);
+	const { isSuccess: hasOpenProject, data: blocks } = $api.useQuery(
+		"get",
+		"/api/blocks/{project}/blocks",
+		{
+			params: {
+				path: {
+					project: currentProject,
+				},
+			},
+		},
+		{ enabled: currentProject !== 0 },
+	);
 	useEffect(() => {
 		if (blocks === undefined) return;
 		addNodes(
-			blocks.data.map((block) => ({
-				id: block.path,
+			blocks.map((block) => ({
+				id: block.id.toString(),
 				type: block.is_file ? "file" : "folder",
-				data: { title: block.path, content: block.content ?? "" },
+				data: { },
 				position: { x: block.x, y: block.y },
 			})),
 		);
-	}, [addNodes, blocks, blocks?.data, hasOpenProject]);
+	}, [addNodes, blocks, hasOpenProject]);
 
 	// Show welcome node if user is not logged in or if user is logged in shows projects node
 	useEffect(() => {
+		// if(isSuccess) document.documentElement.setAttribute('data-theme', user.settings?.style?.baseLightTheme ?? '')
 		setNodes(
 			isSuccess
 				? [
@@ -184,10 +171,9 @@ function App() {
 			padding: isSuccess ? 1.1 : 0.1,
 		});
 	}, [currentProject, fitView, isSuccess, setEdges, setNodes]);
-	const [edges, setEdgeInternal, onEdgesChange] = useEdgesState([]);
 
-	const onConnect: OnConnect = useCallback(
-		(connection) => setEdgeInternal((eds) => addEdge(connection, eds)),
+	const onConnect = useCallback(
+		(connection: Connection) => setEdgeInternal((eds) => addEdge(connection, eds)),
 		[setEdgeInternal],
 	);
 
@@ -199,7 +185,7 @@ function App() {
 
 	const onPaneContextMenu = useCallback(
 		(event: React.MouseEvent | MouseEvent) => {
-			if (!isSuccess) return;
+			// if (!isSuccess) return;
 			event.preventDefault();
 			// Calculate position of the context menu. We want to make sure it
 			// doesn't get positioned off-screen.
@@ -223,7 +209,7 @@ function App() {
 				},
 			]);
 		},
-		[addNodes, currentProject, isSuccess, onPaneClick, screenToFlowPosition],
+		[addNodes, currentProject, onPaneClick, screenToFlowPosition],
 	);
 
 	return (
@@ -255,9 +241,14 @@ function App() {
 				<Background variant={BackgroundVariant.Dots} />
 				{isSuccess && (
 					<>
-						<Controls />
-						<MiniMap zoomable pannable />
-						{currentProject !== 0 && <Path path="123/123/123" />}
+						<Controls position={user.settings?.style?.controlPosition} />
+						<MiniMap zoomable pannable position={user.settings?.style?.minimapPosition} />
+						{currentProject !== 0 && (
+							<>
+								<CloseProject position="top-left" />
+								<Path path="123/123/123" position={user.settings?.style?.pathPosition} />
+							</>
+						)}
 					</>
 				)}
 			</ReactFlow>

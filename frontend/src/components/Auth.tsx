@@ -3,15 +3,13 @@ import type { Node } from "@xyflow/react";
 import { useState } from "react";
 import clsx from "clsx";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa6";
-import { useRoute } from "ziggy-js";
 import { useForm } from "@tanstack/react-form";
-import axios, { AxiosError } from "axios";
 import { useQueryClient } from "@tanstack/react-query";
+import { fetchClient } from "@/bootstrap";
 
 export type AuthNode = Node<Record<never, never>, "auth">;
 
 export default function Auth() {
-	const route = useRoute();
 	const queryClient = useQueryClient();
 	const [toggle, setToggle] = useState(false);
 	const form = useForm({
@@ -24,20 +22,14 @@ export default function Auth() {
 		},
 		validators: {
 			onSubmitAsync: async ({ value }) => {
-				const res = await axios
-					.post(route(toggle ? "register" : "login"), value)
-					.catch(
-						(
-							err: AxiosError<{
-								message: string;
-								errors: Record<string, string[]>;
-							}>,
-						) => err,
-					);
-				if (axios.isAxiosError(res) && res.response) {
-					return { fields: res.response.data.errors };
-				}
-				queryClient.invalidateQueries({ queryKey: ["user"] });
+				const { error } = await fetchClient.POST(
+					toggle ? "/register" : "/login",
+					{
+						body: value,
+					},
+				);
+				if (error) return { fields: error.errors };
+				queryClient.invalidateQueries({ queryKey: ["get", "/api/user", {}] });
 				return null;
 			},
 		},
@@ -66,7 +58,7 @@ export default function Auth() {
 					}}
 					title={toggle ? "To login" : "To register"}
 				>
-					{toggle ? <FaArrowLeft /> : <FaArrowRight />}
+					{toggle ? <><FaArrowLeft /> Login</> : <>Register<FaArrowRight /></>}
 				</button>
 			</div>
 
@@ -83,7 +75,7 @@ export default function Auth() {
 										id={field.name}
 										name={field.name}
 										value={field.state.value}
-										placeholder=""
+										placeholder="Enter your name"
 										onChange={(e) => field.handleChange(e.target.value)}
 										className={clsx(
 											"nodrag input input-sm",
@@ -93,8 +85,8 @@ export default function Auth() {
 								</label>
 								{field.state.meta.errors.length !== 0 && (
 									<div className="flex flex-col">
-										{field.state.meta.errors.flat().map((x) => (
-											<div className="fieldset-label text-error">{x}</div>
+										{field.state.meta.errors.flat().map((x, i) => (
+											<div key={i} className="fieldset-label text-error">{x}</div>
 										))}
 									</div>
 								)}
@@ -113,7 +105,7 @@ export default function Auth() {
 									id={field.name}
 									name={field.name}
 									value={field.state.value}
-									placeholder=""
+									placeholder="Enter your email"
 									onChange={(e) => field.handleChange(e.target.value)}
 									className={clsx(
 										"nodrag input input-sm",
@@ -123,8 +115,8 @@ export default function Auth() {
 							</label>
 							{field.state.meta.errors.length !== 0 && (
 								<div className="text-error">
-									{field.state.meta.errors.flat().map((x) => (
-										<div className="flex flex-wrap">{x}</div>
+									{field.state.meta.errors.flat().map((x, i) => (
+										<div key={i} className="flex flex-wrap">{x}</div>
 									))}
 								</div>
 							)}
@@ -142,7 +134,7 @@ export default function Auth() {
 									id={field.name}
 									name={field.name}
 									value={field.state.value}
-									placeholder=""
+									placeholder="Enter your password"
 									onChange={(e) => field.handleChange(e.target.value)}
 									className={clsx(
 										"nodrag input input-sm",
@@ -152,8 +144,8 @@ export default function Auth() {
 							</label>
 							{field.state.meta.errors.length !== 0 && (
 								<div className="flex flex-col">
-									{field.state.meta.errors.flat().map((x) => (
-										<div className="fieldset-label text-error">{x}</div>
+									{field.state.meta.errors.flat().map((x, i) => (
+										<div key={i} className="fieldset-label text-error">{x}</div>
 									))}
 								</div>
 							)}
@@ -172,7 +164,7 @@ export default function Auth() {
 										id={field.name}
 										name={field.name}
 										value={field.state.value}
-										placeholder=""
+										placeholder="Re-enter your password"
 										onChange={(e) => field.handleChange(e.target.value)}
 										className={clsx(
 											"nodrag input input-sm",
@@ -182,8 +174,8 @@ export default function Auth() {
 								</label>
 								{field.state.meta.errors.length !== 0 && (
 									<div className="flex flex-row text-error">
-										{field.state.meta.errors.flat().map((x) => (
-											<div className="flex flex-wrap">{x}</div>
+										{field.state.meta.errors.flat().map((x, i) => (
+											<div key={i} className="flex flex-wrap">{x}</div>
 										))}
 									</div>
 								)}

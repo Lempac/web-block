@@ -1,5 +1,9 @@
-import { CustomNodeType } from "@/App";
-import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
+import { $api, CustomNodeType } from "@/bootstrap";
+import {
+	useReactFlow,
+	type Node,
+	type NodeProps,
+} from "@xyflow/react";
 import { VscNewFile, VscNewFolder } from "react-icons/vsc";
 import { ProjectProps } from "@/components/Projects";
 
@@ -8,63 +12,59 @@ export type ContextMenuNode = Node<
 	"contextMenu"
 >;
 
-export default function ContextMenu({ data }: NodeProps<ContextMenuNode>) {
+export default function ContextMenu({
+	positionAbsoluteX,
+	positionAbsoluteY,
+	data,
+}: NodeProps<ContextMenuNode>) {
 	const { currentProject, setCurrentProject } = data;
-	const { addNodes, getNode, updateNode } = useReactFlow<CustomNodeType>();
+	const { addNodes, updateNode, getNode } = useReactFlow<CustomNodeType>();
+	const { isSuccess } = $api.useQuery("get", "/api/user");
+	const projects = getNode("projects");
+	const settings = getNode("settings");
+	// console.log(projects, settings);
+	
+	const addFile = () =>
+		addNodes({
+			id: crypto.randomUUID(),
+			type: "file",
+			data: { id: -1 },
+			position: { x: positionAbsoluteX, y: positionAbsoluteY },
+		});
 
-	function showProjects() {
-		const projects = getNode("projects");
-		const contextMenu = getNode("context");
-		if (!contextMenu) return;
-		if (!projects)
-			addNodes({
-				id: "projects",
-				type: "projects",
-				position: contextMenu.position,
-				data: { currentProject, setCurrentProject },
-			});
-		else
-			updateNode(projects.id, {
-				position: contextMenu.position,
-			});
-	}
+	const addFolder = () =>
+		addNodes({
+			id: crypto.randomUUID(),
+			type: "folder",
+			data: { id: -1 },
+			position: { x: positionAbsoluteX, y: positionAbsoluteY },
+		});
 
-	function showSettings() {
-		const settings = getNode("settings");
-		const contextMenu = getNode("context");
-		if (!contextMenu) return;
-		if (!settings) {
-			addNodes([
-				{
-					id: "settings",
-					type: "settings",
-					position: contextMenu.position,
-					data: {},
-				},
-				{
-					id: "profile",
-					type: "profile",
-					position: { x: 0, y: 0 },
-					data: {},
-					parentId: "settings",
-					extent: "parent",
-					expandParent: false,
-				},
-				{
-					id: "theme",
-					type: "theme",
-					position: { x: 0, y: 0 },
-					data: {},
-					parentId: "settings",
-					extent: "parent",
-					expandParent: false,
-				},
-			]);
-		} else
-			updateNode(settings.id, {
-				position: contextMenu.position,
-			});
-	}
+	const showProjects = () =>
+		projects
+			? updateNode(projects.id, {
+					position: { x: positionAbsoluteX, y: positionAbsoluteY },
+				})
+			: addNodes({
+					id: "projects",
+					type: "projects",
+					position: { x: positionAbsoluteX, y: positionAbsoluteY },
+					data: { currentProject, setCurrentProject },
+				});
+
+	const showSettings = () =>
+		settings
+			? updateNode(settings.id, {
+					position: { x: positionAbsoluteX, y: positionAbsoluteY },
+				})
+			: addNodes([
+					{
+						id: "settings",
+						type: "settings",
+						position: { x: positionAbsoluteX, y: positionAbsoluteY },
+						data: {},
+					},
+				]);
 
 	return (
 		<div className="card gap-1 bg-base-300 p-2 shadow" onClick={data.onClick}>
@@ -77,23 +77,25 @@ export default function ContextMenu({ data }: NodeProps<ContextMenuNode>) {
 					className="dropdown-content menu gap-y-1 rounded-box bg-base-100 p-2 shadow-sm"
 				>
 					<li>
-						<button className="btn">
+						<button className="nodrag btn" onClick={addFile}>
 							File
 							<VscNewFile />
 						</button>
 					</li>
 					<li>
-						<button className="btn">
+						<button className="nodrag btn" onClick={addFolder}>
 							Folder
 							<VscNewFolder />
 						</button>
 					</li>
 				</ul>
 			</div>
-			<button className="btn" onClick={showProjects}>
-				Show projects
-			</button>
-			<button className="btn" onClick={showSettings}>
+			{isSuccess && (
+				<button className="nodrag btn" onClick={showProjects}>
+					Show projects
+				</button>
+			)}
+			<button className="nodrag btn" onClick={showSettings}>
 				Show settings
 			</button>
 		</div>

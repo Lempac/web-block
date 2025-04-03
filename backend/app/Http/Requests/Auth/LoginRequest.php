@@ -9,7 +9,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-
+use OpenApi\Attributes\{Schema, Property};
+#[Schema(properties: [
+    new Property(property: 'email', type: 'string', format: 'email'),
+    new Property(property: 'password', type: 'string', format: 'password', minLength: 8),
+    new Property(property: 'password_confirmation', type: 'string', format: 'password', minLength: 8),
+    new Property(property: 'remember', type: 'boolean', default: true),
+], required: [ 'email', 'password', 'password_confirmation', 'remember' ])]
 class LoginRequest extends FormRequest
 {
     /**

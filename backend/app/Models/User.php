@@ -11,12 +11,43 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use OpenApi\Attributes\{Schema, Property};
+use App\Enums\{PanelPosition, Themes};
+// 'hideExtensions' => true,
+// 'defaultBranch' => 'master',
+// 'lang' => 'en',
+// 'style' => [
+//     'controlPosition' => PanelPosition::BottomLeft,
+//     'minimapPosition' => PanelPosition::BottomRight,
+//     'pathPosition' => PanelPosition::TopLeft,
+//     'baseLightTheme' => Themes::Light,
+//     'baseDarkTheme' => Themes::Dark
+// ],
 
+//TODO: fix settings enum to have a default value
+#[Schema(schema: 'Settings', description: 'User settings.', properties: [
+    new Property(property: 'hideExtensions', type: 'boolean', default: true),
+    new Property(property: 'defaultBranch', type: 'string', default: 'master'),
+    new Property(property: 'lang', type: 'string', default: 'en'),
+    new Property(property: 'style', properties: [ 
+        new Property(property: 'controlPosition', allOf: [new Schema(ref: '#/components/schemas/PanelPosition'), new Schema(type: 'string', default: 'bottom-left')]),
+        new Property(property: 'minimapPosition', ref: '#/components/schemas/PanelPosition'),
+        new Property(property: 'pathPosition', ref: '#/components/schemas/PanelPosition'),
+        new Property(property: 'baseLightTheme', ref: '#/components/schemas/Themes'),
+        new Property(property: 'baseDarkTheme', ref: '#/components/schemas/Themes'),
+    ]),
+])]
+#[Schema(properties: [
+    new Property(property: 'name', type: 'string'),
+    new Property(property: 'email', type: 'string'),
+    new Property(property: 'is_admin', type: 'boolean'),
+    new Property(property: 'settings', ref: '#/components/schemas/Settings'),
+], required: [ 'name', 'email' ])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
-
+    
     /**
      * The attributes that are mass assignable.
      *
@@ -86,6 +117,7 @@ class User extends Authenticatable
         $client = new Client();
         $client->authenticate($this->github_id, $this->github_token, AuthMethod::CLIENT_ID);
         $repo = $client->repo()->show($this->name, $repoName);
+
         return $this->projects()->create([
             'name' => $repo['name'],
             'description' => $repo['description'],

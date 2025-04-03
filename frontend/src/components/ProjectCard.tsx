@@ -1,10 +1,7 @@
 import { FaTrashCan } from "react-icons/fa6";
 import { MdOutlineOpenInNew } from "react-icons/md";
 import clsx from "clsx";
-import { Project } from "@/index";
-import { useRoute } from "ziggy-js";
 import { useForm } from "@tanstack/react-form";
-import axios, { AxiosError } from "axios";
 import { useQueryClient } from "@tanstack/react-query";
 // import { useEffect, useRef, useState } from "react";
 // import Editor from "@monaco-editor/react";
@@ -23,22 +20,29 @@ import {
 } from "@mdxeditor/editor";
 import { headingsPlugin } from "@mdxeditor/editor";
 import { useReactFlow } from "@xyflow/react";
-import { CustomNodeType } from "@/App";
+import { CustomNodeType } from "@/bootstrap";
+import { fetchClient } from "@/bootstrap";
+import { components } from "@/api";
 
 export default function ProjectCard({
 	project,
 	currentProject,
 }: {
-	project: Project;
+	project: components["schemas"]["Project"];
 	currentProject: { value: boolean; set: (v: number) => void };
 }) {
-	const route = useRoute();
 	const queryClient = useQueryClient();
 	const { deleteElements } = useReactFlow<CustomNodeType>();
 
 	async function deleteCard(id: number) {
-		await axios.delete(route("projects.destroy", { project: id }));
-		await queryClient.invalidateQueries({ queryKey: ["projects"] });
+		await fetchClient.DELETE("/api/projects/{project}", {
+			params: {
+				path: {
+					project: id,
+				},
+			},
+		});
+		await queryClient.invalidateQueries({ queryKey: ["get", "/api/projects"] });
 	}
 
 	function openProject(id: number) {
@@ -53,22 +57,20 @@ export default function ProjectCard({
 		validators: {
 			onChangeAsyncDebounceMs: 500,
 			onChangeAsync: async ({ value }) => {
-				const res = await axios
-					.patch(route("projects.update", { id: value.id! }), value)
-					.catch(
-						(
-							err: AxiosError<{
-								message: string;
-								errors: Record<string, string[]>;
-							}>,
-						) => err,
-					);
+				const { error } = await fetchClient.PUT("/api/projects/{project}", {
+					params: {
+						path: {
+							project: value.id,
+						},
+					},
+					credentials: "include",
+					body: { name: value.name, description: value.description },
+				});
+				if (error) return { fields: error.errors };
 
-				if (axios.isAxiosError(res) && res.response) {
-					return { fields: res.response.data.errors };
-				}
-
-				await queryClient.invalidateQueries({ queryKey: ["projects"] });
+				await queryClient.invalidateQueries({
+					queryKey: ["get", "/api/projects"],
+				});
 
 				return null;
 			},
@@ -113,11 +115,9 @@ export default function ProjectCard({
 					<FaTrashCan />
 				</button>
 			</div>
-			<div className="collapse collapse-arrow shadow">
+			<div className="collapse-arrow collapse shadow">
 				<input type="checkbox" />
-				<div className="collapse-title font-semibold">
-					Description
-				</div>
+				<div className="collapse-title font-semibold">Description</div>
 				<div className="collapse-content shadow">
 					<Field
 						name="description"

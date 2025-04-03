@@ -8,7 +8,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use OpenApi\Attributes\{Schema, Property};
 
+#[Schema(properties: [
+    new Property(property: 'id', type: 'integer'),
+    new Property(property: 'x', type: 'integer', default: 0),
+    new Property(property: 'y', type: 'integer', default: 0),
+    new Property(property: 'path', type: 'string'),
+    new Property(property: 'content', type: 'string'),
+    new Property(property: 'is_file', type: 'boolean'),
+    new Property(property: 'is_folder', type: 'boolean'),
+    new Property(property: 'block_id', type: 'integer', nullable: true),
+    new Property(property: 'project_id', type: 'integer'),
+], required: [ 'id', 'x', 'y', 'path', 'content', 'is_file', 'is_folder' ])]
 class Block extends Model
 {
     /** @use HasFactory<BlockFactory> */
@@ -29,7 +41,8 @@ class Block extends Model
         'path',
         'content',
         'block_id',
-        'project_id'
+        'project_id',
+        'mimetype',
     ];
 
     public function project(): BelongsTo

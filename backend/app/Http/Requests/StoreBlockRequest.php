@@ -5,7 +5,14 @@ namespace App\Http\Requests;
 use Auth;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use OpenApi\Attributes\{Schema, Property};
 
+#[Schema(properties: [
+    new Property(property: 'x', type: 'integer'),
+    new Property(property: 'y', type: 'integer'),
+    new Property(property: 'path', type: 'string'),
+    new Property(property: 'content', type: 'string', nullable: true)
+], required: ['x', 'y', 'path', 'content'])]
 class StoreBlockRequest extends FormRequest
 {
     /**

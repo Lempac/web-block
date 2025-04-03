@@ -10,7 +10,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Storage;
+use OpenApi\Attributes\{Schema, Property};
 
+#[Schema(properties: [
+    new Property(property: 'id', type: 'integer'),
+    new Property(property: 'name', type: 'string'),
+    new Property(property: 'description', type: 'string', nullable: true),
+    new Property(property: 'url', type: 'string'),
+    new Property(property: 'user_id', type: 'integer'),
+], required: [ 'id', 'name', 'description' ])]
 class Project extends Model
 {
     /** @use HasFactory<ProjectFactory> */
@@ -71,6 +79,7 @@ class Project extends Model
             $newBlob = $this->blocks()->create([
                 'path' => $name,
                 'content' => $blob->getContent(),
+                'mimetype' => $blob->getMimetype(),
                 // 'path' => ,
             ]);
             $newBlob->block()->associate($parent);

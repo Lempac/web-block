@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('path');
             $table->integer('x')->default(0);
             $table->integer('y')->default(0);
-            $table->string('content');
+            $table->string('content')->nullable();
+            $table->string('mimeType');
             $table->timestamps();
 
             $table->foreignIdFor(Block::class)->nullable()->constrained()->cascadeOnDelete()->cascadeOnUpdate();

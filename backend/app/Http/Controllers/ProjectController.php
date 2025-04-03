@@ -8,12 +8,16 @@ use App\Models\Project;
 use Auth;
 use Gitonomy\Git\Admin;
 use Gitonomy\Git\Repository;
+use OpenApi\Attributes\{Get, Response, Post, Put, Patch, Delete, RequestBody, JsonContent, Property, Items, PathParameter, Schema};
+
 
 class ProjectController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+    #[Get(path: '/api/projects', tags: ['project'])]
+    #[Response(response: 200, description: 'test', content: new JsonContent(type: 'array', items: new Items(ref: '#/components/schemas/Project')))]
     public function index()
     {
         return Auth::user()->projects;
@@ -22,6 +26,11 @@ class ProjectController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    #[Post(path: '/api/projects', tags: ['project'])]
+    #[RequestBody(description: 'Name to crate the project', content: new JsonContent(ref: '#/components/schemas/StoreProjectRequest'))]
+    #[Response(response: 201, description: 'Project created successfully', content: new JsonContent(properties:[
+        new Property(property: 'message', type: 'string')
+    ]))]
     public function store(StoreProjectRequest $request)
     {
         $val = $request->validated();
@@ -38,6 +47,7 @@ class ProjectController extends Controller
             $project = Auth::user()->projects()->create(['name' => $name, 'description' => '']);
             $repo = Admin::cloneRepository(storage_path('app/private').'/'.$name, $val['nameOrUrl']);
         } else {
+            //TODO: add logic for if user input a name for new project
             $project = Auth::user()->getGithubProject($val['nameOrUrl']);
             $repo = Admin::cloneRepository(storage_path('app/private').'/'.$project->name, $project->url);
         }
@@ -47,27 +57,40 @@ class ProjectController extends Controller
 
     /**
      * Display the specified resource.
+     * 
      */
-    public function show(string $id)
+    #[Get(path: '/api/projects/{project}', tags: ['project'])]
+    #[PathParameter(name: 'project', required: true, schema: new Schema(type: 'integer'))]
+    #[Response(response: 200, description: 'test', content: new JsonContent(ref: '#/components/schemas/Project'))]
+    public function show(Project $project)
     {
-        return Project::findOrFail($id);
+        return $project;
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateProjectRequest $request, string $id)
+    #[Put(path: '/api/projects/{project}', tags: ['project'])]
+    #[Patch(path: '/api/projects/{project}', tags: ['project'])]
+    #[PathParameter(name: 'project', required: true, schema: new Schema(type: 'integer'))]
+    #[RequestBody(description: 'Date to update project.', content: new JsonContent(ref: '#/components/schemas/UpdateProjectRequest'))]
+    #[Response(response: 204, description: 'Project updated.')]
+    #[Response(response: 401, description: 'Unauthenticated.', content: new JsonContent(ref: '#/components/schemas/ErrorObject'))]
+    public function update(UpdateProjectRequest $request, Project $project)
     {
-        Project::findOrFail($id)->update($request->validated());
+        $project->update($request->validated());
         return response()->noContent();
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    #[Delete(path: '/api/projects/{project}', tags: ['project'])]
+    #[PathParameter(name: 'project', required: true, schema: new Schema(type: 'integer'))]
+    #[Response(response: 204, description: 'Project deleted.')]
+    public function destroy(Project $project)
     {
-        Project::findOrFail($id)->delete();
+        $project->delete();
         return response()->noContent();
     }
 }

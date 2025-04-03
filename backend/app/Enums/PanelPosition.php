@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Enums;
+use OpenApi\Attributes\{Schema};
 
+#[Schema(type: 'string')]
 enum PanelPosition: string
 {
     case TopLeft = "top-left";
