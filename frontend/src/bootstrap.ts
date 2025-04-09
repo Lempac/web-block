@@ -1,18 +1,18 @@
-import createFetchClient, { Middleware } from "openapi-fetch";
+import createFetchClient, { type Middleware } from "openapi-fetch";
 import createClient from "openapi-react-query";
-import { type components, paths } from "./api";
-import { BuiltInNode, NodeTypes } from "@xyflow/react";
-import Auth, { AuthNode } from "./components/Auth";
-import ContextMenu, { ContextMenuNode } from "./components/ContextMenu";
-import File, { FileNode } from "./components/File";
-import Folder, { FolderNode } from "./components/Folder";
-import Github, { GithubNode } from "./components/Github";
-import Projects, { ProjectsNode } from "./components/Projects";
-import Settings, { SettingsNode } from "./components/Settings";
-import Profile, { ProfileNode } from "./components/Settings/Profile";
-import Theme, { ThemeNode } from "./components/Settings/Theme";
-import Welcome, { WelcomeNode } from "./components/Welcome";
-import { useState, useEffect } from "react";
+import type { components, paths } from "./api";
+import type { BuiltInNode, NodeTypes, BuiltInEdge, Edge } from "@xyflow/react";
+import Auth, { type AuthNode } from "./components/Auth";
+import ContextMenu, { type ContextMenuNode } from "./components/ContextMenu";
+import File, { type FileNode } from "./components/File";
+import Folder, { type FolderNode } from "./components/Folder";
+import Github, { type GithubNode } from "./components/Github";
+import Projects, { type ProjectsNode } from "./components/Projects";
+import Settings, { type SettingsNode } from "./components/Settings";
+import Profile, { type ProfileNode } from "./components/Settings/Profile";
+import Theme, { type ThemeNode } from "./components/Settings/Theme";
+import Welcome, { type WelcomeNode } from "./components/Welcome";
+import QuickCommand, { type QuickCommandNode } from "./components/QuickCommand";
 
 export const BASE_URL = "http://localhost:8000";
 // import axios from "axios";
@@ -25,33 +25,34 @@ export const BASE_URL = "http://localhost:8000";
 
 // window.Ziggy = Ziggy;
 
-// export const theme = use(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; 
-export const usePreferredColorScheme = () => {
-	const [theme, setTheme] = useState(() => {
-	  // Check the initial preference
-	  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-	});
-  
-	useEffect(() => {
-	  const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-  
-	  // Function to handle changes in the color scheme
-	  const handleChange = (e: MediaQueryListEvent) => {
-		setTheme(e.matches ? "dark" : "light");
-	  };
-  
-	  // Set up the event listener
-	  mediaQuery.addEventListener('change', handleChange);
-  
-	  // Clean up the event listener on component unmount
-	  return () => {
-		mediaQuery.removeEventListener('change', handleChange);
-	  };
-	}, []);
-  
-	return theme;
-  };
+// export const theme = use(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+// export const usePreferredColorScheme = () => {
+// 	const [theme, setTheme] = useState(() => {
+// 		// Check the initial preference
+// 		return window.matchMedia("(prefers-color-scheme: dark)").matches
+// 			? "dark"
+// 			: "light";
+// 	});
 
+// 	useEffect(() => {
+// 		const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+// 		// Function to handle changes in the color scheme
+// 		const handleChange = (e: MediaQueryListEvent) => {
+// 			setTheme(e.matches ? "dark" : "light");
+// 		};
+
+// 		// Set up the event listener
+// 		mediaQuery.addEventListener("change", handleChange);
+
+// 		// Clean up the event listener on component unmount
+// 		return () => {
+// 			mediaQuery.removeEventListener("change", handleChange);
+// 		};
+// 	}, []);
+
+// 	return theme;
+// };
 
 function getCookie(name: string) {
 	const value = `; ${document.cookie}`;
@@ -82,7 +83,6 @@ const myMiddleware: Middleware = {
 
 fetchClient.use(myMiddleware);
 export const $api = createClient(fetchClient);
-
 export const fileExtensionMap = {
 	js: "javascript",
 	py: "python",
@@ -111,8 +111,52 @@ export const fileExtensionMap = {
 	nix: "nix",
 } as const;
 
-export const themeToSet = () => new Set<components["schemas"]["Themes"]>(["acid", "aqua", "autumn", "black", "bumblebee", "business", "cmyk", "coffee", "corporate", "cupcake", "cyberpunk", "dark", "dim", "dracula", "emerald", "fantasy", "forest", "garden", "halloween", "lemonade", "light", "lofi", "luxury", "night", "nord", "pastel", "retro", "sunset", "synthwave", "valentine", "winter", "wireframe"]);
-export const panelPositionToSet = () => new Set<components["schemas"]["PanelPosition"]>(["bottom-center", "bottom-left", "bottom-right", "top-center", "top-left", "top-right"]);
+export const allowedLang = { en: "en", lv: "lv" } as const;
+
+export const themeToSet = () =>
+	new Set<components["schemas"]["Themes"]>([
+		"acid",
+		"aqua",
+		"autumn",
+		"black",
+		"bumblebee",
+		"business",
+		"cmyk",
+		"coffee",
+		"corporate",
+		"cupcake",
+		"cyberpunk",
+		"dark",
+		"dim",
+		"dracula",
+		"emerald",
+		"fantasy",
+		"forest",
+		"garden",
+		"halloween",
+		"lemonade",
+		"light",
+		"lofi",
+		"luxury",
+		"night",
+		"nord",
+		"pastel",
+		"retro",
+		"sunset",
+		"synthwave",
+		"valentine",
+		"winter",
+		"wireframe",
+	]);
+export const panelPositionToSet = () =>
+	new Set<components["schemas"]["PanelPosition"]>([
+		"bottom-center",
+		"bottom-left",
+		"bottom-right",
+		"top-center",
+		"top-left",
+		"top-right",
+	]);
 export function getLanguage(extension: string) {
 	return extension in fileExtensionMap
 		? fileExtensionMap[extension as keyof typeof fileExtensionMap]
@@ -132,8 +176,8 @@ export function getLanguage(extension: string) {
 
 export type CustomNodeType =
 	| BuiltInNode
-	| AuthNode
 	| ProjectsNode
+	| AuthNode
 	| GithubNode
 	| WelcomeNode
 	| SettingsNode
@@ -141,7 +185,8 @@ export type CustomNodeType =
 	| ThemeNode
 	| FolderNode
 	| FileNode
-	| ContextMenuNode;
+	| ContextMenuNode
+	| QuickCommandNode;
 
 export const nodeTypes: NodeTypes = {
 	auth: Auth,
@@ -154,4 +199,46 @@ export const nodeTypes: NodeTypes = {
 	projects: Projects,
 	github: Github,
 	contextMenu: ContextMenu,
+	quickCommand: QuickCommand,
 } as const;
+
+export const getPositionReletiveToParent = (
+	node: components["schemas"]["Block"],
+	nodes: components["schemas"]["Block"][],
+) => {
+	const position = { x: node.x, y: node.y }; //19
+	const parent = nodes.find((n) => n.id === node.block_id);
+	if (parent) {
+		const parentPosition = getPositionReletiveToParent(parent, nodes);
+		position.x -= parentPosition.x; //18 - 17
+		position.y -= parentPosition.y;
+	}
+	return position;
+};
+
+export const addOrUpdate = <T extends CustomNodeType | BuiltInEdge | Edge>(
+	newNodes: T | T[],
+) => {
+	return <X extends CustomNodeType | T = T>(nodes: X[]) => {
+		console.log(nodes, newNodes);
+		const groupById = Object.groupBy(
+			Array.isArray(newNodes)
+				? nodes.concat(newNodes as X[])
+				: nodes.concat([newNodes] as X[]),
+			({ id }) => id,
+		);
+		console.log(groupById);
+		if (Object.keys(groupById).length === undefined) return [];
+		Object.values(groupById as Record<string, X[]>).map((group) =>
+			group.reduce((acc, element) => {
+				console.log(acc, element);
+				return Object.assign(acc, element);
+			}),
+		);
+		return Object.values(groupById as Record<string, X[]>).map((group) =>
+			group.reduce((acc, element) => {
+				return Object.assign(acc, element);
+			}),
+		);
+	};
+};

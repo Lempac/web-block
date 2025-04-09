@@ -6,12 +6,16 @@ use App\Enums\VisibilityType;
 use Auth;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use OpenApi\Attributes\{Schema, Property};
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
 
 #[Schema(properties: [
     new Property(property: 'name', type: 'string'),
-    new Property(property: 'description', type: 'string', nullable: true)
-], required: ['name', 'description'])]
+    new Property(property: 'description', type: 'string', nullable: true),
+    new Property(property: 'x', type: 'integer'),
+    new Property(property: 'y', type: 'integer'),
+    new Property(property: 'zoom', type: 'number', format: 'float'),
+], required: ['name', 'description', 'x', 'y', 'zoom'])]
 class UpdateProjectRequest extends FormRequest
 {
     /**
@@ -33,6 +37,9 @@ class UpdateProjectRequest extends FormRequest
             'name' => 'required|string',
             // 'visibility' => 'required|in:'.implode(',', array_column(VisibilityType::cases(), 'value')),
             'description' => 'nullable|string',
+            'x' => 'required|integer',
+            'y' => 'required|integer',
+            'zoom' => 'required|numeric',
         ];
     }
 }

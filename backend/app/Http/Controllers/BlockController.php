@@ -4,10 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreBlockRequest;
 use App\Http\Requests\UpdateBlockRequest;
-use App\Http\Resources\BlockResource;
 use App\Models\Block;
 use App\Models\Project;
-use OpenApi\Attributes\{Get, Response, Post, Put, Patch, JsonContent, Items, Delete, PathParameter, Schema, RequestBody};
+use OpenApi\Attributes\Delete;
+use OpenApi\Attributes\Get;
+use OpenApi\Attributes\Items;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Patch;
+use OpenApi\Attributes\PathParameter;
+use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Put;
+use OpenApi\Attributes\RequestBody;
+use OpenApi\Attributes\Response;
+use OpenApi\Attributes\Schema;
 
 class BlockController extends Controller
 {
@@ -32,6 +41,7 @@ class BlockController extends Controller
     public function store(StoreBlockRequest $request)
     {
         Block::create($request->validated());
+
         return response()->noContent();
     }
 
@@ -58,7 +68,7 @@ class BlockController extends Controller
     {
         return $block->blocks;
     }
-    
+
     /**
      * Update the specified resource in storage.
      */
@@ -71,6 +81,7 @@ class BlockController extends Controller
     public function update(UpdateBlockRequest $request, Block $block)
     {
         $block->update($request->validated());
+
         return response()->noContent();
     }
 
@@ -83,6 +94,7 @@ class BlockController extends Controller
     public function destroy(Block $block)
     {
         $block->delete();
+
         return response()->noContent();
     }
 }

@@ -8,13 +8,14 @@
         "php": "^8.4",
         "darkaonline/l5-swagger": "^9.0",
         "gitonomy/gitlib": "^1.5",
-        "graham-campbell/github": "^13.0",
+        "guzzlehttp/guzzle": "^7.0.1",
+        "http-interop/http-factory-guzzle": "^1.0",
+        "knplabs/github-api": "^3.0",
         "laravel/framework": "^12.0",
         "laravel/reverb": "^1.0",
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.16",
-        "laravel/tinker": "^2.9",
-        "socialiteproviders/github": "^4.1"
+        "laravel/tinker": "^2.9"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

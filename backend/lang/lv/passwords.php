@@ -13,10 +13,10 @@ return [
     |
     */
 
-    'reset' => 'Your password has been reset.',
-    'sent' => 'We have emailed your password reset link.',
-    'throttled' => 'Please wait before retrying.',
-    'token' => 'This password reset token is invalid.',
-    'user' => "We can't find a user with that email address.",
+    'reset' => 'Jūsu parole tika atiestatīta.',
+    'sent' => 'Mēs esam nosūtījuši jūsu paroles atiestatīšanas saiti pa e-pastu.',
+    'throttled' => 'Lūdzu, uzgaidiet, pirms mēģināt vēlreiz.',
+    'token' => 'Šī paroles atiestatīšanas pilnvara nav derīga.',
+    'user' => 'Mēs nevaram atrast lietotāju ar šo e-pasta adresi.',
 
 ];

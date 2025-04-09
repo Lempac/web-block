@@ -1,13 +1,27 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Panel } from "@xyflow/react";
-import type { PanelPosition } from "@xyflow/react";
+import type { PanelProps } from "@xyflow/react";
 import { LuStepBack } from "react-icons/lu";
 
 export type CloseProjectProps = {
-	position: PanelPosition;
-};
+	setCurrentProject: React.Dispatch<React.SetStateAction<number>>;
+} & PanelProps;
 
-export default function CloseProject({ position }: CloseProjectProps){
-    return <Panel position={position}>
-        <button className="btn"><LuStepBack /></button>
-    </Panel>;
+export default function CloseProject({
+	position,
+	setCurrentProject,
+}: CloseProjectProps) {
+	const queryClient = useQueryClient();
+	const handleClick = () => {
+		setCurrentProject(0);
+		queryClient.invalidateQueries({ queryKey: ["get", "/api/projects"] });
+	};
+
+	return (
+		<Panel position={position}>
+			<button className="btn" onClick={handleClick}>
+				<LuStepBack />
+			</button>
+		</Panel>
+	);
 }

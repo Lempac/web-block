@@ -194,14 +194,14 @@ export interface paths {
         patch: operations["ee35632abc0168537257bd8f5baa9f30"];
         trace?: never;
     };
-    "/api/translations": {
+    "/api/translations/{locale}/{module}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["434a55804ca50c9845bd4781c222a539"];
+        get: operations["b890df2c0f1546a31de76aeaf6375924"];
         put?: never;
         post?: never;
         delete?: never;
@@ -218,28 +218,28 @@ export interface paths {
             cookie?: never;
         };
         get: operations["971db9bc974c0e607288cfe7ecc10096"];
-        put?: never;
+        put: operations["fd4f39f7820d3f3cbc259c5b30fed830"];
         post?: never;
-        delete?: never;
+        delete: operations["db0c8ea1c902ed078a87cf1fa6497994"];
         options?: never;
         head?: never;
-        patch?: never;
+        patch: operations["ea88adacb890b864b59bcce5aff2473d"];
         trace?: never;
     };
-    "/api/user/settings": {
+    "/api/user/style": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["f0600d450d13d8f338e39fd52193e7a8"];
-        put?: never;
+        get?: never;
+        put: operations["f8741720bfaafb5c8126e8c1418a9917"];
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        patch: operations["54ba995c0c13dd114980733de45f7ffa"];
         trace?: never;
     };
     "/api/user/repos": {
@@ -273,7 +273,7 @@ export interface components {
         VisibilityType: "private" | "public";
         RegisterRequest: {
             name: string;
-        };
+        } & components["schemas"]["LoginRequest"];
         ErrorObject: {
             /** @example Validation failed. */
             message: string;
@@ -289,14 +289,14 @@ export interface components {
             email: string;
             /** Format: password */
             password: string;
-            /** Format: password */
-            password_confirmation: string;
             /** @default true */
             remember: boolean;
         };
         StoreBlockRequest: {
             x: number;
             y: number;
+            width: number;
+            height: number;
             path: string;
             content: string | null;
         };
@@ -306,12 +306,38 @@ export interface components {
         UpdateBlockRequest: {
             x: number;
             y: number;
+            width: number;
+            height: number;
             path: string;
             content: string | null;
         };
         UpdateProjectRequest: {
             name: string;
             description: string | null;
+            x: number;
+            y: number;
+            /** Format: float */
+            zoom: number;
+        };
+        /** @description Request for updating user style */
+        UpdateStyleRequest: components["schemas"]["Style"];
+        /** @description Request to update user information */
+        UpdateUserRequest: {
+            name: string;
+            /** Format: email */
+            email: string;
+            /** Format: password */
+            password: string | null;
+            settings: {
+                /**
+                 * Format: enum
+                 * @enum {string}
+                 */
+                lang: "en" | "lv";
+                hideExtensions: boolean;
+                /** @default main */
+                defaultBranch: string;
+            };
         };
         Block: {
             id: number;
@@ -319,19 +345,43 @@ export interface components {
             x: number;
             /** @default 0 */
             y: number;
+            /** @default 0 */
+            width: number;
+            /** @default 0 */
+            height: number;
             path: string;
             content: string;
             is_file: boolean;
             is_folder: boolean;
             block_id?: number | null;
             project_id?: number;
+            mimetype?: string;
         };
         Project: {
             id: number;
             name: string;
             description: string | null;
-            url?: string;
+            /** @default 0 */
+            x: number;
+            /** @default 0 */
+            y: number;
+            /**
+             * Format: float
+             * @default 0
+             */
+            zoom: number;
+            /** @default main */
+            default_branch: string;
+            url: string;
             user_id?: number;
+        };
+        /** @description User style */
+        Style: {
+            controlPosition: components["schemas"]["PanelPosition"] & string;
+            minimapPosition: components["schemas"]["PanelPosition"];
+            pathPosition: components["schemas"]["PanelPosition"];
+            baseLightTheme: components["schemas"]["Themes"];
+            baseDarkTheme: components["schemas"]["Themes"];
         };
         /** @description User settings. */
         Settings: {
@@ -341,19 +391,13 @@ export interface components {
             defaultBranch: string;
             /** @default en */
             lang: string;
-            style?: {
-                controlPosition?: components["schemas"]["PanelPosition"] & string;
-                minimapPosition?: components["schemas"]["PanelPosition"];
-                pathPosition?: components["schemas"]["PanelPosition"];
-                baseLightTheme?: components["schemas"]["Themes"];
-                baseDarkTheme?: components["schemas"]["Themes"];
-            };
+            style: components["schemas"]["Style"];
         };
         User: {
             name: string;
             email: string;
-            is_admin?: boolean;
-            settings?: components["schemas"]["Settings"];
+            is_admin: boolean;
+            settings: components["schemas"]["Settings"];
         };
     };
     responses: never;
@@ -739,6 +783,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description Invalid url */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorObject"][];
+                };
+            };
         };
     };
     "1352e06e55f6ab10d3702509cd385918": {
@@ -851,14 +904,14 @@ export interface operations {
             };
         };
     };
-    "434a55804ca50c9845bd4781c222a539": {
+    b890df2c0f1546a31de76aeaf6375924: {
         parameters: {
-            query: {
-                /** @description Set website lang. */
-                locale: string;
-            };
+            query?: never;
             header?: never;
-            path?: never;
+            path: {
+                locale: string;
+                module: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -870,6 +923,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LangObject"];
+                };
+            };
+            /** @description Language/Module not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorObject"];
+                };
+            };
+            /** @description Validation error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorObject"];
                 };
             };
         };
@@ -903,7 +974,39 @@ export interface operations {
             };
         };
     };
-    f0600d450d13d8f338e39fd52193e7a8: {
+    fd4f39f7820d3f3cbc259c5b30fed830: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description User data to update. */
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateUserRequest"];
+            };
+        };
+        responses: {
+            /** @description User updated. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorObject"];
+                };
+            };
+        };
+    };
+    db0c8ea1c902ed078a87cf1fa6497994: {
         parameters: {
             query?: never;
             header?: never;
@@ -912,14 +1015,108 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description User settings. */
-            200: {
+            /** @description User deleted. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated. */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Settings"];
+                    "application/json": components["schemas"]["ErrorObject"];
                 };
+            };
+        };
+    };
+    ea88adacb890b864b59bcce5aff2473d: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description User data to update. */
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateUserRequest"];
+            };
+        };
+        responses: {
+            /** @description User updated. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorObject"];
+                };
+            };
+        };
+    };
+    f8741720bfaafb5c8126e8c1418a9917: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description User style data to update. */
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateStyleRequest"];
+            };
+        };
+        responses: {
+            /** @description User style updated. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorObject"];
+                };
+            };
+        };
+    };
+    "54ba995c0c13dd114980733de45f7ffa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description User style data to update. */
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdateStyleRequest"];
+            };
+        };
+        responses: {
+            /** @description User style updated. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Unauthenticated. */
             401: {

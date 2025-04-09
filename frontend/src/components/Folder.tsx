@@ -10,6 +10,8 @@ export type FolderNode = Node<Record<never, never>, "folder">;
 export default function Folder({
 	positionAbsoluteX,
 	positionAbsoluteY,
+	width,
+	height,
 	id,
 }: NodeProps<FolderNode>) {
 	const queryClient = useQueryClient();
@@ -24,37 +26,37 @@ export default function Folder({
 			},
 		},
 	);
-	const { Field, store, setFieldValue, validateAsync } = useForm(
-		{
-			defaultValues: block,
-			validators: {
-				onChangeAsyncDebounceMs: 500,
-				onChangeAsync: async ({ value }) => {
-					const { error } = await fetchClient.PUT("/api/blocks/{block}", {
-						params: {
-							path: {
-								block: value.id,
-							},
+	const { Field, store, setFieldValue, validateAsync } = useForm({
+		defaultValues: block,
+		validators: {
+			onChangeAsyncDebounceMs: 500,
+			onChangeAsync: async ({ value }) => {
+				const { error } = await fetchClient.PUT("/api/blocks/{block}", {
+					params: {
+						path: {
+							block: value.id,
 						},
-						body: value,
-					});
-					if (error) return { fields: error.errors };
+					},
+					body: value,
+				});
+				if (error) return { fields: error.errors };
 
-					await queryClient.invalidateQueries({
-						queryKey: [
-							"get",
-							"/api/blocks/{block}",
-							`{"params":{"path":{"block":${id}}}}`,
-						],
-					});
+				await queryClient.invalidateQueries({
+					queryKey: [
+						"get",
+						"/api/blocks/{block}",
+						`{"params":{"path":{"block":${id}}}}`,
+					],
+				});
 
-					return null;
-				},
+				return null;
 			},
 		},
-	);
+	});
 	const x = useStore(store, (state) => state.values.x ?? 0);
 	const y = useStore(store, (state) => state.values.y ?? 0);
+	const w = useStore(store, (state) => state.values.width ?? 0);
+	const h = useStore(store, (state) => state.values.height ?? 0);
 	const all = useStore(store, (state) => Object.keys(state.values).length);
 
 	useEffect(() => {
@@ -63,15 +65,35 @@ export default function Folder({
 			setFieldValue("x", positionAbsoluteX);
 			validateAsync("change");
 		}
-
 		if (y !== positionAbsoluteY) {
 			setFieldValue("y", positionAbsoluteY);
 			validateAsync("change");
 		}
-	}, [all, isSuccess, positionAbsoluteX, positionAbsoluteY, setFieldValue, validateAsync, x, y]);
-	
+		if (w !== width) {
+			setFieldValue("width", width ?? 0);
+			validateAsync("change");
+		}
+		if (h !== height) {
+			setFieldValue("height", height ?? 0);
+			validateAsync("change");
+		}
+	}, [
+		all,
+		h,
+		height,
+		isSuccess,
+		positionAbsoluteX,
+		positionAbsoluteY,
+		setFieldValue,
+		validateAsync,
+		w,
+		width,
+		x,
+		y,
+	]);
+
 	return (
-		<div className="card h-full min-h-8 min-w-32 border-2 border-base-100 p-4 shadow">
+		<div className="card h-full min-h-8 min-w-32 rounded-2xl border-4 border-base-300 bg-base-200/25 p-4 shadow ring-neutral in-[.selected]:ring-4">
 			<Field
 				name="path"
 				children={(field) => (

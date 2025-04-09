@@ -272,6 +272,14 @@ paths:
                 properties:
                   message: { type: string }
                 type: object
+        '400':
+          description: 'Invalid url'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ErrorObject'
   '/api/projects/{project}':
     get:
       tags:
@@ -360,14 +368,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorObject'
-  /api/translations:
+  '/api/translations/{locale}/{module}':
     get:
-      operationId: 434a55804ca50c9845bd4781c222a539
+      tags:
+        - translation
+      operationId: b890df2c0f1546a31de76aeaf6375924
       parameters:
         -
           name: locale
-          in: query
-          description: 'Set website lang.'
+          in: path
+          required: true
+          schema:
+            type: string
+        -
+          name: module
+          in: path
           required: true
           schema:
             type: string
@@ -378,6 +393,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LangObject'
+        '404':
+          description: 'Language/Module not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+        '422':
+          description: 'Validation error'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
   /api/user:
     get:
       tags:
@@ -396,18 +423,90 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorObject'
-  /api/user/settings:
-    get:
+    put:
       tags:
         - user
-      operationId: f0600d450d13d8f338e39fd52193e7a8
+      operationId: fd4f39f7820d3f3cbc259c5b30fed830
+      requestBody:
+        description: 'User data to update.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
       responses:
-        '200':
-          description: 'User settings.'
+        '204':
+          description: 'User updated.'
+        '401':
+          description: Unauthenticated.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Settings'
+                $ref: '#/components/schemas/ErrorObject'
+    delete:
+      tags:
+        - user
+      operationId: db0c8ea1c902ed078a87cf1fa6497994
+      responses:
+        '204':
+          description: 'User deleted.'
+        '401':
+          description: Unauthenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+    patch:
+      tags:
+        - user
+      operationId: ea88adacb890b864b59bcce5aff2473d
+      requestBody:
+        description: 'User data to update.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '204':
+          description: 'User updated.'
+        '401':
+          description: Unauthenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+  /api/user/style:
+    put:
+      tags:
+        - user
+      operationId: f8741720bfaafb5c8126e8c1418a9917
+      requestBody:
+        description: 'User style data to update.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStyleRequest'
+      responses:
+        '204':
+          description: 'User style updated.'
+        '401':
+          description: Unauthenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+    patch:
+      tags:
+        - user
+      operationId: 54ba995c0c13dd114980733de45f7ffa
+      requestBody:
+        description: 'User style data to update.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStyleRequest'
+      responses:
+        '204':
+          description: 'User style updated.'
         '401':
           description: Unauthenticated.
           content:
@@ -489,10 +588,14 @@ components:
     RegisterRequest:
       required:
         - name
-      properties:
-        name:
-          type: string
-      type: object
+      allOf:
+        -
+          properties:
+            name:
+              type: string
+          type: object
+        -
+          $ref: '#/components/schemas/LoginRequest'
     ErrorObject:
       required:
         - message
@@ -521,17 +624,12 @@ components:
       required:
         - email
         - password
-        - password_confirmation
         - remember
       properties:
         email:
           type: string
           format: email
         password:
-          type: string
-          format: password
-          minLength: 8
-        password_confirmation:
           type: string
           format: password
           minLength: 8
@@ -543,12 +641,18 @@ components:
       required:
         - x
         - 'y'
+        - width
+        - height
         - path
         - content
       properties:
         x:
           type: integer
         'y':
+          type: integer
+        width:
+          type: integer
+        height:
           type: integer
         path:
           type: string
@@ -568,12 +672,18 @@ components:
       required:
         - x
         - 'y'
+        - width
+        - height
         - path
         - content
       properties:
         x:
           type: integer
         'y':
+          type: integer
+        width:
+          type: integer
+        height:
           type: integer
         path:
           type: string
@@ -586,6 +696,9 @@ components:
       required:
         - name
         - description
+        - x
+        - 'y'
+        - zoom
       properties:
         name:
           type: string
@@ -593,6 +706,53 @@ components:
           type:
             - string
             - 'null'
+        x:
+          type: integer
+        'y':
+          type: integer
+        zoom:
+          type: number
+          format: float
+      type: object
+    UpdateStyleRequest:
+      $ref: '#/components/schemas/Style'
+      description: 'Request for updating user style'
+    UpdateUserRequest:
+      description: 'Request to update user information'
+      required:
+        - name
+        - email
+        - password
+        - settings
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type:
+            - string
+            - 'null'
+          format: password
+        settings:
+          required:
+            - lang
+            - hideExtensions
+            - defaultBranch
+          properties:
+            lang:
+              type: string
+              format: enum
+              enum:
+                - en
+                - lv
+            hideExtensions:
+              type: boolean
+            defaultBranch:
+              type: string
+              default: main
+          type: object
       type: object
     Block:
       required:
@@ -612,6 +772,12 @@ components:
         'y':
           type: integer
           default: 0
+        width:
+          type: integer
+          default: 0
+        height:
+          type: integer
+          default: 0
         path:
           type: string
         content:
@@ -626,12 +792,20 @@ components:
             - 'null'
         project_id:
           type: integer
+        mimetype:
+          type: string
+          pattern: '(application|audio|font|example|image|message|model|multipart|text|video|x-(?:[0-9A-Za-z!#$%&''*+.^_`|~-]+))\/([0-9A-Za-z!#$%&''*+.^_`|~-]+)((?:[ \t]*;[ \t]*[0-9A-Za-z!#$%&''*+.^_`|~-]+=(?:[0-9A-Za-z!#$%&''*+.^_`|~-]+|\"(?:[^\"\\]|\.)*\"))*)'
       type: object
     Project:
       required:
         - id
         - name
         - description
+        - x
+        - 'y'
+        - zoom
+        - default_branch
+        - url
       properties:
         id:
           type: integer
@@ -641,13 +815,56 @@ components:
           type:
             - string
             - 'null'
+        x:
+          type: integer
+          default: 0
+        'y':
+          type: integer
+          default: 0
+        zoom:
+          type: number
+          format: float
+          default: 0
+        default_branch:
+          type: string
+          default: main
         url:
           type: string
         user_id:
           type: integer
       type: object
+    Style:
+      description: 'User style'
+      required:
+        - controlPosition
+        - minimapPosition
+        - pathPosition
+        - baseLightTheme
+        - baseDarkTheme
+      properties:
+        controlPosition:
+          allOf:
+            -
+              $ref: '#/components/schemas/PanelPosition'
+            -
+              type: string
+              default: bottom-left
+        minimapPosition:
+          $ref: '#/components/schemas/PanelPosition'
+        pathPosition:
+          $ref: '#/components/schemas/PanelPosition'
+        baseLightTheme:
+          $ref: '#/components/schemas/Themes'
+        baseDarkTheme:
+          $ref: '#/components/schemas/Themes'
+      type: object
     Settings:
       description: 'User settings.'
+      required:
+        - hideExtensions
+        - defaultBranch
+        - lang
+        - style
       properties:
         hideExtensions:
           type: boolean
@@ -659,28 +876,14 @@ components:
           type: string
           default: en
         style:
-          properties:
-            controlPosition:
-              allOf:
-                -
-                  $ref: '#/components/schemas/PanelPosition'
-                -
-                  type: string
-                  default: bottom-left
-            minimapPosition:
-              $ref: '#/components/schemas/PanelPosition'
-            pathPosition:
-              $ref: '#/components/schemas/PanelPosition'
-            baseLightTheme:
-              $ref: '#/components/schemas/Themes'
-            baseDarkTheme:
-              $ref: '#/components/schemas/Themes'
-          type: object
+          $ref: '#/components/schemas/Style'
       type: object
     User:
       required:
         - name
         - email
+        - is_admin
+        - settings
       properties:
         name:
           type: string
@@ -704,6 +907,9 @@ tags:
   -
     name: project
     description: project
+  -
+    name: translation
+    description: translation
   -
     name: user
     description: user

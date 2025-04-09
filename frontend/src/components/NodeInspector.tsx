@@ -80,7 +80,7 @@ function NodeInfo({
 				position: {position.x.toFixed(1)}, {position.y.toFixed(1)}
 			</div>
 			<div>
-				dimensions: {width} × {height}
+				dimensions: {width} x {height}
 			</div>
 			<div>data: {JSON.stringify(data, null, 2)}</div>
 		</div>

@@ -5,10 +5,11 @@ namespace App\Http\Requests;
 use Auth;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use OpenApi\Attributes\{Schema, Property};
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
 
 #[Schema(properties: [
-    new Property(property: 'nameOrUrl', type: 'string')
+    new Property(property: 'nameOrUrl', type: 'string'),
 ], required: ['nameOrUrl'])]
 class StoreProjectRequest extends FormRequest
 {

@@ -10,11 +10,18 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
-use OpenApi\Attributes\{Schema, Post, Response as R, RequestBody, JsonContent, Property};
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Post;
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\RequestBody;
+use OpenApi\Attributes\Response as R;
+use OpenApi\Attributes\Schema;
 
 #[Schema(schema: 'RegisterRequest', properties: [
-    new Property(property: 'name', type: 'string'),
-], required: [ 'name' ])]
+], allOf: [
+    new Schema(properties: [new Property(property: 'name', type: 'string')]),
+    new Schema(ref: '#/components/schemas/LoginRequest'),
+], required: ['name'])]
 class RegisteredUserController extends Controller
 {
     /**
@@ -34,6 +41,7 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'remember' => ['boolean'],
         ]);
 
         $user = User::create([
@@ -44,7 +52,7 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        Auth::login($user);
+        Auth::login($user, $request->remeber);
 
         return response()->noContent();
     }

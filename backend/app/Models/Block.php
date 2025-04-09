@@ -2,25 +2,29 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Database\Factories\BlockFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use OpenApi\Attributes\{Schema, Property};
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
 
 #[Schema(properties: [
     new Property(property: 'id', type: 'integer'),
     new Property(property: 'x', type: 'integer', default: 0),
     new Property(property: 'y', type: 'integer', default: 0),
+    new Property(property: 'width', type: 'integer', default: 0),
+    new Property(property: 'height', type: 'integer', default: 0),
     new Property(property: 'path', type: 'string'),
     new Property(property: 'content', type: 'string'),
     new Property(property: 'is_file', type: 'boolean'),
     new Property(property: 'is_folder', type: 'boolean'),
     new Property(property: 'block_id', type: 'integer', nullable: true),
     new Property(property: 'project_id', type: 'integer'),
-], required: [ 'id', 'x', 'y', 'path', 'content', 'is_file', 'is_folder' ])]
+    new Property(property: 'mimetype', type: 'string', pattern: '(application|audio|font|example|image|message|model|multipart|text|video|x-(?:[0-9A-Za-z!#$%&\'*+.^_`|~-]+))\/([0-9A-Za-z!#$%&\'*+.^_`|~-]+)((?:[ \t]*;[ \t]*[0-9A-Za-z!#$%&\'*+.^_`|~-]+=(?:[0-9A-Za-z!#$%&\'*+.^_`|~-]+|\"(?:[^\"\\\\]|\\.)*\"))*)'),
+], required: ['id', 'x', 'y', 'path', 'content', 'is_file', 'is_folder'])]
 class Block extends Model
 {
     /** @use HasFactory<BlockFactory> */
@@ -31,13 +35,13 @@ class Block extends Model
      *
      * @var array
      */
-
     protected $appends = ['is_folder', 'is_file'];
 
     protected $fillable = [
-        // 'title',
         'x',
         'y',
+        'width',
+        'height',
         'path',
         'content',
         'block_id',
@@ -63,7 +67,6 @@ class Block extends Model
     /**
      * Determine if the block is an folder.
      */
-
     protected function isFolder(): Attribute
     {
         return new Attribute(
@@ -74,7 +77,6 @@ class Block extends Model
     /**
      * Determine if the block is an folder.
      */
-
     protected function isFile(): Attribute
     {
         return new Attribute(

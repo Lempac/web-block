@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Enums;
-use OpenApi\Attributes\{Schema};
+
+use OpenApi\Attributes\Schema;
 
 #[Schema(type: 'string')]
 enum Themes: string

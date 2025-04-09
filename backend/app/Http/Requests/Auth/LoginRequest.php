@@ -9,13 +9,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use OpenApi\Attributes\{Schema, Property};
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
+
 #[Schema(properties: [
     new Property(property: 'email', type: 'string', format: 'email'),
     new Property(property: 'password', type: 'string', format: 'password', minLength: 8),
-    new Property(property: 'password_confirmation', type: 'string', format: 'password', minLength: 8),
     new Property(property: 'remember', type: 'boolean', default: true),
-], required: [ 'email', 'password', 'password_confirmation', 'remember' ])]
+], required: ['email', 'password', 'remember'])]
 class LoginRequest extends FormRequest
 {
     /**
@@ -34,8 +35,20 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string', 'email', 'exists:users,email'],
             'password' => ['required', 'string'],
+        ];
+    }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'email.exists' => __('auth.failed'),
         ];
     }
 
@@ -52,7 +65,8 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => __('auth.failed'),
+                // 'email' => __('auth.failed'),
+                'password' => __('auth.password'),
             ]);
         }
 

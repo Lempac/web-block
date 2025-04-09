@@ -20,9 +20,10 @@ import {
 } from "@mdxeditor/editor";
 import { headingsPlugin } from "@mdxeditor/editor";
 import { useReactFlow } from "@xyflow/react";
-import { CustomNodeType } from "@/bootstrap";
+import type { CustomNodeType } from "@/bootstrap";
 import { fetchClient } from "@/bootstrap";
-import { components } from "@/api";
+import type { components } from "@/api";
+import { useTranslation } from "react-i18next";
 
 export default function ProjectCard({
 	project,
@@ -31,17 +32,20 @@ export default function ProjectCard({
 	project: components["schemas"]["Project"];
 	currentProject: { value: boolean; set: (v: number) => void };
 }) {
+	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const { deleteElements } = useReactFlow<CustomNodeType>();
 
 	async function deleteCard(id: number) {
-		await fetchClient.DELETE("/api/projects/{project}", {
+		const { error } = await fetchClient.DELETE("/api/projects/{project}", {
 			params: {
 				path: {
 					project: id,
 				},
 			},
 		});
+		if (error) return;
+		currentProject.set(0);
 		await queryClient.invalidateQueries({ queryKey: ["get", "/api/projects"] });
 	}
 
@@ -64,7 +68,7 @@ export default function ProjectCard({
 						},
 					},
 					credentials: "include",
-					body: { name: value.name, description: value.description },
+					body: value,
 				});
 				if (error) return { fields: error.errors };
 
@@ -103,21 +107,23 @@ export default function ProjectCard({
 				<button
 					className="nodrag btn btn-outline btn-success"
 					onClick={() => openProject(project.id)}
-					title="Open project"
+					title={t("projects-card.open")}
 				>
 					<MdOutlineOpenInNew size={20} />
 				</button>
 				<button
 					className="nodrag btn btn-outline btn-error"
 					onClick={() => deleteCard(project.id)}
-					title="Delete project"
+					title={t("projects-card.delete")}
 				>
 					<FaTrashCan />
 				</button>
 			</div>
 			<div className="collapse-arrow collapse shadow">
 				<input type="checkbox" />
-				<div className="collapse-title font-semibold">Description</div>
+				<div className="collapse-title font-semibold">
+					{t("projects-card.description")}
+				</div>
 				<div className="collapse-content shadow">
 					<Field
 						name="description"
@@ -129,7 +135,7 @@ export default function ProjectCard({
 								contentEditableClassName="prose"
 								onBlur={field.handleBlur}
 								onChange={(e, init) => !init && field.handleChange(e)}
-								markdown={field.state.value ?? "# some comment"}
+								markdown={field.state.value ?? "Unknown"}
 								plugins={[
 									toolbarPlugin({
 										toolbarContents: () => (

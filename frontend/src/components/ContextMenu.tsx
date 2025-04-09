@@ -1,14 +1,12 @@
-import { $api, CustomNodeType } from "@/bootstrap";
-import {
-	useReactFlow,
-	type Node,
-	type NodeProps,
-} from "@xyflow/react";
+import { $api, addOrUpdate, type CustomNodeType } from "@/bootstrap";
+import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
 import { VscNewFile, VscNewFolder } from "react-icons/vsc";
-import { ProjectProps } from "@/components/Projects";
+import type { ProjectProps } from "@/components/Projects";
+import { useTranslation } from "react-i18next";
+import { FaArrowRight } from "react-icons/fa6";
 
 export type ContextMenuNode = Node<
-	{ onClick?: () => void } & ProjectProps,
+	{ onClick: () => void } & ProjectProps,
 	"contextMenu"
 >;
 
@@ -17,18 +15,16 @@ export default function ContextMenu({
 	positionAbsoluteY,
 	data,
 }: NodeProps<ContextMenuNode>) {
+	const { t } = useTranslation();
 	const { currentProject, setCurrentProject } = data;
-	const { addNodes, updateNode, getNode } = useReactFlow<CustomNodeType>();
+	const { addNodes, setNodes } = useReactFlow<CustomNodeType>();
 	const { isSuccess } = $api.useQuery("get", "/api/user");
-	const projects = getNode("projects");
-	const settings = getNode("settings");
-	// console.log(projects, settings);
-	
+
 	const addFile = () =>
 		addNodes({
 			id: crypto.randomUUID(),
 			type: "file",
-			data: { id: -1 },
+			data: {},
 			position: { x: positionAbsoluteX, y: positionAbsoluteY },
 		});
 
@@ -36,41 +32,35 @@ export default function ContextMenu({
 		addNodes({
 			id: crypto.randomUUID(),
 			type: "folder",
-			data: { id: -1 },
+			data: {},
 			position: { x: positionAbsoluteX, y: positionAbsoluteY },
 		});
-
 	const showProjects = () =>
-		projects
-			? updateNode(projects.id, {
-					position: { x: positionAbsoluteX, y: positionAbsoluteY },
-				})
-			: addNodes({
-					id: "projects",
-					type: "projects",
-					position: { x: positionAbsoluteX, y: positionAbsoluteY },
-					data: { currentProject, setCurrentProject },
-				});
+		setNodes((() => {
+			console.log(positionAbsoluteX, positionAbsoluteY)
+			return addOrUpdate({
+			id: "projects",
+			type: "projects",
+			position: { x: positionAbsoluteX, y: positionAbsoluteY },
+			data: { currentProject, setCurrentProject },
+		})})());
 
 	const showSettings = () =>
-		settings
-			? updateNode(settings.id, {
-					position: { x: positionAbsoluteX, y: positionAbsoluteY },
-				})
-			: addNodes([
-					{
-						id: "settings",
-						type: "settings",
-						position: { x: positionAbsoluteX, y: positionAbsoluteY },
-						data: {},
-					},
-				]);
+		setNodes(
+			addOrUpdate({
+				id: "settings",
+				type: "settings",
+				position: { x: positionAbsoluteX, y: positionAbsoluteY },
+				data: {},
+			}),
+		);
 
 	return (
 		<div className="card gap-1 bg-base-300 p-2 shadow" onClick={data.onClick}>
 			<div className="dropdown-hover nodrag dropdown dropdown-right flex">
-				<button tabIndex={0} className="btn grow">
-					New
+				<button className="nodrag btn grow">
+					{t("context-menu.new")}
+					<FaArrowRight />
 				</button>
 				<ul
 					tabIndex={0}
@@ -78,13 +68,13 @@ export default function ContextMenu({
 				>
 					<li>
 						<button className="nodrag btn" onClick={addFile}>
-							File
+							{t("context-menu.file")}
 							<VscNewFile />
 						</button>
 					</li>
 					<li>
 						<button className="nodrag btn" onClick={addFolder}>
-							Folder
+							{t("context-menu.folder")}
 							<VscNewFolder />
 						</button>
 					</li>
@@ -92,11 +82,11 @@ export default function ContextMenu({
 			</div>
 			{isSuccess && (
 				<button className="nodrag btn" onClick={showProjects}>
-					Show projects
+					{t("context-menu.show-project")}
 				</button>
 			)}
 			<button className="nodrag btn" onClick={showSettings}>
-				Show settings
+				{t("context-menu.show-settings")}
 			</button>
 		</div>
 	);

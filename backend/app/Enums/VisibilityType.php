@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Enums;
-use OpenApi\Attributes\{Schema, Deprecated};
+
+use OpenApi\Attributes\Schema;
 
 #[Schema(deprecated: true, type: 'string')]
 enum VisibilityType: string

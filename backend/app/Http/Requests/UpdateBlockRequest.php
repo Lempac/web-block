@@ -5,14 +5,17 @@ namespace App\Http\Requests;
 use Auth;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use OpenApi\Attributes\{Schema, Property};
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
 
 #[Schema(properties: [
     new Property(property: 'x', type: 'integer'),
     new Property(property: 'y', type: 'integer'),
+    new Property(property: 'width', type: 'integer'),
+    new Property(property: 'height', type: 'integer'),
     new Property(property: 'path', type: 'string'),
-    new Property(property: 'content', type: 'string', nullable: true)
-], required: ['x', 'y', 'path', 'content'])]
+    new Property(property: 'content', type: 'string', nullable: true),
+], required: ['x', 'y', 'width', 'height', 'path', 'content'])]
 class UpdateBlockRequest extends FormRequest
 {
     /**
@@ -33,8 +36,10 @@ class UpdateBlockRequest extends FormRequest
         return [
             'x' => 'required|integer',
             'y' => 'required|integer',
+            'width' => 'required|integer',
+            'height' => 'required|integer',
             'path' => 'required|string',
-            'content' => 'nullable|string'
-        ];  
+            'content' => 'nullable|string',
+        ];
     }
 }

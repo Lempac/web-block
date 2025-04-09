@@ -1,15 +1,22 @@
-import { NodeProps, useReactFlow, useStore, type Node } from "@xyflow/react";
+import {
+	type NodeProps,
+	useReactFlow,
+	useStore,
+	type Node,
+} from "@xyflow/react";
 import Resize from "../Resize";
-import { $api, CustomNodeType } from "@/bootstrap";
+import { $api, type CustomNodeType } from "@/bootstrap";
 import { useEffect, useRef } from "react";
-import { ThemeNode } from "./Theme";
-import { ProfileNode } from "./Profile";
+import type { ThemeNode } from "./Theme";
+import type { ProfileNode } from "./Profile";
+import { useTranslation } from "react-i18next";
 
 export type SettingsNode = Node<Record<never, never>, "settings">;
 
 export default function Settings({ id }: NodeProps<SettingsNode>) {
+	const { t } = useTranslation();
 	const { isSuccess } = $api.useQuery("get", "/api/user");
-	const { addNodes, getNode, deleteElements, getNodesBounds, updateNode } =
+	const { addNodes, getNode, getNodesBounds, updateNode } =
 		useReactFlow<CustomNodeType>();
 	const themeIsLoaded = useRef(false);
 	const profileIsLoaded = useRef(false);
@@ -18,8 +25,12 @@ export default function Settings({ id }: NodeProps<SettingsNode>) {
 			state.nodes.filter((node) => node.parentId === id) as CustomNodeType[],
 		),
 	);
-	const theme = useStore((state) => state.nodeLookup.get("theme") as ThemeNode | undefined);
-	const profile = useStore((state) => state.nodeLookup.get("profile") as ProfileNode | undefined);
+	const theme = useStore(
+		(state) => state.nodeLookup.get("theme") as ThemeNode | undefined,
+	);
+	const profile = useStore(
+		(state) => state.nodeLookup.get("profile") as ProfileNode | undefined,
+	);
 
 	useEffect(() => {
 		if (!theme && !themeIsLoaded.current) {
@@ -48,19 +59,21 @@ export default function Settings({ id }: NodeProps<SettingsNode>) {
 		}
 	}, [addNodes, getNode, isSuccess, profile, theme]);
 
-	useEffect(() => {
-		updateNode("settings", {
-			height: size.height + 40,
-			width: size.width + 40,
-		});
-	}, [themeIsLoaded, profileIsLoaded, size.width, size.height]);
+	useEffect(
+		() =>
+			updateNode("settings", {
+				height: size.height + 40,
+				width: size.width + 40,
+			}),
+		[themeIsLoaded, profileIsLoaded, size.width, size.height, updateNode],
+	);
 
 	return (
-		<div className="card grid h-full content-between border-2 p-4">
+		<div className="card grid h-full content-between border-2 bg-base-200/25 p-4 shadow ring-neutral in-[.selected]:ring-4">
 			<h2 className="card relative -top-10 max-w-fit border-2 bg-base-200 p-2 text-2xl">
-				Settings
+				{t("settings.name")}
 			</h2>
-			<button
+			{/* <button
 				className="btn text-2xl"
 				onClick={() =>
 					deleteElements({
@@ -68,8 +81,8 @@ export default function Settings({ id }: NodeProps<SettingsNode>) {
 					})
 				}
 			>
-				Save
-			</button>
+				{t("settings.save")}
+			</button> */}
 			<Resize />
 		</div>
 	);

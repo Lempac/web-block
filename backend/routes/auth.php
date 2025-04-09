@@ -3,9 +3,7 @@
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\GithubAuthController;
 use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Models\User;
 use Illuminate\Support\Facades\Route;
-use Laravel\Socialite\Facades\Socialite;
 
 Route::middleware('guest')->group(function () {
     //    Route::get('register', [RegisteredUserController::class, 'create'])

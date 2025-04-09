@@ -5,20 +5,22 @@ import {
 	$api,
 	fetchClient,
 	getLanguage,
-	usePreferredColorScheme,
 } from "@/bootstrap";
 import { useForm, useStore } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { useMediaQuery } from "@uidotdev/usehooks";
 
 export type FileNode = Node<Record<never, never>, "file">;
 
 export default function File({
 	positionAbsoluteX,
 	positionAbsoluteY,
+	width,
+	height,
 	id,
 }: NodeProps<FileNode>) {
-	const theme = usePreferredColorScheme();
+	const theme = useMediaQuery("(prefers-color-scheme: dark)") ? "dark" : "light";
 	const queryClient = useQueryClient();
 	const { data: block, isSuccess } = $api.useQuery(
 		"get",
@@ -59,6 +61,8 @@ export default function File({
 	});
 	const x = useStore(store, (state) => state.values.x ?? 0);
 	const y = useStore(store, (state) => state.values.y ?? 0);
+	const w = useStore(store, (state) => state.values.width ?? 0);
+	const h = useStore(store, (state) => state.values.height ?? 0);
 	const path = useStore(store, (state) => state.values.path ?? "");
 	const all = useStore(store, (state) => Object.keys(state.values).length);
 	useEffect(() => {
@@ -67,23 +71,34 @@ export default function File({
 			setFieldValue("x", positionAbsoluteX);
 			validateAsync("change");
 		}
-
 		if (y !== positionAbsoluteY) {
 			setFieldValue("y", positionAbsoluteY);
 			validateAsync("change");
 		}
+		if (w !== width) {
+			setFieldValue("width", width ?? 0);
+			validateAsync("change");
+		}
+		if (h !== height) {
+			setFieldValue("height", height ?? 0);
+			validateAsync("change");
+		}
 	}, [
 		all,
+		h,
+		height,
 		isSuccess,
 		positionAbsoluteX,
 		positionAbsoluteY,
 		setFieldValue,
 		validateAsync,
+		w,
+		width,
 		x,
 		y,
 	]);
 	return (
-		<div>
+		<div className="rounded-2xl shadow ring-neutral in-[.selected]:ring-4">
 			<div className="collapse-arrow collapse border border-base-300 bg-base-100 p-5">
 				<Field
 					name="path"

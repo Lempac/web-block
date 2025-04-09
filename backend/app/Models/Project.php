@@ -9,16 +9,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
 use Storage;
-use OpenApi\Attributes\{Schema, Property};
 
 #[Schema(properties: [
     new Property(property: 'id', type: 'integer'),
     new Property(property: 'name', type: 'string'),
     new Property(property: 'description', type: 'string', nullable: true),
+    new Property(property: 'x', type: 'integer', default: 0),
+    new Property(property: 'y', type: 'integer', default: 0),
+    new Property(property: 'zoom', type: 'number', default: 0, format: 'float'),
+    new Property(property: 'default_branch', type: 'string', default: 'main'),
     new Property(property: 'url', type: 'string'),
     new Property(property: 'user_id', type: 'integer'),
-], required: [ 'id', 'name', 'description' ])]
+], required: ['id', 'name', 'description', 'x', 'y', 'zoom', 'default_branch', 'url'])]
 class Project extends Model
 {
     /** @use HasFactory<ProjectFactory> */
@@ -27,6 +32,9 @@ class Project extends Model
     protected $fillable = [
         'name',
         'description',
+        'x',
+        'y',
+        'zoom',
         'default_branch',
         'url',
         'user_id',
@@ -45,8 +53,7 @@ class Project extends Model
     public function generateGitProject()
     {
         $repo = new Repository(storage_path('app/private').'/'.$this->name);
-        $this->url = $repo->run('remote',['get-url', 'origin']);
-        $this->save();
+        // $this->url ??= $repo->run('remote', ['get-url', 'origin']);
         $tree = $repo->getHeadCommit()->getTree();
         $this->gitToBlocks($tree);
     }
@@ -59,6 +66,7 @@ class Project extends Model
             Storage::disk('local')->deleteDirectory($project->name);
         });
     }
+
     private function gitToBlocks(Tree $rootTree, ?Block $parent = null)
     {
         foreach ($rootTree->getTreeEntries() as $name => [$mode, $tree]) {
@@ -70,9 +78,9 @@ class Project extends Model
             $newRoot->save();
             $this->gitToBlocks($tree, $newRoot);
         }
-    
+
         foreach ($rootTree->getBlobEntries() as $name => [$mode, $blob]) {
-            if($parent === null && str_ends_with($name, '.md') && $blob->isText()){
+            if ($parent === null && str_ends_with($name, '.md') && $blob->isText()) {
                 $this->description = $blob->getContent();
                 $this->save();
             }
@@ -85,7 +93,7 @@ class Project extends Model
             $newBlob->block()->associate($parent);
             $newBlob->save();
         }
-    
+
         // foreach ($tree->getEntries() as $name => $data) {
         //     [$mode, $entry] = $data;
         //     if ($entry instanceof Tree) {
@@ -99,7 +107,7 @@ class Project extends Model
         //         ]);
         //         gitToBlocks($entry, $newRoot);
         //     } else {
-    
+
         //     }
         // }
     }

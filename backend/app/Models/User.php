@@ -4,50 +4,43 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Auth;
+use Database\Factories\UserFactory;
 use Github\AuthMethod;
 use Github\Client;
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use OpenApi\Attributes\{Schema, Property};
-use App\Enums\{PanelPosition, Themes};
-// 'hideExtensions' => true,
-// 'defaultBranch' => 'master',
-// 'lang' => 'en',
-// 'style' => [
-//     'controlPosition' => PanelPosition::BottomLeft,
-//     'minimapPosition' => PanelPosition::BottomRight,
-//     'pathPosition' => PanelPosition::TopLeft,
-//     'baseLightTheme' => Themes::Light,
-//     'baseDarkTheme' => Themes::Dark
-// ],
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Schema;
 
-//TODO: fix settings enum to have a default value
+// TODO: fix settings enum to have a default value
+#[Schema(schema: 'Style', description: 'User style', properties: [
+    new Property(property: 'controlPosition', allOf: [new Schema(ref: '#/components/schemas/PanelPosition'), new Schema(type: 'string', default: 'bottom-left')]),
+    new Property(property: 'minimapPosition', ref: '#/components/schemas/PanelPosition'),
+    new Property(property: 'pathPosition', ref: '#/components/schemas/PanelPosition'),
+    new Property(property: 'baseLightTheme', ref: '#/components/schemas/Themes'),
+    new Property(property: 'baseDarkTheme', ref: '#/components/schemas/Themes'),
+], required: ['controlPosition', 'minimapPosition', 'pathPosition', 'baseLightTheme', 'baseDarkTheme'])]
+
 #[Schema(schema: 'Settings', description: 'User settings.', properties: [
     new Property(property: 'hideExtensions', type: 'boolean', default: true),
     new Property(property: 'defaultBranch', type: 'string', default: 'master'),
     new Property(property: 'lang', type: 'string', default: 'en'),
-    new Property(property: 'style', properties: [ 
-        new Property(property: 'controlPosition', allOf: [new Schema(ref: '#/components/schemas/PanelPosition'), new Schema(type: 'string', default: 'bottom-left')]),
-        new Property(property: 'minimapPosition', ref: '#/components/schemas/PanelPosition'),
-        new Property(property: 'pathPosition', ref: '#/components/schemas/PanelPosition'),
-        new Property(property: 'baseLightTheme', ref: '#/components/schemas/Themes'),
-        new Property(property: 'baseDarkTheme', ref: '#/components/schemas/Themes'),
-    ]),
-])]
+    new Property(property: 'style', ref: '#/components/schemas/Style'),
+], required: ['hideExtensions', 'defaultBranch', 'lang', 'style'])]
+
 #[Schema(properties: [
     new Property(property: 'name', type: 'string'),
     new Property(property: 'email', type: 'string'),
     new Property(property: 'is_admin', type: 'boolean'),
     new Property(property: 'settings', ref: '#/components/schemas/Settings'),
-], required: [ 'name', 'email' ])]
+], required: ['name', 'email', 'is_admin', 'settings'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
-    
+
     /**
      * The attributes that are mass assignable.
      *
@@ -61,7 +54,7 @@ class User extends Authenticatable
         'github_token',
         'github_refresh_token',
         'is_admin',
-        'settings'
+        'settings',
     ];
 
     /**
@@ -103,25 +96,41 @@ class User extends Authenticatable
 
     public function getGithubProjects()
     {
-        if (! $this->hasGithub())
+        if (! $this->hasGithub()) {
             return [];
-        $client = new Client();
-        $client->authenticate($this->github_id, $this->github_token, AuthMethod::CLIENT_ID);
+        }
+        $client = new Client;
+        // $client->api('')
+        $client->authenticate($this->github_token, authMethod: AuthMethod::CLIENT_ID);
         $repos = $client->currentUser()->repositories();
-        return array_map(fn ($repo) => $repo["name"], $repos);
+
+        return array_map(fn ($repo) => $repo['name'], $repos);
     }
 
     public function getGithubProject(string $repoName)
     {
-        if (!$this->hasGithub()) return null;
-        $client = new Client();
-        $client->authenticate($this->github_id, $this->github_token, AuthMethod::CLIENT_ID);
+        if (! $this->hasGithub()) {
+            return null;
+        }
+        $client = new Client;
+        // Log::info("Getting github project: $repoName");
+        // Log::info("Authenticating with github id: $this->github_id");
+        $client->authenticate($this->github_token, authMethod: AuthMethod::CLIENT_ID);
         $repo = $client->repo()->show($this->name, $repoName);
 
-        return $this->projects()->create([
+        // return $this->projects()->create([
+        //     'name' => $repo['name'],
+        //     'description' => $repo['description'],
+        //     'url' => $repo['html_url'],
+        // ]);
+        $prname = $repo['name'];
+        $token = Auth::user()->github_token;
+        $username = Auth::user()->name;
+
+        return new Project([
             'name' => $repo['name'],
             'description' => $repo['description'],
-            'url' => $repo['html_url'],
+            'url' => "https://$token@github.com/$username/$prname.git",
         ]);
     }
 }

@@ -423,6 +423,19 @@
                                 }
                             }
                         }
+                    },
+                    "400": {
+                        "description": "Invalid url",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ErrorObject"
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -563,14 +576,24 @@
                 }
             }
         },
-        "/api/translations": {
+        "/api/translations/{locale}/{module}": {
             "get": {
-                "operationId": "434a55804ca50c9845bd4781c222a539",
+                "tags": [
+                    "translation"
+                ],
+                "operationId": "b890df2c0f1546a31de76aeaf6375924",
                 "parameters": [
                     {
                         "name": "locale",
-                        "in": "query",
-                        "description": "Set website lang.",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "module",
+                        "in": "path",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -584,6 +607,26 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/LangObject"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Language/Module not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorObject"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorObject"
                                 }
                             }
                         }
@@ -604,6 +647,122 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorObject"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "user"
+                ],
+                "operationId": "fd4f39f7820d3f3cbc259c5b30fed830",
+                "requestBody": {
+                    "description": "User data to update.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateUserRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "User updated."
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorObject"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "user"
+                ],
+                "operationId": "db0c8ea1c902ed078a87cf1fa6497994",
+                "responses": {
+                    "204": {
+                        "description": "User deleted."
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorObject"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "user"
+                ],
+                "operationId": "ea88adacb890b864b59bcce5aff2473d",
+                "requestBody": {
+                    "description": "User data to update.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateUserRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "User updated."
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorObject"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/style": {
+            "put": {
+                "tags": [
+                    "user"
+                ],
+                "operationId": "e9aa0f5f436944565d44dd2c97ff29ad",
+                "responses": {
+                    "200": {
+                        "description": "User repos from github.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
                                 }
                             }
                         }
@@ -717,12 +876,19 @@
                 "required": [
                     "name"
                 ],
-                "properties": {
-                    "name": {
-                        "type": "string"
+                "allOf": [
+                    {
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    {
+                        "$ref": "#/components/schemas/LoginRequest"
                     }
-                },
-                "type": "object"
+                ]
             },
             "ErrorObject": {
                 "required": [
@@ -764,7 +930,6 @@
                 "required": [
                     "email",
                     "password",
-                    "password_confirmation",
                     "remember"
                 ],
                 "properties": {
@@ -773,11 +938,6 @@
                         "format": "email"
                     },
                     "password": {
-                        "type": "string",
-                        "format": "password",
-                        "minLength": 8
-                    },
-                    "password_confirmation": {
                         "type": "string",
                         "format": "password",
                         "minLength": 8
@@ -793,6 +953,8 @@
                 "required": [
                     "x",
                     "y",
+                    "width",
+                    "height",
                     "path",
                     "content"
                 ],
@@ -801,6 +963,12 @@
                         "type": "integer"
                     },
                     "y": {
+                        "type": "integer"
+                    },
+                    "width": {
+                        "type": "integer"
+                    },
+                    "height": {
                         "type": "integer"
                     },
                     "path": {
@@ -830,6 +998,8 @@
                 "required": [
                     "x",
                     "y",
+                    "width",
+                    "height",
                     "path",
                     "content"
                 ],
@@ -838,6 +1008,12 @@
                         "type": "integer"
                     },
                     "y": {
+                        "type": "integer"
+                    },
+                    "width": {
+                        "type": "integer"
+                    },
+                    "height": {
                         "type": "integer"
                     },
                     "path": {
@@ -855,7 +1031,10 @@
             "UpdateProjectRequest": {
                 "required": [
                     "name",
-                    "description"
+                    "description",
+                    "x",
+                    "y",
+                    "zoom"
                 ],
                 "properties": {
                     "name": {
@@ -866,6 +1045,71 @@
                             "string",
                             "null"
                         ]
+                    },
+                    "x": {
+                        "type": "integer"
+                    },
+                    "y": {
+                        "type": "integer"
+                    },
+                    "zoom": {
+                        "type": "number",
+                        "format": "float"
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateStyleRequest": {
+                "$ref": "#/components/schemas/Style",
+                "description": "Request for updating user style"
+            },
+            "UpdateUserRequest": {
+                "description": "Request to update user information",
+                "required": [
+                    "name",
+                    "email",
+                    "password",
+                    "settings"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "password": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "password"
+                    },
+                    "settings": {
+                        "required": [
+                            "lang",
+                            "hideExtensions",
+                            "defaultBranch"
+                        ],
+                        "properties": {
+                            "lang": {
+                                "type": "string",
+                                "format": "enum",
+                                "enum": [
+                                    "en",
+                                    "lv"
+                                ]
+                            },
+                            "hideExtensions": {
+                                "type": "boolean"
+                            },
+                            "defaultBranch": {
+                                "type": "string",
+                                "default": "main"
+                            }
+                        },
+                        "type": "object"
                     }
                 },
                 "type": "object"
@@ -892,6 +1136,14 @@
                         "type": "integer",
                         "default": 0
                     },
+                    "width": {
+                        "type": "integer",
+                        "default": 0
+                    },
+                    "height": {
+                        "type": "integer",
+                        "default": 0
+                    },
                     "path": {
                         "type": "string"
                     },
@@ -912,6 +1164,10 @@
                     },
                     "project_id": {
                         "type": "integer"
+                    },
+                    "mimetype": {
+                        "type": "string",
+                        "pattern": "(application|audio|font|example|image|message|model|multipart|text|video|x-(?:[0-9A-Za-z!#$%&'*+.^_`|~-]+))\\/([0-9A-Za-z!#$%&'*+.^_`|~-]+)((?:[ \\t]*;[ \\t]*[0-9A-Za-z!#$%&'*+.^_`|~-]+=(?:[0-9A-Za-z!#$%&'*+.^_`|~-]+|\\\"(?:[^\\\"\\\\]|\\.)*\\\"))*)"
                     }
                 },
                 "type": "object"
@@ -920,7 +1176,12 @@
                 "required": [
                     "id",
                     "name",
-                    "description"
+                    "description",
+                    "x",
+                    "y",
+                    "zoom",
+                    "default_branch",
+                    "url"
                 ],
                 "properties": {
                     "id": {
@@ -935,6 +1196,23 @@
                             "null"
                         ]
                     },
+                    "x": {
+                        "type": "integer",
+                        "default": 0
+                    },
+                    "y": {
+                        "type": "integer",
+                        "default": 0
+                    },
+                    "zoom": {
+                        "type": "number",
+                        "format": "float",
+                        "default": 0
+                    },
+                    "default_branch": {
+                        "type": "string",
+                        "default": "main"
+                    },
                     "url": {
                         "type": "string"
                     },
@@ -944,8 +1222,50 @@
                 },
                 "type": "object"
             },
+            "Style": {
+                "description": "User style",
+                "required": [
+                    "controlPosition",
+                    "minimapPosition",
+                    "pathPosition",
+                    "baseLightTheme",
+                    "baseDarkTheme"
+                ],
+                "properties": {
+                    "controlPosition": {
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/PanelPosition"
+                            },
+                            {
+                                "type": "string",
+                                "default": "bottom-left"
+                            }
+                        ]
+                    },
+                    "minimapPosition": {
+                        "$ref": "#/components/schemas/PanelPosition"
+                    },
+                    "pathPosition": {
+                        "$ref": "#/components/schemas/PanelPosition"
+                    },
+                    "baseLightTheme": {
+                        "$ref": "#/components/schemas/Themes"
+                    },
+                    "baseDarkTheme": {
+                        "$ref": "#/components/schemas/Themes"
+                    }
+                },
+                "type": "object"
+            },
             "Settings": {
                 "description": "User settings.",
+                "required": [
+                    "hideExtensions",
+                    "defaultBranch",
+                    "lang",
+                    "style"
+                ],
                 "properties": {
                     "hideExtensions": {
                         "type": "boolean",
@@ -960,32 +1280,7 @@
                         "default": "en"
                     },
                     "style": {
-                        "properties": {
-                            "controlPosition": {
-                                "allOf": [
-                                    {
-                                        "$ref": "#/components/schemas/PanelPosition"
-                                    },
-                                    {
-                                        "type": "string",
-                                        "default": "bottom-left"
-                                    }
-                                ]
-                            },
-                            "minimapPosition": {
-                                "$ref": "#/components/schemas/PanelPosition"
-                            },
-                            "pathPosition": {
-                                "$ref": "#/components/schemas/PanelPosition"
-                            },
-                            "baseLightTheme": {
-                                "$ref": "#/components/schemas/Themes"
-                            },
-                            "baseDarkTheme": {
-                                "$ref": "#/components/schemas/Themes"
-                            }
-                        },
-                        "type": "object"
+                        "$ref": "#/components/schemas/Style"
                     }
                 },
                 "type": "object"
@@ -993,7 +1288,9 @@
             "User": {
                 "required": [
                     "name",
-                    "email"
+                    "email",
+                    "is_admin",
+                    "settings"
                 ],
                 "properties": {
                     "name": {
@@ -1029,6 +1326,10 @@
         {
             "name": "project",
             "description": "project"
+        },
+        {
+            "name": "translation",
+            "description": "translation"
         },
         {
             "name": "user",

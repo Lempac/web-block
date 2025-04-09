@@ -1,11 +1,13 @@
 import type { Node } from "@xyflow/react";
 import Resize from "../Resize";
-import { $api, panelPositionToSet, themeToSet } from "@/bootstrap";
+import { $api, fetchClient, panelPositionToSet, themeToSet } from "@/bootstrap";
 import { useForm } from "@tanstack/react-form";
-import { components } from "@/api";
-import { JSX } from "react";
+import type { components } from "@/api";
+import type { JSX } from "react";
+import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
 
-export type ThemeNode = Node<Record<never, never>, "theme">;
+export type ThemeNode = Node<Record<string, never>, "theme">;
 
 const intrToOptions = (intr: SetIterator<string>) => {
 	const options: JSX.Element[] = [];
@@ -22,12 +24,19 @@ const intrToOptions = (intr: SetIterator<string>) => {
 };
 
 export default function Theme() {
+	const queryClient = useQueryClient();
+	const { t } = useTranslation();
 	const { data: user } = $api.useQuery("get", "/api/user");
 	const { Field } = useForm({
-		defaultValues: user?.settings,
+		defaultValues: user?.settings.style,
 		validators: {
-			onChange: ({ value }) => {
-				console.log(value);
+			onChangeAsyncDebounceMs: 500,
+			onChangeAsync: async ({value}) => {
+				const {error} = await fetchClient.PUT("/api/user/style", {
+					body: value,
+				});
+				if (error) return { fields: error.errors };
+				queryClient.invalidateQueries({ queryKey: ["get", "/api/user"] });
 				return null;
 			},
 		},
@@ -37,12 +46,14 @@ export default function Theme() {
 	const positions = intrToOptions(panelPositionToSet().values());
 
 	return (
-		<div className="card h-full border-2 p-4">
-			<h2 className="card relative -top-10 max-w-fit border-2 bg-base-200 p-2 text-2xl">
-				Theme
-			</h2>
+		<div className="card h-full border-2 gap-2 p-4 bg-base-200/25 shadow ring-neutral in-[.selected]:ring-4 first:mb-9">
+			<div className="mb-3">
+				<h2 className="card absolute -top-6 card-body max-w-fit border-2 bg-base-200 p-2 text-2xl">
+					{t("settings.theme.name")}
+				</h2>
+			</div>
 			<Field
-				name={"style.baseDarkTheme"}
+				name={"baseDarkTheme"}
 				children={(field) => (
 					<select
 						id={field.name}
@@ -61,7 +72,7 @@ export default function Theme() {
 				)}
 			/>
 			<Field
-				name={"style.baseLightTheme"}
+				name={"baseLightTheme"}
 				children={(field) => (
 					<select
 						id={field.name}
@@ -80,7 +91,7 @@ export default function Theme() {
 				)}
 			/>
 			<Field
-				name={"style.controlPosition"}
+				name={"controlPosition"}
 				children={(field) => (
 					<select
 						id={field.name}
@@ -99,7 +110,7 @@ export default function Theme() {
 				)}
 			/>
 			<Field
-				name={"style.minimapPosition"}
+				name={"minimapPosition"}
 				children={(field) => (
 					<select
 						id={field.name}
@@ -118,7 +129,7 @@ export default function Theme() {
 				)}
 			/>
 			<Field
-				name={"style.pathPosition"}
+				name={"pathPosition"}
 				children={(field) => (
 					<select
 						id={field.name}

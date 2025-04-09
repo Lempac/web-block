@@ -15,14 +15,13 @@ use OpenApi\Attributes as OAT;
 //     message: string;
 //     errors: Record<string, string[]>;
 // }>,
-#[OAT\Schema(schema: 'ErrorObject', properties:[
-    new OAT\Property(property: 'message', type: 'string', example: "Validation failed."),
+#[OAT\Schema(schema: 'ErrorObject', properties: [
+    new OAT\Property(property: 'message', type: 'string', example: 'Validation failed.'),
     new OAT\Property(property: 'errors', type: 'object', additionalProperties: new OAT\AdditionalProperties(
-        type: 'array', items: new OAT\Items(type: 'string', example: "Field is required")
-    ))
+        type: 'array', items: new OAT\Items(type: 'string', example: 'Field is required')
+    )),
 ], required: ['message', 'errors'])]
 class openAPI {}
-
 
 abstract class Controller
 {

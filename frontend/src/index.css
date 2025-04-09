@@ -25,18 +25,17 @@ color utility to any element that depends on these defaults. */
 
 /*mapping daisyui colors to reactflow*/
 .react-flow, .react-flow.dark {
-	/* direction: ltr; */
-	/* --xy-edge-stroke-default: #b1b1b7; */
+	--xy-edge-stroke-default: var(--color-base-300);
 	/* --xy-edge-stroke-width-default: 1; */
-	/* --xy-edge-stroke-selected-default: #555; */
-	/* --xy-connectionline-stroke-default: #b1b1b7; */
+	--xy-edge-stroke-selected-default: var(--color-base-content);
+	--xy-connectionline-stroke-default: var(--color-error);
 	/* --xy-connectionline-stroke-width-default: 1; */
-	/* --xy-attribution-background-color-default: rgba(255, 255, 255, 0.5); */
-	/* --xy-minimap-background-color-default: #fff; */
-	/* --xy-minimap-mask-background-color-default: rgb(240, 240, 240, 0.6); */
+	--xy-attribution-background-color-default: var(--color-error);
+	--xy-minimap-background-color-default: var(--color-base-100);
+	--xy-minimap-mask-background-color-default: var(--color-base-200);
 	/* --xy-minimap-mask-stroke-color-default: transparent; */
 	/* --xy-minimap-mask-stroke-width-default: 1; */
-	/* --xy-minimap-node-background-color-default: #e2e2e2; */
+	--xy-minimap-node-background-color-default: var(--color-base-300);
 	/* --xy-minimap-node-stroke-color-default: transparent; */
 	/* --xy-minimap-node-stroke-width-default: 2; */
 	--xy-background-color-default: var(--color-base-100);
@@ -49,19 +48,28 @@ color utility to any element that depends on these defaults. */
 	/* --xy-node-group-background-color-default: rgba(240, 240, 240, 0.25); */
 	/* --xy-node-boxshadow-hover-default: 0 1px 4px 1px rgba(0, 0, 0, 0.08); */
 	/* --xy-node-boxshadow-selected-default: 0 0 0 0.5px #1a192b; */
-	/* --xy-node-border-radius-default: 3px; */
-	/* --xy-handle-background-color-default: #1a192b; */
-	/* --xy-handle-border-color-default: #fff; */
+	--xy-node-border-radius-default: var(--radius-field);
+	--xy-handle-background-color-default: var(--color-base-200);
+	--xy-handle-border-color-default: var(--color-base-300);
 	/* --xy-selection-background-color-default: rgba(0, 89, 220, 0.08); */
 	/* --xy-selection-border-default: 1px dotted rgba(0, 89, 220, 0.8); */
-	/* --xy-controls-button-background-color-default: #fefefe; */
-	/* --xy-controls-button-background-color-hover-default: #f4f4f4; */
+	--xy-controls-button-background-color-default: var(--color-base-200);
+	--xy-controls-button-background-color-hover-default: var(--color-base-300);
 	/* --xy-controls-button-color-default: inherit; */
 	/* --xy-controls-button-color-hover-default: inherit; */
-	/* --xy-controls-button-border-color-default: #eee; */
+	--xy-controls-button-border-color-default: var(--color-base-300);
 	/* --xy-controls-box-shadow-default: 0 0 2px 1px rgba(0, 0, 0, 0.08); */
 	/* --xy-edge-label-background-color-default: #ffffff; */
 	/* --xy-edge-label-color-default: inherit; */
-	/* --xy-resize-background-color-default: #3367d9; */
+	--xy-resize-background-color-default: var(--color-base-content);
+}
+
+.react-flow__handle {
+	border-radius: var(--radius-selector);
+}
+
+.react-flow__minimap-node {
+	rx: var(--radius-field);
+	ry: var(--radius-field);
 }
 
