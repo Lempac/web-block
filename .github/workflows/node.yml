@@ -23,9 +23,11 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: frontend # Specify the working directory for npm install
 
       - name: Run build
         run: npm run build
+        working-directory: frontend # Specify the working directory for npm run build
 
     #   - name: Run tests (optional)
     #     run: npm test # Uncomment this line if you want to run tests after building

@@ -21,7 +21,7 @@ jobs:
           docker save web-block:latest -o web-block.tar  # Save the image as a tarball
 
       - name: Upload Docker image as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3 
         with:
           name: docker-image
           path: web-block.tar # Path to the tarball
