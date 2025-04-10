@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->integer('x')->default(0);
             $table->integer('y')->default(0);
-            $table->float('zoom')->default(0);
+            $table->float('zoom')->default(1);
             $table->string('default_branch')->default('main');
             $table->string('url')->nullable();
             $table->timestamps();

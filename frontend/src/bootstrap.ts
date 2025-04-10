@@ -148,6 +148,9 @@ export const themeToSet = () =>
 		"winter",
 		"wireframe",
 	]);
+
+
+
 export const panelPositionToSet = () =>
 	new Set<components["schemas"]["PanelPosition"]>([
 		"bottom-center",
@@ -157,6 +160,7 @@ export const panelPositionToSet = () =>
 		"top-left",
 		"top-right",
 	]);
+
 export function getLanguage(extension: string) {
 	return extension in fileExtensionMap
 		? fileExtensionMap[extension as keyof typeof fileExtensionMap]

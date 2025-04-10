@@ -367,7 +367,7 @@ export interface components {
             y: number;
             /**
              * Format: float
-             * @default 0
+             * @default 1
              */
             zoom: number;
             /** @default main */

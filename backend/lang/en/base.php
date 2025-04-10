@@ -30,14 +30,22 @@ return [
     ],
     'settings' => [
         'name' => 'Settings',
-        'save' => 'Save',
         'profile' => [
             'name' => 'Profile',
             'hideExtensions' => 'Hide extensions',
             'defaultBranch' => 'Default branch name',
+            'password' => 'Password',
+            'password-placeholder' => 'Enter your new password',
+            'email' => 'Email',
+            'lang' => 'Language',
         ],
         'theme' => [
             'name' => 'Theme',
+            'controlPosition' => 'Control position',
+            'minimapPosition' => 'Minimap position',
+            'pathPosition' => 'Path position',
+            'baseLightTheme' => 'Base light theme',
+            'baseDarkTheme' => 'Base dark theme',
         ],
     ],
     'auth' => [

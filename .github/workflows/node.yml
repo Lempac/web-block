@@ -3,7 +3,7 @@ name: Node.js Build
 on:
   push:
     branches:
-      - main
+      - new-v
   pull_request:
     branches:
       - new-v

@@ -752,20 +752,51 @@
                 "tags": [
                     "user"
                 ],
-                "operationId": "e9aa0f5f436944565d44dd2c97ff29ad",
+                "operationId": "f8741720bfaafb5c8126e8c1418a9917",
+                "requestBody": {
+                    "description": "User style data to update.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateStyleRequest"
+                            }
+                        }
+                    }
+                },
                 "responses": {
-                    "200": {
-                        "description": "User repos from github.",
+                    "204": {
+                        "description": "User style updated."
+                    },
+                    "401": {
+                        "description": "Unauthenticated.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
+                                    "$ref": "#/components/schemas/ErrorObject"
                                 }
                             }
                         }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "user"
+                ],
+                "operationId": "54ba995c0c13dd114980733de45f7ffa",
+                "requestBody": {
+                    "description": "User style data to update.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateStyleRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "User style updated."
                     },
                     "401": {
                         "description": "Unauthenticated.",

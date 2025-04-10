@@ -19,7 +19,7 @@ use Storage;
     new Property(property: 'description', type: 'string', nullable: true),
     new Property(property: 'x', type: 'integer', default: 0),
     new Property(property: 'y', type: 'integer', default: 0),
-    new Property(property: 'zoom', type: 'number', default: 0, format: 'float'),
+    new Property(property: 'zoom', type: 'number', default: 1, format: 'float'),
     new Property(property: 'default_branch', type: 'string', default: 'main'),
     new Property(property: 'url', type: 'string'),
     new Property(property: 'user_id', type: 'integer'),

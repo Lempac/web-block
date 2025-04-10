@@ -85,18 +85,23 @@ function App() {
 		},
 	);
 	// console.log(user);
-	const theme = useMediaQuery("(prefers-color-scheme: dark)") ? user?.settings.style.baseDarkTheme : user?.settings.style.baseLightTheme;
+	const theme = useMediaQuery("(prefers-color-scheme: dark)")
+		? user?.settings.style.baseDarkTheme
+		: user?.settings.style.baseLightTheme;
 	useEffect(() => {
-		if(theme) document.documentElement.setAttribute('data-theme', theme);
+		if (theme) document.documentElement.setAttribute("data-theme", theme);
 	}, [theme]);
 	useEffect(() => {
-		i18n.changeLanguage(language === user?.settings.lang ? user?.settings.lang : user?.settings.lang || "en");
+		i18n.changeLanguage(
+			language === user?.settings.lang
+				? user?.settings.lang
+				: user?.settings.lang || "en",
+		);
 	}, [i18n, language, user?.settings.lang]);
 	// console.log(t('failed'));
 	// const { getLayoutedElements } = useLayoutedElements();
 	// const [currectRadiusField] = useState('');
 	const [currentProject, setCurrentProject] = useState(0);
-
 
 	const {
 		setNodes,
@@ -105,6 +110,7 @@ function App() {
 		deleteElements,
 		screenToFlowPosition,
 		setCenter,
+		addNodes,
 	} = useReactFlow<CustomNodeType>();
 	const [nodes, , onNodesChange] = useNodesState<CustomNodeType>([]);
 	const [edges, setEdgeInternal, onEdgesChange] = useEdgesState([]);
@@ -166,9 +172,10 @@ function App() {
 			currentProjectData === undefined
 		)
 			return;
+		console.log("currentProjectData", currentProjectData);
 		setCenter(currentProjectData.x, currentProjectData.y, {
 			duration: 300,
-			zoom: currentProjectData.zoom,
+			zoom: currentProjectData.zoom || 1,
 		});
 	}, [
 		currentProject,
@@ -178,17 +185,51 @@ function App() {
 	]);
 
 	useEffect(() => {
-		if (blocks === undefined) return;
+		if (blocks === undefined || !hasOpenProject) return;
+		// console.log('blocks', addOrUpdate(
+		// 	blocks.map((block) =>
+		// 		block.is_file
+		// 			? {
+		// 					id: block.id.toString(),
+		// 					type: "file",
+		// 					data: {},
+		// 					style: { width: block.width, height: block.height },
+		// 					parentId: block.block_id?.toString(),
+		// 					position: (() => {
+		// 						const res = getPositionReletiveToParent(block, blocks);
+		// 						console.log(res);
+		// 						return res;
+		// 					})(),
+		// 					expandParent: true,
+		// 				}
+		// 			: {
+		// 					id: block.id.toString(),
+		// 					type: "folder",
+		// 					data: {},
+		// 					style: { width: block.width, height: block.height },
+		// 					parentId: block.block_id?.toString(),
+		// 					position: (() => {
+		// 						const res = getPositionReletiveToParent(block, blocks);
+		// 						console.log(res);
+		// 						return res;
+		// 					})(),
+		// 					expandParent: true,
+		// 				},
+		// 	)([])
+		// ),)]
+		// addNodes(
 		setNodes(
 			addOrUpdate(
-				blocks.map((block) =>
-					block.is_file
+				blocks.map((block) => {
+					console.log("block", block);
+					return block.is_file
 						? {
 								id: block.id.toString(),
 								type: "file",
 								data: {},
-								style: { width: block.width, height: block.height },
+								style: { width: block.width + 100, height: block.height + 100 },
 								parentId: block.block_id?.toString(),
+								// position: { x: 0, y: 0 },
 								position: (() => {
 									const res = getPositionReletiveToParent(block, blocks);
 									console.log(res);
@@ -202,17 +243,18 @@ function App() {
 								data: {},
 								style: { width: block.width, height: block.height },
 								parentId: block.block_id?.toString(),
+								// position: { x: 0, y: 0 },
 								position: (() => {
 									const res = getPositionReletiveToParent(block, blocks);
 									console.log(res);
 									return res;
 								})(),
 								expandParent: true,
-							},
-				),
+							};
+				}),
 			),
 		);
-	}, [blocks, hasOpenProject, setNodes]);
+	}, [addNodes, blocks, hasOpenProject, setNodes]);
 
 	// Show welcome node if user is not logged in or if user is logged in shows projects node
 
@@ -230,6 +272,11 @@ function App() {
 					},
 				}),
 			);
+			fitView({
+				nodes: [{ id: "projects" }],
+				includeHiddenNodes: false,
+				padding: 20,
+			});
 			deleteElements({
 				nodes: [{ id: "auth" }, { id: "github" }, { id: "welcome" }],
 				edges: [{ id: "github-auth" }, { id: "welcome-auth" }],
@@ -285,14 +332,27 @@ function App() {
 
 	const onViewportChange = useCallback(
 		(viewport: Viewport) => {
-			if (currentProject === 0 || !isCurrentProjectDataLoaded) return;
+			if (
+				currentProject === 0 ||
+				!isCurrentProjectDataLoaded ||
+				currentProjectData === undefined
+			)
+				return;
 			const { domNode } = store.getState();
 			const boundingRect = domNode?.getBoundingClientRect();
 			if (!boundingRect) return;
+			console.log(
+				"boundingRect:",
+				boundingRect,
+				currentProject,
+				currentProjectData,
+			);
+			if (boundingRect.x === 0 && boundingRect.y === 0) return;
 			const center = screenToFlowPosition({
 				x: boundingRect.x + boundingRect.width / 2,
 				y: boundingRect.y + boundingRect.height / 2,
 			});
+			// Update form values with new center coordinates and zoom leve
 			setFieldValue("x", Math.round(center.x));
 			setFieldValue("y", Math.round(center.y));
 			setFieldValue("zoom", viewport.zoom);
@@ -300,6 +360,7 @@ function App() {
 		},
 		[
 			currentProject,
+			currentProjectData,
 			isCurrentProjectDataLoaded,
 			screenToFlowPosition,
 			setFieldValue,
@@ -361,12 +422,12 @@ function App() {
 				onPaneContextMenu={onPaneContextMenu}
 				onPaneClick={onPaneClick}
 				fitView
+				maxZoom={100}
+				minZoom={0.05}
 				snapToGrid={true}
 				snapGrid={[5, 5]}
 				onlyRenderVisibleElements={false}
 				fitViewOptions={{
-					minZoom: 0.001,
-					maxZoom: 1000,
 					padding: isSuccess ? 1.1 : 0.1,
 				}}
 				proOptions={{ hideAttribution: true }}

@@ -1,10 +1,11 @@
-import { type Node, type NodeProps } from "@xyflow/react";
+import { type Node, type NodeProps, useReactFlow } from "@xyflow/react";
 import Editor from "@monaco-editor/react";
 import Resize from "./Resize";
 import {
 	$api,
 	fetchClient,
 	getLanguage,
+	type CustomNodeType,
 } from "@/bootstrap";
 import { useForm, useStore } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
@@ -22,6 +23,7 @@ export default function File({
 }: NodeProps<FileNode>) {
 	const theme = useMediaQuery("(prefers-color-scheme: dark)") ? "dark" : "light";
 	const queryClient = useQueryClient();
+	const {getIntersectingNodes} = useReactFlow<CustomNodeType>();
 	const { data: block, isSuccess } = $api.useQuery(
 		"get",
 		"/api/blocks/{block}",
@@ -65,6 +67,11 @@ export default function File({
 	const h = useStore(store, (state) => state.values.height ?? 0);
 	const path = useStore(store, (state) => state.values.path ?? "");
 	const all = useStore(store, (state) => Object.keys(state.values).length);
+	useEffect(() => {
+		// const nodes = getIntersectingNodes({id: id});
+		// const folders = nodes.filter((node) => node.type === "folder")
+
+	}, [getIntersectingNodes, id])
 	useEffect(() => {
 		if (!isSuccess || all === 0) return;
 		if (x !== positionAbsoluteX) {
@@ -129,15 +136,17 @@ export default function File({
 				<Field
 					name="content"
 					children={(field) => (
-						<Editor
-							className="nodrag collapse-content border"
-							height={"700px"}
-							width={"1000px"}
-							theme={`vs-${theme}`}
-							value={field.state.value ?? "test test"}
-							language={getLanguage(path.split(".")[1] ?? "unkown")}
-							onChange={(e) => field.handleChange(e ?? field.state.value)}
-						/>
+						<div className="collapse-content border">
+							<Editor
+								className="nodrag"
+								height={"700px"}
+								width={"1000px"}
+								theme={`vs-${theme}`}
+								value={field.state.value ?? "test test"}
+								language={getLanguage(path.split(".")[1] ?? "unkown")}
+								onChange={(e) => field.handleChange(e ?? field.state.value)}
+							/>
+						</div>
 					)}
 				/>
 				<Resize />

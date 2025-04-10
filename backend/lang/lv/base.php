@@ -30,14 +30,22 @@ return [
     ],
     'settings' => [
         'name' => 'Iestatījumi',
-        'save' => 'Saglabāt',
         'profile' => [
             'name' => 'Profils',
             'hideExtensions' => 'Pārdod visus failu paplašinājumus',
             'defaultBranch' => 'Pamatā izvēlēto koka nosaukums',
+            'password' => 'Password',
+            'password-placeholder' => 'Enter your new password',
+            'email' => 'Email',
+            'lang' => 'Language',
         ],
         'theme' => [
             'name' => 'Motīvi',
+            'controlPosition' => 'Control position',
+            'minimapPosition' => 'Minimap position',
+            'pathPosition' => 'Path position',
+            'baseLightTheme' => 'Base light theme',
+            'baseDarkTheme' => 'Base dark theme',
         ],
     ],
     'auth' => [

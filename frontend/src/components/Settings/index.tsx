@@ -70,19 +70,9 @@ export default function Settings({ id }: NodeProps<SettingsNode>) {
 
 	return (
 		<div className="card grid h-full content-between border-2 bg-base-200/25 p-4 shadow ring-neutral in-[.selected]:ring-4">
-			<h2 className="card relative -top-10 max-w-fit border-2 bg-base-200 p-2 text-2xl">
+			<h2 className="card relative -top-10 max-w-fit border-2 border-secondary bg-base-200 p-2 text-2xl">
 				{t("settings.name")}
 			</h2>
-			{/* <button
-				className="btn text-2xl"
-				onClick={() =>
-					deleteElements({
-						nodes: [{ id: "settings" }, { id: "profile" }, { id: "theme" }],
-					})
-				}
-			>
-				{t("settings.save")}
-			</button> */}
 			<Resize />
 		</div>
 	);
