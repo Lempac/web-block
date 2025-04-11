@@ -1,0 +1,30 @@
+name: Build and Store Docker Image
+
+on:
+  push:
+    branches:
+      - new-v
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and run Docker Compose
+        run: |
+          docker-compose build
+
+      - name: Save Docker image as tarball
+        run: |
+          docker save web-block-backend -o web-block.tar 
+
+      - name: Upload Docker image as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-block
+          path: web-block.tar  # Path to the tarball
