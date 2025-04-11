@@ -1238,7 +1238,7 @@
                     "zoom": {
                         "type": "number",
                         "format": "float",
-                        "default": 0
+                        "default": 1
                     },
                     "default_branch": {
                         "type": "string",

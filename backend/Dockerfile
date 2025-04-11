@@ -1,4 +1,4 @@
-FROM php:8.4-alpine AS backend
+FROM php:8.4-fpm-alpine AS backend
 
 WORKDIR /var/www/
 
@@ -22,6 +22,7 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD [ "curl", "--fail", "http://localhost:8000/up"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD curl --fail http://localhost:8000/up || exit 1
+
 
 CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
