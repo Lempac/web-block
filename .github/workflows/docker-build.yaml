@@ -17,7 +17,7 @@ jobs:
 
       - name: Build and run Docker Compose
         run: |
-          docker-compose build
+          docker compose build
 
       - name: Save Docker image as tarball
         run: |
