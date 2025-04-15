@@ -7,8 +7,6 @@ import {
 import Resize from "../Resize";
 import { $api, type CustomNodeType } from "@/bootstrap";
 import { useEffect, useRef } from "react";
-import type { ThemeNode } from "./Theme";
-import type { ProfileNode } from "./Profile";
 import { useTranslation } from "react-i18next";
 
 export type SettingsNode = Node<Record<never, never>, "settings">;
@@ -20,17 +18,15 @@ export default function Settings({ id }: NodeProps<SettingsNode>) {
 		useReactFlow<CustomNodeType>();
 	const themeIsLoaded = useRef(false);
 	const profileIsLoaded = useRef(false);
+	const theme = getNode("theme");
+	const profile = getNode("profile");
 	const size = useStore((state) =>
 		getNodesBounds(
 			state.nodes.filter((node) => node.parentId === id) as CustomNodeType[],
 		),
 	);
-	const theme = useStore(
-		(state) => state.nodeLookup.get("theme") as ThemeNode | undefined,
-	);
-	const profile = useStore(
-		(state) => state.nodeLookup.get("profile") as ProfileNode | undefined,
-	);
+	console.log(size);
+	
 
 	useEffect(() => {
 		if (!theme && !themeIsLoaded.current) {
@@ -62,10 +58,10 @@ export default function Settings({ id }: NodeProps<SettingsNode>) {
 	useEffect(
 		() =>
 			updateNode("settings", {
-				height: size.height + 40,
-				width: size.width + 40,
+				height: size.height,
+				width: size.width,
 			}),
-		[themeIsLoaded, profileIsLoaded, size.width, size.height, updateNode],
+		[size, updateNode],
 	);
 
 	return (

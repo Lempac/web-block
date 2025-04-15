@@ -6,7 +6,8 @@ return [
         'description' => 'Šis ir projekts par tīmekļa redaktoru, kas ļauj veidot projektus, izmantojot foršu bloku saskarni.',
     ],
     'github' => [
-        'title' => 'Reģistrējieties/ienāciet ar Github!',
+        'tooltip' => 'Reģistrējieties/ienāciet ar Github!',
+        'title' => 'Github',
     ],
     'context-menu' => [
         'new' => 'Jauns',

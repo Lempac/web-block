@@ -14,14 +14,7 @@ services:
     ports:
       - "8000:8000"  # Adjust the port as needed
     volumes:
-      - .:/var/www
       - dbdata:/var/www/database
-    networks:
-      - app-network
 
 volumes:
   dbdata:  # Define the volume for the SQLite database
-
-networks:
-  app-network:
-    driver: bridge

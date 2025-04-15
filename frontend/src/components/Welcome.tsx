@@ -1,5 +1,5 @@
 import { Handle, Position, type Node } from "@xyflow/react";
-import icon from "@/assets/favicon.ico";
+import icon from "../assets/favicon.ico";
 import { useTranslation } from "react-i18next";
 
 export type WelcomeNode = Node<Record<never, never>, "welcome">;
@@ -13,7 +13,7 @@ export default function Welcome() {
 				<h1 className="card-title max-w-fit">{t("welcome.title")}</h1>
 				<p className="w-80 pr-1">{t("welcome.description")}</p>
 			</div>
-			<img src={icon} alt="" className="m-4 -ml-6 size-25 rounded-lg" />
+			<img src={icon} alt="icon" className="m-4 -ml-6 size-25 rounded-lg" />
 			<Handle
 				type="source"
 				position={Position.Bottom}

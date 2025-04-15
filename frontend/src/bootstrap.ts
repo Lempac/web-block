@@ -14,7 +14,6 @@ import Theme, { type ThemeNode } from "./components/Settings/Theme";
 import Welcome, { type WelcomeNode } from "./components/Welcome";
 import QuickCommand, { type QuickCommandNode } from "./components/QuickCommand";
 
-export const BASE_URL = "http://localhost:8000";
 // import axios from "axios";
 // import { Ziggy } from "./ziggy.js";
 // window.axios = axios;
@@ -62,14 +61,14 @@ function getCookie(name: string) {
 
 export const fetchClient = createFetchClient<paths>({
 	credentials: "include",
-	baseUrl: BASE_URL,
+	baseUrl: import.meta.env.VITE_SERVER_URL,
 	headers: {
 		"X-Requested-With": "XMLHttpRequest",
 	},
 });
 //for csrf and xsrf token
-// fetch(`${BASE_URL}/sanctum/csrf-cookie`);
-if (!getCookie("XSRF-TOKEN")) fetch(`${BASE_URL}/sanctum/csrf-cookie`);
+// fetch(`${import.meta.env.VITE_SERVER_URL}/sanctum/csrf-cookie`);
+if (!getCookie("XSRF-TOKEN")) fetch(`${import.meta.env.VITE_SERVER_URL}/sanctum/csrf-cookie`);
 
 const myMiddleware: Middleware = {
 	async onRequest({ request }) {
@@ -206,19 +205,19 @@ export const nodeTypes: NodeTypes = {
 	quickCommand: QuickCommand,
 } as const;
 
-export const getPositionReletiveToParent = (
-	node: components["schemas"]["Block"],
-	nodes: components["schemas"]["Block"][],
-) => {
-	const position = { x: node.x, y: node.y }; //19
-	const parent = nodes.find((n) => n.id === node.block_id);
-	if (parent) {
-		const parentPosition = getPositionReletiveToParent(parent, nodes);
-		position.x -= parentPosition.x; //18 - 17
-		position.y -= parentPosition.y;
-	}
-	return position;
-};
+// export const getPositionReletiveToParent = (
+// 	node: components["schemas"]["Block"],
+// 	nodes: components["schemas"]["Block"][],
+// ) => {
+// 	const position = { x: node.x, y: node.y }; //19
+// 	const parent = nodes.find((n) => n.id === node.block_id);
+// 	if (parent) {
+// 		const parentPosition = getPositionReletiveToParent(parent, nodes);
+// 		position.x -= parentPosition.x; //18 - 17
+// 		position.y -= parentPosition.y;
+// 	}
+// 	return position;
+// };
 
 export const addOrUpdate = <T extends CustomNodeType | BuiltInEdge | Edge>(
 	newNodes: T | T[],

@@ -7,26 +7,29 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite --port=3000",
-		"build": "tsc -b && vite build",
+		"predeploy": "tsc -b && vite build",
 		"lint": "eslint .",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"deploy": "gh-pages -d dist -v '**/{.*,artisan,*.*,Dockerfile,workflows}' --nojekyll"
 	},
 	"dependencies": {
-		"@mdxeditor/editor": "^3.29.3",
+		"@mdxeditor/editor": "^3.30.0",
 		"@monaco-editor/react": "^4.7.0",
-		"@tailwindcss/vite": "^4.1.3",
+		"@tailwindcss/vite": "^4.1.4",
 		"@tanstack/react-form": "^0.41.4",
-		"@tanstack/react-query": "^5.72.2",
-		"@tanstack/react-query-devtools": "^5.72.2",
-		"@types/node": "^22.14.0",
+		"@tanstack/react-query": "^5.74.3",
+		"@tanstack/react-query-devtools": "^5.74.3",
+		"@types/node": "^22.14.1",
 		"@uidotdev/usehooks": "^2.4.1",
 		"@vitejs/plugin-react": "^4.3.4",
-		"@xyflow/react": "^12.5.5",
+		"@xyflow/react": "^12.5.6",
 		"clsx": "^2.1.1",
 		"daisyui": "5.0.0",
 		"elkjs": "^0.9.3",
 		"i18next": "^24.2.3",
+		"i18next-chained-backend": "^4.6.2",
 		"i18next-http-backend": "^3.0.2",
+		"i18next-localstorage-backend": "^4.2.0",
 		"install": "^0.13.0",
 		"isomorphic-git": "^1.30.1",
 		"openapi-fetch": "^0.13.5",
@@ -35,13 +38,13 @@
 		"react-dom": "^19.1.0",
 		"react-i18next": "^15.4.1",
 		"react-icons": "^5.5.0",
-		"tailwindcss": "^4.1.3",
+		"tailwindcss": "^4.1.4",
 		"vite": "^6.2.6"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.24.0",
 		"@tailwindcss/typography": "^0.5.16",
-		"@types/react": "^19.1.0",
+		"@types/react": "^19.1.2",
 		"@types/react-dom": "^19.1.2",
 		"@vitejs/plugin-react-swc": "^3.8.1",
 		"babel-plugin-react-compiler": "19.0.0-beta-aeaed83-20250323",
@@ -49,12 +52,13 @@
 		"eslint-plugin-react-compiler": "19.0.0-beta-aeaed83-20250323",
 		"eslint-plugin-react-hooks": "^5.2.0",
 		"eslint-plugin-react-refresh": "^0.4.19",
+		"gh-pages": "^6.3.0",
 		"globals": "^15.15.0",
 		"openapi-typescript": "^7.6.1",
 		"prettier": "3.4.2",
 		"prettier-plugin-tailwindcss": "^0.6.11",
 		"typescript": "^5.8.3",
-		"typescript-eslint": "^8.29.1"
+		"typescript-eslint": "^8.30.1"
 	},
 	"module": "index.ts"
 }

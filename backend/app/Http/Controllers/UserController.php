@@ -44,12 +44,12 @@ class UserController extends Controller
         // Get the existing settings
         $existingSettings = $user->settings;
         // Ensure the settings are an array
-        if (!is_array($existingSettings)) {
+        if (! is_array($existingSettings)) {
             $existingSettings = [];
         }
 
         // Initialize the array if it doesn't exist
-        if (!isset($existingSettings)) {
+        if (! isset($existingSettings)) {
             $existingSettings = [];
         }
         // Merge the new data into the existing settings

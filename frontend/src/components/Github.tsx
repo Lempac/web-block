@@ -1,4 +1,3 @@
-import { BASE_URL } from "@/bootstrap";
 import { Handle, Position, type Node } from "@xyflow/react";
 import { useTranslation } from "react-i18next";
 import { FaGithub } from "react-icons/fa6";
@@ -13,11 +12,11 @@ export default function Github() {
 				<a
 					className="nodrag btn"
 					type="button"
-					href={`${BASE_URL}/auth/redirect`}
+					href={`${import.meta.env.VITE_SERVER_URL}/auth/redirect`}
 					title={t('github.title')}
 				>
 					<FaGithub />
-					Github
+					{t('github.title')}
 				</a>
 			</div>
 			<Handle

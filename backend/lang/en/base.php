@@ -6,7 +6,8 @@ return [
         'description' => 'This is a project about editor in web, that lets you build projects using cool block interface.',
     ],
     'github' => [
-        'title' => 'Register/Login with Github!',
+        'tooltip' => 'Register/Login with Github!',
+        'title' => 'Github',
     ],
     'context-menu' => [
         'new' => 'New',

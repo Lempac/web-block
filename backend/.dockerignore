@@ -1,0 +1,17 @@
+Dockerfile
+.dockerignore
+.git
+.gitignore
+.env.example
+.env
+.env.production
+**/database.sqlite
+.devenv
+.direnv
+.devenv.flake.nix
+.envrc
+.gitattrivutes
+.vscode
+devenv.lock
+devenv.nix
+devenv.yaml

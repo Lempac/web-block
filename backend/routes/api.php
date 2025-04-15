@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/translations/{locate}/{module}', [TranslationController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', [UserController::class, 'index'])->name('user');
-    Route::put('/user', [UserController::class, 'update'])->name('user');
+    Route::get('/user', [UserController::class, 'index'])->name('user.index');
+    Route::put('/user', [UserController::class, 'update'])->name('user.update');
 
     // Route::get('/user/settings', [UserController::class, 'indexSettings'])->name('user.settings');
     Route::get('/user/repos', [UserController::class, 'indexRepos'])->name('user.repos');

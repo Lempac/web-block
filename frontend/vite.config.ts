@@ -8,7 +8,7 @@ const ReactCompilerConfig = {
 };
 
 export default defineConfig({
-	base: "/web-block/",
+	base: "/web-block",
 	preview: {
 		port: 3000,
 	},

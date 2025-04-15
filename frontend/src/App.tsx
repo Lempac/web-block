@@ -19,7 +19,7 @@ import {
 	addOrUpdate,
 	type CustomNodeType,
 	fetchClient,
-	getPositionReletiveToParent,
+	// getPositionReletiveToParent,
 	nodeTypes,
 } from "./bootstrap";
 import CloseProject from "@/components/CloseProject";
@@ -137,7 +137,7 @@ function App() {
 	const { validateAsync, setFieldValue } = useForm({
 		defaultValues: currentProjectData,
 		validators: {
-			onChangeAsyncDebounceMs: 500,
+			onChangeAsyncDebounceMs: 250,
 			onChangeAsync: async ({ value }) => {
 				const { error } = await fetchClient.PUT("/api/projects/{project}", {
 					params: {
@@ -186,78 +186,28 @@ function App() {
 
 	useEffect(() => {
 		if (blocks === undefined || !hasOpenProject) return;
-		// console.log('blocks', addOrUpdate(
-		// 	blocks.map((block) =>
-		// 		block.is_file
-		// 			? {
-		// 					id: block.id.toString(),
-		// 					type: "file",
-		// 					data: {},
-		// 					style: { width: block.width, height: block.height },
-		// 					parentId: block.block_id?.toString(),
-		// 					position: (() => {
-		// 						const res = getPositionReletiveToParent(block, blocks);
-		// 						console.log(res);
-		// 						return res;
-		// 					})(),
-		// 					expandParent: true,
-		// 				}
-		// 			: {
-		// 					id: block.id.toString(),
-		// 					type: "folder",
-		// 					data: {},
-		// 					style: { width: block.width, height: block.height },
-		// 					parentId: block.block_id?.toString(),
-		// 					position: (() => {
-		// 						const res = getPositionReletiveToParent(block, blocks);
-		// 						console.log(res);
-		// 						return res;
-		// 					})(),
-		// 					expandParent: true,
-		// 				},
-		// 	)([])
-		// ),)]
-		// addNodes(
-		setNodes(
-			addOrUpdate(
-				blocks.map((block) => {
-					console.log("block", block);
-					return block.is_file
-						? {
-								id: block.id.toString(),
-								type: "file",
-								data: {},
-								style: { width: block.width + 100, height: block.height + 100 },
-								parentId: block.block_id?.toString(),
-								// position: { x: 0, y: 0 },
-								position: (() => {
-									const res = getPositionReletiveToParent(block, blocks);
-									console.log(res);
-									return res;
-								})(),
-								expandParent: true,
-							}
-						: {
-								id: block.id.toString(),
-								type: "folder",
-								data: {},
-								style: { width: block.width, height: block.height },
-								parentId: block.block_id?.toString(),
-								// position: { x: 0, y: 0 },
-								position: (() => {
-									const res = getPositionReletiveToParent(block, blocks);
-									console.log(res);
-									return res;
-								})(),
-								expandParent: true,
-							};
-				}),
-			),
+		addNodes(
+			blocks.map((block) => ({
+				id: block.id.toString(),
+				type: block.is_file ? "file" : "folder",
+				data: {},
+				style: { width: block.width, height: block.height },
+				parentId: block.block_id?.toString(),
+				position:
+					block.block_id === null
+						? { x: block.x, y: block.y }
+						: (() => {
+								const parent = blocks.find((b) => b.block_id === block.id);
+								if (parent)
+									return { x: parent.x - block.x, y: parent.y - block.y };
+								return { x: 0, y: 0 };
+							})(),
+				expandParent: true,
+			})),
 		);
 	}, [addNodes, blocks, hasOpenProject, setNodes]);
 
 	// Show welcome node if user is not logged in or if user is logged in shows projects node
-
 	useEffect(() => {
 		if (isSuccess) {
 			if (currentProject !== 0) return;
@@ -341,17 +291,11 @@ function App() {
 			const { domNode } = store.getState();
 			const boundingRect = domNode?.getBoundingClientRect();
 			if (!boundingRect) return;
-			console.log(
-				"boundingRect:",
-				boundingRect,
-				currentProject,
-				currentProjectData,
-			);
-			if (boundingRect.x === 0 && boundingRect.y === 0) return;
 			const center = screenToFlowPosition({
 				x: boundingRect.x + boundingRect.width / 2,
 				y: boundingRect.y + boundingRect.height / 2,
 			});
+
 			// Update form values with new center coordinates and zoom leve
 			setFieldValue("x", Math.round(center.x));
 			setFieldValue("y", Math.round(center.y));

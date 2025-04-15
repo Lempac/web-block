@@ -14,6 +14,7 @@ export default function Folder({
 	height,
 	id,
 }: NodeProps<FolderNode>) {
+	console.log(id, width, height);
 	const queryClient = useQueryClient();
 	const { data: block, isSuccess } = $api.useQuery(
 		"get",
@@ -53,44 +54,32 @@ export default function Folder({
 			},
 		},
 	});
-	const x = useStore(store, (state) => state.values.x ?? 0);
-	const y = useStore(store, (state) => state.values.y ?? 0);
-	const w = useStore(store, (state) => state.values.width ?? 0);
-	const h = useStore(store, (state) => state.values.height ?? 0);
-	const all = useStore(store, (state) => Object.keys(state.values).length);
+	// const x = useStore(store, (state) => state.values.x ?? 0);
+	// const y = useStore(store, (state) => state.values.y ?? 0);
+	// const w = useStore(store, (state) => state.values.width ?? 0);
+	// const h = useStore(store, (state) => state.values.height ?? 0);
+	const hasValues = useStore(store, (state) => state.values !== undefined);
 
 	useEffect(() => {
-		if (!isSuccess || all === 0) return;
-		if (x !== positionAbsoluteX) {
-			setFieldValue("x", positionAbsoluteX);
-			validateAsync("change");
-		}
-		if (y !== positionAbsoluteY) {
-			setFieldValue("y", positionAbsoluteY);
-			validateAsync("change");
-		}
-		if (w !== width) {
-			setFieldValue("width", width ?? 0);
-			validateAsync("change");
-		}
-		if (h !== height) {
-			setFieldValue("height", height ?? 0);
-			validateAsync("change");
-		}
+		if (!isSuccess || !hasValues) return;
+		setFieldValue("x", positionAbsoluteX);
+		setFieldValue("y", positionAbsoluteY);
+		validateAsync("change");
 	}, [
-		all,
-		h,
-		height,
+		hasValues,
 		isSuccess,
 		positionAbsoluteX,
 		positionAbsoluteY,
 		setFieldValue,
 		validateAsync,
-		w,
-		width,
-		x,
-		y,
 	]);
+
+	useEffect(() => {
+		if (!isSuccess || !hasValues) return;
+		setFieldValue("width", width ?? 0);
+		setFieldValue("height", height ?? 0);
+		validateAsync("change");
+	}, [hasValues, height, isSuccess, setFieldValue, validateAsync, width]);
 
 	return (
 		<div className="card h-full min-h-8 min-w-32 rounded-2xl border-4 border-base-300 bg-base-200/25 p-4 shadow ring-neutral in-[.selected]:ring-4">
