@@ -5,18 +5,18 @@ import { FaGithub } from "react-icons/fa6";
 export type GithubNode = Node<Record<never, never>, "github">;
 
 export default function Github() {
-	const {t} = useTranslation();
+	const { t } = useTranslation();
 	return (
-		<div className="card card-sm bg-base-100 shadow">
+		<div className="card bg-base-100 shadow card-sm">
 			<div className="card-body">
 				<a
 					className="nodrag btn"
 					type="button"
 					href={`${import.meta.env.VITE_SERVER_URL}/auth/redirect`}
-					title={t('github.title')}
+					title={t("github.title")}
 				>
 					<FaGithub />
-					{t('github.title')}
+					{t("github.title")}
 				</a>
 			</div>
 			<Handle

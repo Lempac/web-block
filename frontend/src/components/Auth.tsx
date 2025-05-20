@@ -11,10 +11,10 @@ import { useTranslation } from "react-i18next";
 export type AuthNode = Node<Record<never, never>, "auth">;
 
 export default function Auth() {
-	const {t} = useTranslation();
+	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [toggle, setToggle] = useState(false);
-	const form = useForm({
+	const {Field, Subscribe, handleSubmit} = useForm({
 		defaultValues: {
 			email: "",
 			name: "",
@@ -42,14 +42,14 @@ export default function Auth() {
 			<Handle
 				type="target"
 				position={Position.Top}
-				className="transition-[padding] p-1 hover:p-2 z-20"
+				className="z-20 p-1 transition-[padding] hover:p-2"
 			/>
 			<form
 				className="card bg-base-100 p-4 shadow"
 				onSubmit={(e) => {
 					e.preventDefault();
 					e.stopPropagation();
-					form.handleSubmit();
+					handleSubmit();
 				}}
 			>
 				<div className={clsx(!toggle && "flex justify-end")}>
@@ -59,7 +59,9 @@ export default function Auth() {
 							e.preventDefault();
 							setToggle(!toggle);
 						}}
-						title={toggle ? t("auth.login.tooltip") : t("auth.register.tooltip")}
+						title={
+							toggle ? t("auth.login.tooltip") : t("auth.register.tooltip")
+						}
 					>
 						{toggle ? (
 							<>
@@ -76,7 +78,7 @@ export default function Auth() {
 
 				<fieldset className="fieldset">
 					{toggle && (
-						<form.Field
+						<Field
 							name="name"
 							children={(field) => (
 								<>
@@ -108,18 +110,18 @@ export default function Auth() {
 							)}
 						/>
 					)}
-					<form.Field
+					<Field
 						name="email"
 						children={(field) => (
 							<>
 								<label className="floating-label">
-									<span className="!scale-100">{t('auth.email.title')}</span>
+									<span className="!scale-100">{t("auth.email.title")}</span>
 									<input
 										type="email"
 										id={field.name}
 										name={field.name}
 										value={field.state.value}
-										placeholder={t('auth.email.placeholder')}
+										placeholder={t("auth.email.placeholder")}
 										onChange={(e) => field.handleChange(e.target.value)}
 										className={clsx(
 											"nodrag input input-sm",
@@ -139,18 +141,18 @@ export default function Auth() {
 							</>
 						)}
 					/>
-					<form.Field
+					<Field
 						name="password"
 						children={(field) => (
 							<>
 								<label className="floating-label">
-									<span className="!scale-100">{t('auth.password.title')}</span>
+									<span className="!scale-100">{t("auth.password.title")}</span>
 									<input
 										type="password"
 										id={field.name}
 										name={field.name}
 										value={field.state.value}
-										placeholder={t('auth.password.placeholder')}
+										placeholder={t("auth.password.placeholder")}
 										onChange={(e) => field.handleChange(e.target.value)}
 										className={clsx(
 											"nodrag input input-sm",
@@ -171,12 +173,14 @@ export default function Auth() {
 						)}
 					/>
 					{toggle && (
-						<form.Field
+						<Field
 							name="password_confirmation"
 							children={(field) => (
 								<>
 									<label className="floating-label">
-										<span className="!scale-100">{t("auth.password_confirmation.title")}</span>
+										<span className="!scale-100">
+											{t("auth.password_confirmation.title")}
+										</span>
 										<input
 											type="password"
 											id={field.name}
@@ -203,7 +207,7 @@ export default function Auth() {
 							)}
 						/>
 					)}
-					<form.Field
+					<Field
 						name="remember"
 						children={(field) => (
 							<label className="fieldset-label">
@@ -215,12 +219,12 @@ export default function Auth() {
 									onChange={(e) => field.handleChange(e.currentTarget.checked)}
 									className="checkbox"
 								/>
-								{t('auth.remember.title')}
+								{t("auth.remember.title")}
 							</label>
 						)}
 					/>
 				</fieldset>
-				<form.Subscribe
+				<Subscribe
 					selector={(state) => [state.canSubmit, state.isSubmitting]}
 					children={([canSubmit, isSubmitting]) => (
 						<button
@@ -228,7 +232,7 @@ export default function Auth() {
 							className="nodrag btn mt-3"
 							type="submit"
 						>
-							{toggle ? t('auth.register.title') : t('auth.login.title')}
+							{toggle ? t("auth.register.title") : t("auth.login.title")}
 						</button>
 					)}
 				/>

@@ -1,12 +1,8 @@
 import { type Node, type NodeProps, useReactFlow } from "@xyflow/react";
 import Editor from "@monaco-editor/react";
 import Resize from "./Resize";
-import {
-	$api,
-	fetchClient,
-	getLanguage,
-	type CustomNodeType,
-} from "@/bootstrap";
+import { $api, fetchClient, getLanguage } from "@/bootstrap";
+import { type CustomNodeType } from "@/index";
 import { useForm, useStore } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -32,7 +28,7 @@ export default function File({
 		{
 			params: {
 				path: {
-					block: Number(id),
+					block: Number(id.split("-")[1]),
 				},
 			},
 		},
@@ -95,8 +91,8 @@ export default function File({
 	}, [hasValues, height, isSuccess, setFieldValue, validateAsync, width]);
 
 	return (
-		<div className="rounded-2xl shadow ring-neutral in-[.selected]:ring-4">
-			<div className="collapse-arrow collapse border border-base-300 bg-base-100 p-5">
+		<div className="h-full rounded-box border border-base-300 bg-base-100 p-5 shadow ring-neutral in-[.selected]:ring-4">
+			<div className="collapse-arrow collapse rounded-none">
 				<Field
 					name="path"
 					children={(field) => (
@@ -111,7 +107,7 @@ export default function File({
 				<Field
 					name="path"
 					children={(field) => (
-						<div className="nodrag collapse-title border">
+						<div className="nodrag collapse-title rounded-t-selector border">
 							<input
 								id={field.name}
 								name={field.name}
@@ -126,11 +122,9 @@ export default function File({
 				<Field
 					name="content"
 					children={(field) => (
-						<div className="collapse-content border">
+						<div className="collapse-content">
 							<Editor
-								className="nodrag"
-								height={"700px"}
-								width={"1000px"}
+								className="nodrag rounded-b-field border"
 								theme={`vs-${theme}`}
 								value={field.state.value ?? "test test"}
 								language={getLanguage(path.split(".")[1] ?? "unkown")}
@@ -139,8 +133,8 @@ export default function File({
 						</div>
 					)}
 				/>
-				<Resize />
 			</div>
+			<Resize />
 		</div>
 	);
 }

@@ -21,6 +21,26 @@ use OpenApi\Attributes as OAT;
         type: 'array', items: new OAT\Items(type: 'string', example: 'Field is required')
     )),
 ], required: ['message', 'errors'])]
+
+#[OAT\Components(
+    securitySchemes: [
+        new OAT\SecurityScheme(
+            securityScheme: 'sessionAuth',
+            type: 'apiKey',
+            in: 'cookie',
+            name: 'web_block_session',
+            description: 'This API uses session-based authentication. The session cookie is automatically handled by the 
+            middleware, and clients do not need to include it in their requests.',
+            flows: [
+                new OAT\Flow(
+                    flow: 'implicit',
+                    authorizationUrl: '/api/auth/redirect',
+                    scopes: ['read', 'write']
+                ),
+            ]
+        ),
+    ]
+)]
 class openAPI {}
 
 abstract class Controller

@@ -1,24 +1,31 @@
-import type { Node } from "@xyflow/react";
+import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
 import Resize from "../Resize";
-import { $api, allowedLang, fetchClient } from "@/bootstrap";
+import { allowedLang, fetchClient, INITAL_SETTINGS_WINDOW } from "@/bootstrap";
+import { type CustomNodeType } from "@/index";
 import { useForm } from "@tanstack/react-form";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import type { components } from "@/api";
 import clsx from "clsx";
 import IterToOptions from "../IterToOptions";
+import { useEffect } from "react";
+import { useUser } from "@/Providers/useUser";
 
 export type ProfileNode = Node<Record<string, never>, "profile">;
 
-export default function Profile() {
+export default function Profile({ width, height, id }: NodeProps<ProfileNode>) {
 	const queryClient = useQueryClient();
+	const { user, settings, setSettings, setUser } = useUser();
+	const { getNode } = useReactFlow<CustomNodeType>();
 	const { t } = useTranslation();
-	const { data: user } = $api.useQuery("get", "/api/user");
 	const { Field } = useForm({
 		defaultValues: { ...user, password: "" },
 		validators: {
 			onChangeAsyncDebounceMs: 500,
 			onChangeAsync: async ({ value }) => {
+				const valueWithoutPassword : Omit<typeof value, 'password'> & {password?: string } = value;
+				delete valueWithoutPassword.password;
+				setUser({...valueWithoutPassword, settings: {...valueWithoutPassword.settings, style: user.settings.style, keybinds: user.settings.keybinds}});
 				const { error } = await fetchClient.PUT("/api/user", {
 					body: value as components["schemas"]["UpdateUserRequest"],
 				});
@@ -29,8 +36,21 @@ export default function Profile() {
 		},
 	});
 
+	useEffect(() => {
+		//HACK: values are 0 on init
+		if (width === 0 || height === 0) return;
+		setSettings({
+			...settings,
+			profile: {
+				height: height ?? INITAL_SETTINGS_WINDOW.profile.height,
+				width: width ?? INITAL_SETTINGS_WINDOW.profile.width,
+				...getNode(id)?.position,
+			},
+		});
+	}, [getNode, height, id, setSettings, settings, width]);
+
 	return (
-		<div className="card gap-2 border-2 bg-base-200/25 p-4 shadow ring-neutral in-[.selected]:ring-4">
+		<div className="card min-w-max gap-2 border-2 bg-base-200/25 p-4 shadow ring-neutral in-[.selected]:ring-4">
 			<div className="mb-3">
 				<h2 className="card absolute -top-6 card-body max-w-fit border-2 bg-base-200 p-2 text-2xl">
 					{t("settings.profile.name")}
@@ -103,12 +123,14 @@ export default function Profile() {
 				children={(field) => (
 					<>
 						<label className="floating-label">
-							<span className="!scale-100">{t("settings.profile.password")}</span>
+							<span className="!scale-100">
+								{t("settings.profile.password")}
+							</span>
 							<input
 								type="text"
 								id={field.name}
 								name={field.name}
-								value={field.state.value}
+								value={field.state.value ?? ""}
 								onChange={(e) => field.handleChange(e.target.value)}
 								placeholder={t("settings.profile.password-placeholder")}
 								onBlur={field.handleBlur}
@@ -141,17 +163,15 @@ export default function Profile() {
 								name={field.name}
 								value={field.state.value}
 								onBlur={field.handleBlur}
-								onChange={(e) =>
-									field.handleChange(
-										e.target.value,
-									)
-								}
+								onChange={(e) => field.handleChange(e.target.value)}
 								className={clsx(
 									"nodrag select input-sm",
 									field.state.meta.errors.length !== 0 && "select-error",
 								)}
 							>
-								<IterToOptions iter={(new Set(Object.keys(allowedLang)).values())} />
+								<IterToOptions
+									iter={new Set(Object.keys(allowedLang)).values()}
+								/>
 							</select>
 						</label>
 						{field.state.meta.errors.length !== 0 && (
@@ -171,7 +191,9 @@ export default function Profile() {
 				children={(field) => (
 					<>
 						<label className="floating-label">
-							<span className="!scale-100">{t("settings.profile.defaultBranch")}</span>
+							<span className="!scale-100">
+								{t("settings.profile.defaultBranch")}
+							</span>
 							<input
 								type="text"
 								id={field.name}

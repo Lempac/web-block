@@ -1,12 +1,14 @@
 name: Build and Store Docker Image
 
 on:
-  push:
-    branches:
-      - new-v
+  workflow_dispatch: 
+  workflow_run: 
+    workflows: [node-tests, laravel-tests]
+    types: completed
   
 jobs:
   build:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

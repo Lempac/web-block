@@ -14,7 +14,7 @@
     
     languages.javascript.enable = true;
     languages.javascript.npm.enable = true;
-    #languages.javascript.package = pkgs.nodejs_20;
+    languages.javascript.package = pkgs.nodejs_22;
 
     processes = {
         #vite.exec = "npm run dev";

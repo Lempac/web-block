@@ -1,32 +1,34 @@
-import { $api, addOrUpdate, type CustomNodeType } from "@/bootstrap";
+import { INITAL_SETTINGS_WINDOW, useAddQuickCommand } from "@/bootstrap";
+import { type CustomNodeType } from "@/index";
 import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
 import { VscNewFile, VscNewFolder } from "react-icons/vsc";
-import type { ProjectProps } from "@/components/Projects";
 import { useTranslation } from "react-i18next";
 import { FaArrowRight } from "react-icons/fa6";
+import { useLocalStorage } from "@uidotdev/usehooks";
+import useProjects from "@/Providers/useProjects";
 
-export type ContextMenuNode = Node<
-	{ onClick: () => void } & ProjectProps,
-	"contextMenu"
->;
+export type ContextMenuNode = Node<{ onClick: () => void }, "contextMenu">;
 
 export default function ContextMenu({
 	positionAbsoluteX,
 	positionAbsoluteY,
 	data,
 }: NodeProps<ContextMenuNode>) {
+	const addQuickCommand = useAddQuickCommand();
+	const [settings] = useLocalStorage("settings", INITAL_SETTINGS_WINDOW);
 	const { t } = useTranslation();
-	const { currentProject, setCurrentProject } = data;
-	const { addNodes, setNodes } = useReactFlow<CustomNodeType>();
-	const { isSuccess } = $api.useQuery("get", "/api/user");
+	const { currentProject, setCurrentProject } = useProjects();
+	const { addNodes } = useReactFlow<CustomNodeType>();
 
 	const addFile = () =>
-		addNodes({
-			id: crypto.randomUUID(),
-			type: "file",
-			data: {},
-			position: { x: positionAbsoluteX, y: positionAbsoluteY },
-		});
+		addNodes([
+			{
+				id: crypto.randomUUID(),
+				type: "file",
+				data: {},
+				position: { x: positionAbsoluteX, y: positionAbsoluteY },
+			},
+		]);
 
 	const addFolder = () =>
 		addNodes({
@@ -36,24 +38,22 @@ export default function ContextMenu({
 			position: { x: positionAbsoluteX, y: positionAbsoluteY },
 		});
 	const showProjects = () =>
-		setNodes((() => {
-			console.log(positionAbsoluteX, positionAbsoluteY)
-			return addOrUpdate({
+		addNodes({
 			id: "projects",
 			type: "projects",
 			position: { x: positionAbsoluteX, y: positionAbsoluteY },
 			data: { currentProject, setCurrentProject },
-		})})());
+		});
 
 	const showSettings = () =>
-		setNodes(
-			addOrUpdate({
-				id: "settings",
-				type: "settings",
-				position: { x: positionAbsoluteX, y: positionAbsoluteY },
-				data: {},
-			}),
-		);
+		addNodes({
+			id: "settings",
+			type: "settings",
+			position: { x: positionAbsoluteX, y: positionAbsoluteY },
+			style: { width: settings.width, height: settings.height },
+			data: {},
+		});
+	const showQuickCommand = addQuickCommand;
 
 	return (
 		<div className="card gap-1 bg-base-300 p-2 shadow" onClick={data.onClick}>
@@ -80,13 +80,14 @@ export default function ContextMenu({
 					</li>
 				</ul>
 			</div>
-			{isSuccess && (
-				<button className="nodrag btn" onClick={showProjects}>
-					{t("context-menu.show-project")}
-				</button>
-			)}
+			<button className="nodrag btn" onClick={showProjects}>
+				{t("context-menu.show-project")}
+			</button>
 			<button className="nodrag btn" onClick={showSettings}>
 				{t("context-menu.show-settings")}
+			</button>
+			<button className="nodrag btn" onClick={showQuickCommand}>
+				{t("context-menu.show-quick-command")}
 			</button>
 		</div>
 	);

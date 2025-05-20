@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\Project;
 use App\Models\User;
+use Auth;
 
 class ProjectPolicy
 {
@@ -20,7 +21,7 @@ class ProjectPolicy
      */
     public function view(User $user, Project $Project): bool
     {
-        return false;
+        return $Project->user_id === $user->id;
     }
 
     /**
@@ -28,7 +29,7 @@ class ProjectPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return Auth::check();
     }
 
     /**
@@ -36,7 +37,7 @@ class ProjectPolicy
      */
     public function update(User $user, Project $Project): bool
     {
-        return false;
+        return $Project->user_id === $user->id;
     }
 
     /**
@@ -44,7 +45,7 @@ class ProjectPolicy
      */
     public function delete(User $user, Project $Project): bool
     {
-        return false;
+        return $Project->user_id === $user->id;
     }
 
     /**

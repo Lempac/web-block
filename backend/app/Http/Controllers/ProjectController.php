@@ -26,7 +26,7 @@ class ProjectController extends Controller
     /**
      * Display a listing of the resource.
      */
-    #[Get(path: '/api/projects', tags: ['project'])]
+    #[Get(path: '/api/projects', tags: ['project'], security: ['sessionAuth'])]
     #[Response(response: 200, description: 'test', content: new JsonContent(type: 'array', items: new Items(ref: '#/components/schemas/Project')))]
     public function index()
     {
@@ -36,7 +36,7 @@ class ProjectController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    #[Post(path: '/api/projects', tags: ['project'])]
+    #[Post(path: '/api/projects', tags: ['project'], security: ['sessionAuth'])]
     #[RequestBody(description: 'Name to crate the project', content: new JsonContent(ref: '#/components/schemas/StoreProjectRequest'))]
     #[Response(response: 201, description: 'Project created successfully', content: new JsonContent(properties: [
         new Property(property: 'message', type: 'string'),
@@ -81,8 +81,8 @@ class ProjectController extends Controller
     /**
      * Display the specified resource.
      */
-    #[Get(path: '/api/projects/{project}', tags: ['project'])]
-    #[PathParameter(name: 'project', required: true, schema: new Schema(type: 'integer'))]
+    #[Get(path: '/api/projects/{project}', tags: ['project'], security: ['sessionAuth'])]
+    #[PathParameter(name: 'project', required: true, schema: new Schema(type: 'string', format: 'uuid'))]
     #[Response(response: 200, description: 'test', content: new JsonContent(ref: '#/components/schemas/Project'))]
     public function show(Project $project)
     {
@@ -92,9 +92,9 @@ class ProjectController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    #[Put(path: '/api/projects/{project}', tags: ['project'])]
-    #[Patch(path: '/api/projects/{project}', tags: ['project'])]
-    #[PathParameter(name: 'project', required: true, schema: new Schema(type: 'integer'))]
+    #[Put(path: '/api/projects/{project}', tags: ['project'], security: ['sessionAuth'])]
+    #[Patch(path: '/api/projects/{project}', tags: ['project'], security: ['sessionAuth'])]
+    #[PathParameter(name: 'project', required: true, schema: new Schema(type: 'string', format: 'uuid'))]
     #[RequestBody(description: 'Date to update project.', content: new JsonContent(ref: '#/components/schemas/UpdateProjectRequest'))]
     #[Response(response: 204, description: 'Project updated.')]
     #[Response(response: 401, description: 'Unauthenticated.', content: new JsonContent(ref: '#/components/schemas/ErrorObject'))]
@@ -108,8 +108,8 @@ class ProjectController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    #[Delete(path: '/api/projects/{project}', tags: ['project'])]
-    #[PathParameter(name: 'project', required: true, schema: new Schema(type: 'integer'))]
+    #[Delete(path: '/api/projects/{project}', tags: ['project'], security: ['sessionAuth'])]
+    #[PathParameter(name: 'project', required: true, schema: new Schema(type: 'string', format: 'uuid'))]
     #[Response(response: 204, description: 'Project deleted.')]
     public function destroy(Project $project)
     {

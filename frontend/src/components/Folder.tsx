@@ -14,7 +14,6 @@ export default function Folder({
 	height,
 	id,
 }: NodeProps<FolderNode>) {
-	console.log(id, width, height);
 	const queryClient = useQueryClient();
 	const { data: block, isSuccess } = $api.useQuery(
 		"get",
@@ -22,7 +21,7 @@ export default function Folder({
 		{
 			params: {
 				path: {
-					block: Number(id),
+					block: Number(id.split("-")[1]),
 				},
 			},
 		},
@@ -82,7 +81,7 @@ export default function Folder({
 	}, [hasValues, height, isSuccess, setFieldValue, validateAsync, width]);
 
 	return (
-		<div className="card h-full min-h-8 min-w-32 rounded-2xl border-4 border-base-300 bg-base-200/25 p-4 shadow ring-neutral in-[.selected]:ring-4">
+		<div className="card h-full min-h-8 min-w-32 rounded-box border border-base-300 bg-base-200/25 p-4 shadow ring-neutral in-[.selected]:ring-4">
 			<Field
 				name="path"
 				children={(field) => (
@@ -91,7 +90,7 @@ export default function Folder({
 						type="text"
 						id={field.name}
 						name={field.name}
-						value={field.state.value ?? ""}
+						value={field.state.value ?? "Unknown state"}
 						onChange={(e) => field.handleChange(e.target.value)}
 						onBlur={field.handleBlur}
 					/>

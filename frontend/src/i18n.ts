@@ -11,18 +11,18 @@ i18n
 		lng: "en", // Default language
 		fallbackLng: "en",
 		resources: {},
-		ns: ["base"],
+		ns: [],
 		defaultNS: "base",
 		partialBundledLanguages: true,
 		backend: {
 			backends: [LocalStorageBackend, HttpBackend],
 			backendOptions: [
-				{ expirationTime: 24 * 60 * 60 * 1000 },
+				{ expirationTime: import.meta.env.DEV ? 0 : 24 * 60 * 60 * 1000 },
 				{ loadPath: `${import.meta.env.VITE_SERVER_URL}/api/translations/{{lng}}/{{ns}}` },
 			],
 		},
 		// saveMissing: true,
-		debug: !process.env.NODE_ENV || process.env.NODE_ENV === "development",
+		debug: import.meta.env.DEV,
 		interpolation: {
 			escapeValue: false, // React already does escaping
 		},

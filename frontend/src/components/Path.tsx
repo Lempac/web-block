@@ -8,18 +8,19 @@ export type PathProps = {
 };
 
 export default function Path({ path, position, size }: PathProps) {
-	const segments = path.split("/");
+	console.assert(path !== '', "Path is empty string?");
+	const segments = path === '/' ? ['/'] : path.split("/");
 	return (
 		<Panel
-			className="breadcrumbs rounded-t-md rounded-br-3xl rounded-bl-md bg-base-300 pr-5 pl-2 shadow"
+			className="left-16! breadcrumbs rounded-t-md rounded-br-3xl rounded-bl-md bg-base-300 pr-5 pl-2 shadow"
 			position={position ?? "top-left"}
 		>
 			<ul className="transition-all">
-				{size !== undefined && segments?.length && size < segments?.length ? (
+				{size !== undefined && segments?.length && size < segments?.length && (
 					<li>
 						<a className="link link-hover">..</a>
 					</li>
-				) : null}
+				)}
 				{segments
 					?.slice(
 						size === undefined || size >= segments.length

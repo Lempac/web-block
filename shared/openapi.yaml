@@ -40,6 +40,9 @@ paths:
       responses:
         '204':
           description: 'User successfully logged out.'
+      security:
+        -
+          scalar: sessionAuth
   /auth/redirect:
     get:
       tags:
@@ -96,7 +99,8 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         '200':
           description: 'All blocks, 1 deep, project has.'
@@ -108,6 +112,9 @@ paths:
                   $ref: '#/components/schemas/Block'
         '404':
           description: 'Project not found.'
+      security:
+        -
+          scalar: sessionAuth
   /api/blocks:
     post:
       tags:
@@ -123,6 +130,9 @@ paths:
       responses:
         '204':
           description: 'Block created.'
+      security:
+        -
+          scalar: sessionAuth
   '/api/blocks/{block}':
     get:
       tags:
@@ -145,6 +155,9 @@ paths:
                 $ref: '#/components/schemas/Block'
         '404':
           description: 'Block not found.'
+      security:
+        -
+          scalar: sessionAuth
     put:
       tags:
         - block
@@ -172,6 +185,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorObject'
+      security:
+        -
+          scalar: sessionAuth
     delete:
       tags:
         - block
@@ -187,6 +203,9 @@ paths:
       responses:
         '204':
           description: 'Block deleted.'
+      security:
+        -
+          scalar: sessionAuth
     patch:
       tags:
         - block
@@ -213,6 +232,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorObject'
+      security:
+        -
+          scalar: sessionAuth
   '/api/blocks/{block}/blocks':
     get:
       tags:
@@ -237,6 +259,9 @@ paths:
                   $ref: '#/components/schemas/Block'
         '404':
           description: 'Project not found.'
+      security:
+        -
+          scalar: sessionAuth
   /api/projects:
     get:
       tags:
@@ -252,6 +277,9 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Project'
+      security:
+        -
+          scalar: sessionAuth
     post:
       tags:
         - project
@@ -280,6 +308,9 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ErrorObject'
+      security:
+        -
+          scalar: sessionAuth
   '/api/projects/{project}':
     get:
       tags:
@@ -292,7 +323,8 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         '200':
           description: test
@@ -300,6 +332,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Project'
+      security:
+        -
+          scalar: sessionAuth
     put:
       tags:
         - project
@@ -311,7 +346,8 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       requestBody:
         description: 'Date to update project.'
         content:
@@ -327,6 +363,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorObject'
+      security:
+        -
+          scalar: sessionAuth
     delete:
       tags:
         - project
@@ -338,10 +377,14 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         '204':
           description: 'Project deleted.'
+      security:
+        -
+          scalar: sessionAuth
     patch:
       tags:
         - project
@@ -352,7 +395,8 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       requestBody:
         description: 'Date to update project.'
         content:
@@ -368,6 +412,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorObject'
+      security:
+        -
+          scalar: sessionAuth
   '/api/translations/{locale}/{module}':
     get:
       tags:
@@ -442,6 +489,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorObject'
+      security:
+        -
+          scalar: sessionAuth
     delete:
       tags:
         - user
@@ -455,6 +505,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorObject'
+      security:
+        -
+          scalar: sessionAuth
     patch:
       tags:
         - user
@@ -474,6 +527,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorObject'
+      security:
+        -
+          scalar: sessionAuth
   /api/user/style:
     put:
       tags:
@@ -494,6 +550,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorObject'
+      security:
+        -
+          scalar: sessionAuth
     patch:
       tags:
         - user
@@ -513,6 +572,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorObject'
+      security:
+        -
+          scalar: sessionAuth
   /api/user/repos:
     get:
       tags:
@@ -533,8 +595,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorObject'
+      security:
+        -
+          scalar: sessionAuth
 components:
   schemas:
+    ErrorObject:
+      required:
+        - message
+        - errors
+      properties:
+        message:
+          type: string
+          example: 'Validation failed.'
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+              example: 'Field is required'
+      type: object
     PanelPosition:
       type: string
       enum:
@@ -596,22 +677,6 @@ components:
           type: object
         -
           $ref: '#/components/schemas/LoginRequest'
-    ErrorObject:
-      required:
-        - message
-        - errors
-      properties:
-        message:
-          type: string
-          example: 'Validation failed.'
-        errors:
-          type: object
-          additionalProperties:
-            type: array
-            items:
-              type: string
-              example: 'Field is required'
-      type: object
     LangObject:
       type: object
       additionalProperties:
@@ -806,9 +871,12 @@ components:
         - zoom
         - default_branch
         - url
+        - oid
+        - cwd
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
         name:
           type: string
         description:
@@ -830,8 +898,20 @@ components:
           default: main
         url:
           type: string
-        user_id:
-          type: integer
+        oid:
+          type: string
+        cwd:
+          type: string
+          default: /
+      type: object
+    Keybinds:
+      description: 'User keybinds'
+      required:
+        - quickCommand
+      properties:
+        quickCommand:
+          type: string
+          default: Control+p
       type: object
     Style:
       description: 'User style'
@@ -865,6 +945,7 @@ components:
         - defaultBranch
         - lang
         - style
+        - keybinds
       properties:
         hideExtensions:
           type: boolean
@@ -877,23 +958,34 @@ components:
           default: en
         style:
           $ref: '#/components/schemas/Style'
+        keybinds:
+          $ref: '#/components/schemas/Keybinds'
       type: object
     User:
       required:
         - name
         - email
-        - is_admin
         - settings
       properties:
         name:
           type: string
         email:
           type: string
-        is_admin:
-          type: boolean
         settings:
           $ref: '#/components/schemas/Settings'
       type: object
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      description: "This API uses session-based authentication. The session cookie is automatically handled by the \n            middleware, and clients do not need to include it in their requests."
+      name: web_block_session
+      in: cookie
+      flows:
+        implicit:
+          authorizationUrl: /api/auth/redirect
+          scopes:
+            - read
+            - write
 tags:
   -
     name: auth

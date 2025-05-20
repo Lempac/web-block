@@ -60,7 +60,12 @@
                     "204": {
                         "description": "User successfully logged out."
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             }
         },
         "/auth/redirect": {
@@ -166,7 +171,12 @@
                     "404": {
                         "description": "Project not found."
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             }
         },
         "/api/blocks": {
@@ -190,7 +200,12 @@
                     "204": {
                         "description": "Block created."
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             }
         },
         "/api/blocks/{block}": {
@@ -224,7 +239,12 @@
                     "404": {
                         "description": "Block not found."
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             },
             "put": {
                 "tags": [
@@ -266,7 +286,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             },
             "delete": {
                 "tags": [
@@ -288,7 +313,12 @@
                     "204": {
                         "description": "Block deleted."
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             },
             "patch": {
                 "tags": [
@@ -329,7 +359,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             }
         },
         "/api/blocks/{block}/blocks": {
@@ -366,7 +401,12 @@
                     "404": {
                         "description": "Project not found."
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             }
         },
         "/api/projects": {
@@ -390,7 +430,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             },
             "post": {
                 "tags": [
@@ -437,7 +482,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             }
         },
         "/api/projects/{project}": {
@@ -468,7 +518,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             },
             "put": {
                 "tags": [
@@ -510,7 +565,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             },
             "delete": {
                 "tags": [
@@ -532,7 +592,12 @@
                     "204": {
                         "description": "Project deleted."
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             },
             "patch": {
                 "tags": [
@@ -573,7 +638,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             }
         },
         "/api/translations/{locale}/{module}": {
@@ -692,7 +762,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             },
             "delete": {
                 "tags": [
@@ -713,7 +788,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             },
             "patch": {
                 "tags": [
@@ -744,7 +824,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             }
         },
         "/api/user/style": {
@@ -777,7 +862,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             },
             "patch": {
                 "tags": [
@@ -808,7 +898,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             }
         },
         "/api/user/repos": {
@@ -841,12 +936,40 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "scalar": "sessionAuth"
+                    }
+                ]
             }
         }
     },
     "components": {
         "schemas": {
+            "ErrorObject": {
+                "required": [
+                    "message",
+                    "errors"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Validation failed."
+                    },
+                    "errors": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "example": "Field is required"
+                            }
+                        }
+                    }
+                },
+                "type": "object"
+            },
             "PanelPosition": {
                 "type": "string",
                 "enum": [
@@ -920,29 +1043,6 @@
                         "$ref": "#/components/schemas/LoginRequest"
                     }
                 ]
-            },
-            "ErrorObject": {
-                "required": [
-                    "message",
-                    "errors"
-                ],
-                "properties": {
-                    "message": {
-                        "type": "string",
-                        "example": "Validation failed."
-                    },
-                    "errors": {
-                        "type": "object",
-                        "additionalProperties": {
-                            "type": "array",
-                            "items": {
-                                "type": "string",
-                                "example": "Field is required"
-                            }
-                        }
-                    }
-                },
-                "type": "object"
             },
             "LangObject": {
                 "type": "object",
@@ -1216,7 +1316,8 @@
                 ],
                 "properties": {
                     "id": {
-                        "type": "integer"
+                        "type": "string",
+                        "format": "uuid"
                     },
                     "name": {
                         "type": "string"
@@ -1249,6 +1350,19 @@
                     },
                     "user_id": {
                         "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "Keybinds": {
+                "description": "User keybinds",
+                "required": [
+                    "quickCommand"
+                ],
+                "properties": {
+                    "quickCommand": {
+                        "type": "string",
+                        "default": "Control+p"
                     }
                 },
                 "type": "object"
@@ -1295,7 +1409,8 @@
                     "hideExtensions",
                     "defaultBranch",
                     "lang",
-                    "style"
+                    "style",
+                    "keybinds"
                 ],
                 "properties": {
                     "hideExtensions": {
@@ -1312,6 +1427,9 @@
                     },
                     "style": {
                         "$ref": "#/components/schemas/Style"
+                    },
+                    "keybinds": {
+                        "$ref": "#/components/schemas/Keybinds"
                     }
                 },
                 "type": "object"
@@ -1338,6 +1456,23 @@
                     }
                 },
                 "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "sessionAuth": {
+                "type": "apiKey",
+                "description": "This API uses session-based authentication. The session cookie is automatically handled by the \n            middleware, and clients do not need to include it in their requests.",
+                "name": "web_block_session",
+                "in": "cookie",
+                "flows": {
+                    "implicit": {
+                        "authorizationUrl": "/api/auth/redirect",
+                        "scopes": [
+                            "read",
+                            "write"
+                        ]
+                    }
+                }
             }
         }
     },

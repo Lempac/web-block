@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'loading' => 'Lādēšana...',
     'welcome' => [
         'title' => 'Laipni lūdzam Web-blokā!',
         'description' => 'Šis ir projekts par tīmekļa redaktoru, kas ļauj veidot projektus, izmantojot foršu bloku saskarni.',
@@ -15,6 +16,7 @@ return [
         'folder' => 'Mape',
         'show-project' => 'Rādīt projektus',
         'show-settings' => 'Rādīt iestatījumus',
+        'show-quick-command' => 'Rādīt ātrās komandas',
     ],
     'projects' => [
         'name' => 'Projekti',
@@ -33,7 +35,7 @@ return [
         'name' => 'Iestatījumi',
         'profile' => [
             'name' => 'Profils',
-            'hideExtensions' => 'Pārdod visus failu paplašinājumus',
+            'hideExtensions' => 'Rādīt visus failu paplašinājumus',
             'defaultBranch' => 'Pamatā izvēlēto koka nosaukums',
             'password' => 'Password',
             'password-placeholder' => 'Enter your new password',
@@ -78,4 +80,10 @@ return [
             'title' => 'Atceries Mani',
         ],
     ],
+    'quick-command' => [
+        'name' => 'Quick command',
+    ],
+    'upload-project' => [
+        'tooltip' => 'Upload project'
+    ]
 ];

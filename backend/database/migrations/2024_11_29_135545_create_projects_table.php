@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('projects', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('name');
             $table->text('description')->nullable();
             $table->integer('x')->default(0);
@@ -21,6 +21,8 @@ return new class extends Migration
             $table->float('zoom')->default(1);
             $table->string('default_branch')->default('main');
             $table->string('url')->nullable();
+            $table->string('oid');
+            $table->string('cwd')->default('/');
             $table->timestamps();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
         });

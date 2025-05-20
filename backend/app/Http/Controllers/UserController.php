@@ -26,8 +26,8 @@ class UserController extends Controller
         return Auth::user();
     }
 
-    #[Put(path: '/api/user', tags: ['user'])]
-    #[Patch(path: '/api/user', tags: ['user'])]
+    #[Put(path: '/api/user', tags: ['user'], security: ['sessionAuth'])]
+    #[Patch(path: '/api/user', tags: ['user'], security: ['sessionAuth'])]
     #[RequestBody(description: 'User data to update.', content: new JsonContent(ref: '#/components/schemas/UpdateUserRequest'))]
     #[Response(response: '204', description: 'User updated.')]
     #[Response(response: '401', description: 'Unauthenticated.', content: new JsonContent(ref: '#/components/schemas/ErrorObject'))]
@@ -65,8 +65,8 @@ class UserController extends Controller
         return response()->noContent();
     }
 
-    #[Put(path: '/api/user/style', tags: ['user'])]
-    #[Patch(path: '/api/user/style', tags: ['user'])]
+    #[Put(path: '/api/user/style', tags: ['user'], security: ['sessionAuth'])]
+    #[Patch(path: '/api/user/style', tags: ['user'], security: ['sessionAuth'])]
     #[RequestBody(description: 'User style data to update.', content: new JsonContent(ref: '#/components/schemas/UpdateStyleRequest'))]
     #[Response(response: '204', description: 'User style updated.')]
     #[Response(response: '401', description: 'Unauthenticated.', content: new JsonContent(ref: '#/components/schemas/ErrorObject'))]
@@ -97,6 +97,7 @@ class UserController extends Controller
         // Update the settings
         $user->settings = $existingSettings;
         $user->save();
+        \App::setLocale($user->settings['lang']);
 
         return response()->noContent();
     }
@@ -114,7 +115,7 @@ class UserController extends Controller
     //     return Auth::user()->settings;
     // }
 
-    #[Get(path: '/api/user/repos', tags: ['user'])]
+    #[Get(path: '/api/user/repos', tags: ['user'], security: ['sessionAuth'])]
     #[Response(response: '200', description: 'User repos from github.', content: new JsonContent(type: 'array', items: new Items(type: 'string'), nullable: false))]
     #[Response(response: '401', description: 'Unauthenticated.', content: new JsonContent(ref: '#/components/schemas/ErrorObject'))]
     public function indexRepos()
@@ -122,7 +123,7 @@ class UserController extends Controller
         return Auth::user()->getGithubProjects();
     }
 
-    #[Delete(path: '/api/user', tags: ['user'])]
+    #[Delete(path: '/api/user', tags: ['user'], security: ['sessionAuth'])]
     #[Response(response: '204', description: 'User deleted.')]
     #[Response(response: '401', description: 'Unauthenticated.', content: new JsonContent(ref: '#/components/schemas/ErrorObject'))]
     public function destroy(Request $request)

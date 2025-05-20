@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'loading' => 'Loading...',
     'welcome' => [
         'title' => 'Welcome to Web-block!',
         'description' => 'This is a project about editor in web, that lets you build projects using cool block interface.',
@@ -15,9 +16,11 @@ return [
         'folder' => 'Folder',
         'show-project' => 'Show projects',
         'show-settings' => 'Show settings',
+        'show-quick-command' => 'Show quick command',
     ],
     'projects' => [
         'name' => 'Projects',
+        'no-search' => 'No github projects found.',
         'no-projects' => 'No project selected.',
         'logout' => 'Logout',
         'settings' => 'Settings',
@@ -78,4 +81,10 @@ return [
             'title' => 'Remember Me',
         ],
     ],
+    'quick-command' => [
+        'name' => 'Quick command',
+    ],
+    'upload-project' => [
+        'tooltip' => 'Upload project'
+    ]
 ];

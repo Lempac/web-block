@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 
-export default function IterToOptions({iter}: {iter: SetIterator<string>}) {
+export default function IterToOptions({ iter }: { iter: SetIterator<string> }) {
 	const options: JSX.Element[] = [];
 	let current = iter.next();
 	while (!current.done) {

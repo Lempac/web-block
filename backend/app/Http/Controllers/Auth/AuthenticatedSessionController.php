@@ -34,7 +34,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Destroy an authenticated session.
      */
-    #[Delete(path: '/logout', tags: ['auth'])]
+    #[Delete(path: '/logout', tags: ['auth'], security: ['sessionAuth'])]
     #[R(response: '204', description: 'User successfully logged out.')]
     public function destroy(Request $request): Response
     {

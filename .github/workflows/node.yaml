@@ -9,7 +9,7 @@ on:
       - new-v
 
 jobs:
-  build:
+  node-tests:
     runs-on: ubuntu-latest
 
     steps:

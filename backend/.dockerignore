@@ -15,3 +15,8 @@ Dockerfile
 devenv.lock
 devenv.nix
 devenv.yaml
+tests
+storage/app/private/**
+storage/logs/**
+storage/pail
+public/vendor

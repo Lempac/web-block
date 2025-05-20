@@ -21,11 +21,23 @@ COPY .env.production.encrypted /var/www/.env.encrypted
 # Generate application key
 # RUN php artisan key:generate
 
+# Set environment variables for PHP settings
+ENV PHP_UPLOAD_MAX_FILESIZE=200M
+ENV PHP_POST_MAX_SIZE=200M
+
+# Alternatively, you can modify the php.ini settings directly
+RUN { \
+    echo 'upload_max_filesize = '"$PHP_UPLOAD_MAX_FILESIZE"; \
+    echo 'post_max_size = '"$PHP_POST_MAX_SIZE"; \
+} > /usr/local/etc/php/conf.d/uploads.ini
+
+RUN php artisan storage:link
+
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-EXPOSE 8000
+EXPOSE 8000 465 
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD curl --fail http://localhost:8000/up || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD curl --fail localhost:8000/up || exit 1
 
 
 CMD ["sh", "-c", "php artisan env:decrypt --force --key=$ENCRYPTION_KEY && php -S 0.0.0.0:8000 -t public"]

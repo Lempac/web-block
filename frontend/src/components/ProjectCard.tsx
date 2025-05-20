@@ -3,8 +3,6 @@ import { MdOutlineOpenInNew } from "react-icons/md";
 import clsx from "clsx";
 import { useForm } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
-// import { useEffect, useRef, useState } from "react";
-// import Editor from "@monaco-editor/react";
 import {
 	BlockTypeSelect,
 	BoldItalicUnderlineToggles,
@@ -17,26 +15,33 @@ import {
 	quotePlugin,
 	toolbarPlugin,
 	UndoRedo,
+	type MDXEditorMethods,
 } from "@mdxeditor/editor";
 import { headingsPlugin } from "@mdxeditor/editor";
 import { useReactFlow } from "@xyflow/react";
-import type { CustomNodeType } from "@/bootstrap";
-import { fetchClient } from "@/bootstrap";
+import type { CustomNodeType } from "..";
+import { fetchClient, pfs } from "@/bootstrap";
 import type { components } from "@/api";
 import { useTranslation } from "react-i18next";
+import { useRef } from "react";
+import useProjects from "@/Providers/useProjects";
 
 export default function ProjectCard({
 	project,
-	currentProject,
 }: {
-	project: components["schemas"]["Project"];
-	currentProject: { value: boolean; set: (v: number) => void };
+	//HACK: Tehnically, by this point description cant be null.
+	project: components["schemas"]["Project"] & {
+		description: string;
+		raw_description: string;
+	};
 }) {
-	const { t } = useTranslation();
+	const { t } = useTranslation(["base", "md"]);
 	const queryClient = useQueryClient();
+	const { setCurrentProject, currentProject } = useProjects();
 	const { deleteElements } = useReactFlow<CustomNodeType>();
+	const description = useRef<MDXEditorMethods>(null);
 
-	async function deleteCard(id: number) {
+	async function deleteCard(id: string) {
 		const { error } = await fetchClient.DELETE("/api/projects/{project}", {
 			params: {
 				path: {
@@ -45,12 +50,12 @@ export default function ProjectCard({
 			},
 		});
 		if (error) return;
-		currentProject.set(0);
+		setCurrentProject("");
 		await queryClient.invalidateQueries({ queryKey: ["get", "/api/projects"] });
 	}
 
-	function openProject(id: number) {
-		currentProject.set(id);
+	function openProject(id: string) {
+		setCurrentProject(id);
 		deleteElements({
 			nodes: [{ id: "projects" }],
 		});
@@ -61,6 +66,7 @@ export default function ProjectCard({
 		validators: {
 			onChangeAsyncDebounceMs: 500,
 			onChangeAsync: async ({ value }) => {
+				await pfs.writeFile(project.raw_description, value.description);
 				const { error } = await fetchClient.PUT("/api/projects/{project}", {
 					params: {
 						path: {
@@ -68,7 +74,7 @@ export default function ProjectCard({
 						},
 					},
 					credentials: "include",
-					body: value,
+					body: { ...value, description: project.description },
 				});
 				if (error) return { fields: error.errors };
 
@@ -80,12 +86,11 @@ export default function ProjectCard({
 			},
 		},
 	});
-
 	return (
 		<div
 			className={clsx(
 				"grid flex-none content-start gap-2 rounded-box border-2 border-base-300 p-4 shadow",
-				currentProject.value && "border-8 border-double",
+				currentProject && "border-8 border-double",
 			)}
 		>
 			<div className="flex gap-2">
@@ -128,14 +133,25 @@ export default function ProjectCard({
 					<Field
 						name="description"
 						asyncDebounceMs={1000}
+						// listeners={{
+						// onChange: ({ value }) => {
+
+						// },
+						// onMount: ({value}) => {
+						// 	description.current?.setMarkdown(value as string);
+						// },
+						// }}
 						children={(field) => (
-							// <Editor height="90vh" onChange={(e) => field.handleChange(e ?? "")} defaultLanguage="markdown" defaultValue={field.state.value ?? "// some comment"} />
 							<MDXEditor
+								ref={description}
 								className="nodrag"
 								contentEditableClassName="prose"
 								onBlur={field.handleBlur}
+								markdown={field.state.value}
 								onChange={(e, init) => !init && field.handleChange(e)}
-								markdown={field.state.value ?? "Unknown"}
+								translation={(key, defaultValue, interpolations) => {
+									return t(key, defaultValue, { ns: "md", ...interpolations });
+								}}
 								plugins={[
 									toolbarPlugin({
 										toolbarContents: () => (

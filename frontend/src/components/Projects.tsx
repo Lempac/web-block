@@ -5,26 +5,29 @@ import { FaSignOutAlt } from "react-icons/fa";
 import ProjectCard from "@/components/ProjectCard.tsx";
 import clsx from "clsx";
 import { IoIosAdd, IoMdSearch } from "react-icons/io";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { type CustomNodeType } from "@/bootstrap";
-import { $api, fetchClient } from "@/bootstrap";
+import { type CustomNodeType } from "@/index";
+import { $api, fetchClient, pfs } from "@/bootstrap";
 import { useTranslation } from "react-i18next";
+import useProjects from "@/Providers/useProjects";
+import { useUser } from "@/Providers/useUser";
 
-export type ProjectProps = {
-	currentProject: number;
-	setCurrentProject: (v: number) => void;
-};
-export type ProjectsNode = Node<ProjectProps, "projects">;
+export type ProjectsNode = Node<Record<never, never>, "projects">;
 
-export default function Projects({ data }: NodeProps<ProjectsNode>) {
+export default function Projects({
+	positionAbsoluteX,
+	positionAbsoluteY,
+}: NodeProps<ProjectsNode>) {
+	const { projects, isLoading, isSuccess } = useProjects();
+	const {isSuccess: gotUser, repos, settings} = useUser();
 	const { t } = useTranslation();
-	const { currentProject, setCurrentProject } = data;
+	
 	const queryClient = useQueryClient();
 	const [search, setSearch] = useState("");
 	const { getNode, addNodes, deleteElements } = useReactFlow<CustomNodeType>();
-
-	const { data: repos } = $api.useQuery("get", "/api/user/repos");
+	
+	
 	const { mutateAsync: createProject, isPending: isCreating } =
 		$api.useMutation("post", "/api/projects", {
 			onSuccess: () => {
@@ -32,17 +35,22 @@ export default function Projects({ data }: NodeProps<ProjectsNode>) {
 				setSearch("");
 			},
 		});
+
 	const toggleSettings = () => {
 		if (getNode("settings")) {
 			deleteElements({
-				nodes: [{ id: "settings" }, { id: "profile" }, { id: "theme" }],
+				nodes: [{ id: "settings" }],
 			});
 		} else {
 			//TODO: add settings resizing
 			addNodes({
 				id: "settings",
 				type: "settings",
-				position: { x: 0, y: 0 },
+				position: {
+					x: positionAbsoluteX - (settings.width + 200),
+					y: positionAbsoluteY,
+				},
+				style: { width: settings.width, height: settings.height },
 				data: {},
 			});
 		}
@@ -60,21 +68,23 @@ export default function Projects({ data }: NodeProps<ProjectsNode>) {
 				</button>
 			</li>
 		));
-	const { data: projects, isSuccess } = $api.useQuery("get", "/api/projects");
-	const filteredProjects = projects
-		?.filter((project) =>
-			project.name.toLowerCase().includes(search.toLowerCase()),
-		)
-		.map((project) => (
-			<ProjectCard
-				project={project}
-				key={project.id}
-				currentProject={{
-					value: currentProject === project.id,
-					set: setCurrentProject,
-				}}
-			/>
-		));
+
+	const { data: filteredProjects } = useQuery({
+		queryKey: ["filteredProjects"],
+		queryFn: async () =>
+			(
+				await Promise.all(
+					projects.values().map(async (project) => ({
+						...project,
+						raw_description: project.description!,
+						description: await pfs.readFile(project.description!, "utf8"),
+					})),
+				)
+			).filter((project) =>
+				project.name.toLowerCase().includes(search.toLowerCase()),
+			),
+		enabled: isSuccess,
+	});
 	const filRepoLen = filteredRepos?.length;
 	return (
 		<div className="grid gap-2 rounded-box bg-base-300 p-4 shadow ring-neutral in-[.selected]:ring-4">
@@ -104,11 +114,11 @@ export default function Projects({ data }: NodeProps<ProjectsNode>) {
 							tabIndex={0}
 							className={clsx(
 								"nowheel nodarg dropdown-content menu flex-nowrap gap-0.5 overflow-y-scroll rounded-box bg-base-100 p-2 shadow sm:h-32 md:h-64",
-								filRepoLen === undefined || (filRepoLen < 6 && "h-auto!"),
+								(filRepoLen === undefined || filRepoLen < 6) && "h-auto!",
 							)}
 						>
-							{filRepoLen === 0 ? (
-								<p>{t("projects.no-projects")}</p>
+							{filRepoLen === 0 || filRepoLen === undefined ? (
+								<p>{t("projects.no-search")}</p>
 							) : (
 								filteredRepos
 							)}
@@ -121,33 +131,51 @@ export default function Projects({ data }: NodeProps<ProjectsNode>) {
 					>
 						<FaGear />
 					</button>
-					<button
-						className="nodrag btn btn-primary"
-						onClick={async () => {
-							await fetchClient.DELETE("/logout");
-							await queryClient.resetQueries({
-								queryKey: ["get", "/api/user"],
-							});
-						}}
-						title={t("projects.logout")}
-					>
-						<FaSignOutAlt />
-					</button>
+					{gotUser && (
+						<button
+							className="nodrag btn btn-primary"
+							onClick={async () => {
+								await fetchClient.DELETE("/logout");
+								await queryClient.invalidateQueries({
+									queryKey: ["get", "/api/user"],
+								});
+								await queryClient.invalidateQueries({
+									queryKey: ["get", "/api/user/repos"],
+								});
+								await queryClient.invalidateQueries({
+									queryKey: ["get", "/api/projects"],
+								});
+							}}
+							title={t("projects.logout")}
+						>
+							<FaSignOutAlt />
+						</button>
+					)}
 				</div>
 			</div>
 			<div
 				className={clsx(
 					"grid min-w-max items-start gap-2 rounded-box bg-base-200 p-4",
-					projects && projects.length == 2 && "grid-cols-2",
-					projects && projects.length >= 3 && "grid-cols-3",
+					projects && projects.size == 2 && "grid-cols-2",
+					projects && projects.size >= 3 && "grid-cols-3",
 				)}
 			>
-				{isSuccess && filteredProjects?.length === 0 ? (
+				{filteredProjects === undefined || filteredProjects.length === 0 ? (
 					<p>{t("projects.no-projects")}</p>
 				) : (
-					filteredProjects
+					filteredProjects.map((project) => (
+						<ProjectCard project={project} key={project.id} />
+					))
 				)}
 			</div>
+			{isLoading ? (
+				<div className="animate-pulse rounded-box bg-base-200 p-4">
+					<span className="loading loading-md animate-spin loading-infinity"></span>
+					{t("loading")}
+				</div>
+			) : (
+				<></>
+			)}
 		</div>
 	);
 }

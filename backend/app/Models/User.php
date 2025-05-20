@@ -2,18 +2,23 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Auth;
 use Database\Factories\UserFactory;
 use Github\AuthMethod;
 use Github\Client;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Orchid\Filters\Types\Like;
+use Orchid\Filters\Types\Where;
+use Orchid\Filters\Types\WhereDateStartEnd;
+use Orchid\Platform\Models\User as Authenticatable;
 
+#[Schema(schema: 'Keybinds', description: 'User keybinds', properties: [
+    new Property(property: 'quickCommand', type: 'string', default: 'Control+p'),
+], required: ['quickCommand'])]
 // TODO: fix settings enum to have a default value
 #[Schema(schema: 'Style', description: 'User style', properties: [
     new Property(property: 'controlPosition', allOf: [new Schema(ref: '#/components/schemas/PanelPosition'), new Schema(type: 'string', default: 'bottom-left')]),
@@ -28,14 +33,15 @@ use OpenApi\Attributes\Schema;
     new Property(property: 'defaultBranch', type: 'string', default: 'master'),
     new Property(property: 'lang', type: 'string', default: 'en'),
     new Property(property: 'style', ref: '#/components/schemas/Style'),
-], required: ['hideExtensions', 'defaultBranch', 'lang', 'style'])]
+    new Property(property: 'keybinds', ref: '#/components/schemas/Keybinds'),
+], required: ['hideExtensions', 'defaultBranch', 'lang', 'style', 'keybinds'])]
 
 #[Schema(properties: [
     new Property(property: 'name', type: 'string'),
     new Property(property: 'email', type: 'string'),
-    new Property(property: 'is_admin', type: 'boolean'),
+    // new Property(property: 'is_admin', type: 'boolean'),
     new Property(property: 'settings', ref: '#/components/schemas/Settings'),
-], required: ['name', 'email', 'is_admin', 'settings'])]
+], required: ['name', 'email', 'settings'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -44,7 +50,7 @@ class User extends Authenticatable
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var array
      */
     protected $fillable = [
         'name',
@@ -53,14 +59,14 @@ class User extends Authenticatable
         'github_id',
         'github_token',
         'github_refresh_token',
-        'is_admin',
+        // 'is_admin',
         'settings',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * The attributes excluded from the model's JSON form.
      *
-     * @var array<int, string>
+     * @var array
      */
     protected $hidden = [
         'password',
@@ -68,21 +74,45 @@ class User extends Authenticatable
         'github_token',
         'github_refresh_token',
         'github_id',
+        // 'is_admin',
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be cast to native types.
      *
-     * @return array<string, string>
+     * @var array
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'settings' => 'array',
-        ];
-    }
+    protected $casts = [
+        'permissions' => 'array',
+        'email_verified_at' => 'datetime',
+        'settings' => 'array',
+    ];
+
+    /**
+     * The attributes for which you can use filters in url.
+     *
+     * @var array
+     */
+    protected $allowedFilters = [
+        'id' => Where::class,
+        'name' => Like::class,
+        'email' => Like::class,
+        'updated_at' => WhereDateStartEnd::class,
+        'created_at' => WhereDateStartEnd::class,
+    ];
+
+    /**
+     * The attributes for which can use sort in url.
+     *
+     * @var array
+     */
+    protected $allowedSorts = [
+        'id',
+        'name',
+        'email',
+        'updated_at',
+        'created_at',
+    ];
 
     public function projects(): HasMany
     {

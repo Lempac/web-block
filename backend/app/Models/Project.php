@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Database\Factories\ProjectFactory;
 use Gitonomy\Git\Repository;
 use Gitonomy\Git\Tree;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,7 +14,7 @@ use OpenApi\Attributes\Schema;
 use Storage;
 
 #[Schema(properties: [
-    new Property(property: 'id', type: 'integer'),
+    new Property(property: 'id', type: 'string', format: 'uuid'),
     new Property(property: 'name', type: 'string'),
     new Property(property: 'description', type: 'string', nullable: true),
     new Property(property: 'x', type: 'integer', default: 0),
@@ -22,12 +22,14 @@ use Storage;
     new Property(property: 'zoom', type: 'number', default: 1, format: 'float'),
     new Property(property: 'default_branch', type: 'string', default: 'main'),
     new Property(property: 'url', type: 'string'),
-    new Property(property: 'user_id', type: 'integer'),
-], required: ['id', 'name', 'description', 'x', 'y', 'zoom', 'default_branch', 'url'])]
+    new Property(property: 'oid', type: 'string'),
+    new Property(property: 'cwd', type: 'string', default: '/'),
+    // new Property(property: 'user_id', type: 'integer'),
+], required: ['id', 'name', 'description', 'x', 'y', 'zoom', 'default_branch', 'url', 'oid', 'cwd'])]
 class Project extends Model
 {
     /** @use HasFactory<ProjectFactory> */
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $fillable = [
         'name',
@@ -37,6 +39,12 @@ class Project extends Model
         'zoom',
         'default_branch',
         'url',
+        'oid',
+        'cwd',
+        'user_id',
+    ];
+
+    protected $hidden = [
         'user_id',
     ];
 
@@ -62,7 +70,6 @@ class Project extends Model
     {
         parent::boot();
         self::deleted(function ($project) {
-            // Generate Git project here
             Storage::disk('local')->deleteDirectory($project->name);
         });
     }
@@ -72,7 +79,6 @@ class Project extends Model
         foreach ($rootTree->getTreeEntries() as $name => [$mode, $tree]) {
             $newRoot = $this->blocks()->create([
                 'path' => $name,
-                'content' => '',
             ]);
             $newRoot->block()->associate($parent);
             $newRoot->save();
@@ -86,7 +92,6 @@ class Project extends Model
             }
             $newBlob = $this->blocks()->create([
                 'path' => $name,
-                'content' => $blob->getContent(),
                 'mimetype' => $blob->getMimetype(),
                 // 'path' => ,
             ]);

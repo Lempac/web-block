@@ -1,8 +1,37 @@
-// const ProjectVisibility = {
-// 	PUBLIC: "public",
-// 	PRIVATE: "private",
-// } as const;
+import type { AuthNode } from "./components/Auth";
+import type { ContextMenuNode } from "./components/ContextMenu";
+import type { FileNode } from "./components/File";
+import type { FolderNode } from "./components/Folder";
+import type { GithubNode } from "./components/Github";
+import type { ProjectsNode } from "./components/Projects";
+import type { QuickCommandNode } from "./components/QuickCommand";
+import type { SettingsNode } from "./components/Settings";
+import type { KeybindsNode } from "./components/Settings/Keybinds";
+import type { ProfileNode } from "./components/Settings/Profile";
+import type { ThemeNode } from "./components/Settings/Theme";
+import type { WelcomeNode } from "./components/Welcome";
+import git from 'isomorphic-git';
 
+declare global {
+	interface Window {
+		fs: LightningFS;
+		pfs: LightningFS.PromisifiedFS;
+		git: git;
+	}
+}
+export type CustomNodeType =
+	| ProjectsNode
+	| AuthNode
+	| GithubNode
+	| WelcomeNode
+	| SettingsNode
+	| ProfileNode
+	| ThemeNode
+	| KeybindsNode
+	| FolderNode
+	| FileNode
+	| ContextMenuNode
+	| QuickCommandNode;
 // export type ProjectVisibility =
 // 	(typeof ProjectVisibility)[keyof typeof ProjectVisibility];
 
@@ -12,7 +41,7 @@
 // 	description: string;
 // 	default_branch: string;
 // 	url: string;
-	// visibility: ProjectVisibility;
+// visibility: ProjectVisibility;
 // };
 
 // export type User = {
@@ -61,7 +90,7 @@
 
 // export type Themes =
 // 	(typeof Themes)[keyof typeof Themes];
-	
+
 // export type Settings = {
 // 	hideExtensions: boolean;
 // 	defaultBranch: string;
@@ -84,3 +113,13 @@
 // 	readonly is_file: boolean;
 // 	readonly is_folder: boolean;
 // };
+
+// let test = themeToSet().values()
+// setInterval(() => {
+// 	let val = test.next();
+// 	if(val.done){
+// 		test = themeToSet().values();
+// 		val = test.next();
+// 	}
+// 	document.documentElement.setAttribute('data-theme', val.value!)
+// }, 2000);

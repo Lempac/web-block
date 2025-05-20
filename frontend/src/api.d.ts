@@ -262,6 +262,13 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        ErrorObject: {
+            /** @example Validation failed. */
+            message: string;
+            errors: {
+                [key: string]: string[];
+            };
+        };
         /** @enum {string} */
         PanelPosition: "top-left" | "top-right" | "top-center" | "bottom-left" | "bottom-center" | "bottom-right";
         /** @enum {string} */
@@ -274,13 +281,6 @@ export interface components {
         RegisterRequest: {
             name: string;
         } & components["schemas"]["LoginRequest"];
-        ErrorObject: {
-            /** @example Validation failed. */
-            message: string;
-            errors: {
-                [key: string]: string[];
-            };
-        };
         LangObject: {
             [key: string]: string | components["schemas"]["LangObject"];
         };
@@ -358,7 +358,8 @@ export interface components {
             mimetype?: string;
         };
         Project: {
-            id: number;
+            /** Format: uuid */
+            id: string;
             name: string;
             description: string | null;
             /** @default 0 */
@@ -373,7 +374,14 @@ export interface components {
             /** @default main */
             default_branch: string;
             url: string;
-            user_id?: number;
+            oid: string;
+            /** @default / */
+            cwd: string;
+        };
+        /** @description User keybinds */
+        Keybinds: {
+            /** @default Control+p */
+            quickCommand: string;
         };
         /** @description User style */
         Style: {
@@ -392,11 +400,11 @@ export interface components {
             /** @default en */
             lang: string;
             style: components["schemas"]["Style"];
+            keybinds: components["schemas"]["Keybinds"];
         };
         User: {
             name: string;
             email: string;
-            is_admin: boolean;
             settings: components["schemas"]["Settings"];
         };
     };
@@ -545,7 +553,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                project: number;
+                project: string;
             };
             cookie?: never;
         };
@@ -799,7 +807,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                project: number;
+                project: string;
             };
             cookie?: never;
         };
@@ -821,7 +829,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                project: number;
+                project: string;
             };
             cookie?: never;
         };
@@ -855,7 +863,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                project: number;
+                project: string;
             };
             cookie?: never;
         };
@@ -875,7 +883,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                project: number;
+                project: string;
             };
             cookie?: never;
         };

@@ -14,14 +14,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('blocks', function (Blueprint $table) {
-            $table->id();
-            $table->string('path');
+            $table->string('path')->primary();
             $table->integer('x')->default(0);
             $table->integer('y')->default(0);
             $table->integer('width')->default(0);
             $table->integer('height')->default(0);
-            $table->string('content')->nullable();
-            $table->string('mimeType')->nullable();
             $table->timestamps();
 
             $table->foreignIdFor(Block::class)->nullable()->constrained()->cascadeOnDelete()->cascadeOnUpdate();

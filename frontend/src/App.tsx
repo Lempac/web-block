@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
 	addEdge,
 	Background,
@@ -8,6 +8,7 @@ import {
 	MiniMap,
 	ReactFlow,
 	useEdgesState,
+	useKeyPress,
 	useNodesState,
 	useReactFlow,
 	useStoreApi,
@@ -15,17 +16,25 @@ import {
 } from "@xyflow/react";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
-	$api,
-	addOrUpdate,
-	type CustomNodeType,
 	fetchClient,
-	// getPositionReletiveToParent,
 	nodeTypes,
+	useAddQuickCommand,
+	useOnPaneClick,
 } from "./bootstrap";
+import { type CustomNodeType } from "@/index";
 import CloseProject from "@/components/CloseProject";
-import { useForm } from "@tanstack/react-form";
 import { useTranslation } from "react-i18next";
-import { useMediaQuery, usePreferredLanguage } from "@uidotdev/usehooks";
+import {
+	useLocalStorage,
+	useMediaQuery,
+	usePreferredLanguage,
+} from "@uidotdev/usehooks";
+import Path from "./components/Path";
+import useProjects from "./Providers/useProjects";
+import UploadProject from "./components/UploadProject";
+import { useUser } from "./Providers/useUser";
+import { useForm } from "@tanstack/react-form";
+// import NodeInspector from "./components/NodeInspector";
 // import ELK from "elkjs/lib/elk.bundled.js";
 
 // const elk = new ELK();
@@ -70,24 +79,55 @@ import { useMediaQuery, usePreferredLanguage } from "@uidotdev/usehooks";
 // 	return { getLayoutedElements };
 // };
 
-function App() {
+export default function App() {
+	const {
+		fitView,
+		screenToFlowPosition,
+		setCenter,
+		addNodes,
+		addEdges,
+		deleteElements,
+	} = useReactFlow<CustomNodeType>();
+	const [nodes, , onNodesChange] = useNodesState<CustomNodeType>([]);
+	const [edges, setEdgeInternal, onEdgesChange] = useEdgesState([]);
+	const store = useStoreApi();
+
+	const onPaneClick = useOnPaneClick();
+	const addQuickCommand = useAddQuickCommand();
+	const [firstTime, setFirstTime] = useLocalStorage("firstTime", true);
+	const {
+		currentProject,
+		projects,
+		setCurrentProject,
+		isLoading,
+		isSuccess,
+		cwd,
+		getCurrentProject,
+	} = useProjects();
+	const { user, isSuccess: gotUser } = useUser();
 	const { i18n } = useTranslation();
 	const language = usePreferredLanguage();
-	const { isSuccess, data: user } = $api.useQuery(
-		"get",
-		"/api/user",
-		{},
-		{
-			retry: 1,
-			refetchInterval: 2 * 1000 * 60,
-			//HACK: so we doest have two cache for user("get","/api/user",{})
-			queryKey: ["get", "/api/user"],
-		},
-	);
-	// console.log(user);
 	const theme = useMediaQuery("(prefers-color-scheme: dark)")
 		? user?.settings.style.baseDarkTheme
 		: user?.settings.style.baseLightTheme;
+
+	//If new user create example project
+	useEffect(() => {
+		if (!firstTime || isLoading) return;
+		const project = getCurrentProject();
+		if (isSuccess && project?.name === "untitled")
+			setCurrentProject(project.id);
+		setFirstTime(false);
+	}, [
+		firstTime,
+		getCurrentProject,
+		isLoading,
+		isSuccess,
+		projects,
+		setCurrentProject,
+		setFirstTime,
+	]);
+
 	useEffect(() => {
 		if (theme) document.documentElement.setAttribute("data-theme", theme);
 	}, [theme]);
@@ -98,47 +138,23 @@ function App() {
 				: user?.settings.lang || "en",
 		);
 	}, [i18n, language, user?.settings.lang]);
-	// console.log(t('failed'));
-	// const { getLayoutedElements } = useLayoutedElements();
-	// const [currectRadiusField] = useState('');
-	const [currentProject, setCurrentProject] = useState(0);
 
-	const {
-		setNodes,
-		setEdges,
-		fitView,
-		deleteElements,
-		screenToFlowPosition,
-		setCenter,
-		addNodes,
-	} = useReactFlow<CustomNodeType>();
-	const [nodes, , onNodesChange] = useNodesState<CustomNodeType>([]);
-	const [edges, setEdgeInternal, onEdgesChange] = useEdgesState([]);
-	const store = useStoreApi();
 	// const r = useKeyPress('r');
 	// useEffect(() => {
 	// 	if(r === false) return;
 	// 	getLayoutedElements({
 	// 	'elk.algorithm': 'org.eclipse.elk.radial',
 	// })}, [r]);
-	const { data: currentProjectData, isSuccess: isCurrentProjectDataLoaded } =
-		$api.useQuery(
-			"get",
-			"/api/projects/{project}",
-			{
-				params: {
-					path: {
-						project: currentProject,
-					},
-				},
-			},
-			{ enabled: currentProject !== 0 },
-		);
+
+	const quickCommand = useKeyPress("Control+p", {
+		preventDefault: true,
+	});
 	const { validateAsync, setFieldValue } = useForm({
-		defaultValues: currentProjectData,
+		defaultValues: getCurrentProject(),
 		validators: {
 			onChangeAsyncDebounceMs: 250,
 			onChangeAsync: async ({ value }) => {
+				projects.set(currentProject, value);
 				const { error } = await fetchClient.PUT("/api/projects/{project}", {
 					params: {
 						path: {
@@ -152,127 +168,100 @@ function App() {
 			},
 		},
 	});
-	const { isSuccess: hasOpenProject, data: blocks } = $api.useQuery(
-		"get",
-		"/api/blocks/{project}/blocks",
-		{
-			params: {
-				path: {
-					project: currentProject,
-				},
-			},
-		},
-		{ enabled: currentProject !== 0 },
-	);
 
 	useEffect(() => {
-		if (
-			currentProject === 0 ||
-			!isCurrentProjectDataLoaded ||
-			currentProjectData === undefined
-		)
-			return;
-		console.log("currentProjectData", currentProjectData);
-		setCenter(currentProjectData.x, currentProjectData.y, {
+		if (currentProject === "") return;
+		const { x, y, zoom } = getCurrentProject()!;
+		setCenter(x, y, {
 			duration: 300,
-			zoom: currentProjectData.zoom || 1,
+			zoom: zoom || 1,
 		});
-	}, [
-		currentProject,
-		currentProjectData,
-		isCurrentProjectDataLoaded,
-		setCenter,
-	]);
+	}, [currentProject, getCurrentProject, setCenter]);
 
 	useEffect(() => {
-		if (blocks === undefined || !hasOpenProject) return;
-		addNodes(
-			blocks.map((block) => ({
-				id: block.id.toString(),
-				type: block.is_file ? "file" : "folder",
-				data: {},
-				style: { width: block.width, height: block.height },
-				parentId: block.block_id?.toString(),
-				position:
-					block.block_id === null
-						? { x: block.x, y: block.y }
-						: (() => {
-								const parent = blocks.find((b) => b.block_id === block.id);
-								if (parent)
-									return { x: parent.x - block.x, y: parent.y - block.y };
-								return { x: 0, y: 0 };
-							})(),
-				expandParent: true,
-			})),
-		);
-	}, [addNodes, blocks, hasOpenProject, setNodes]);
+		if (currentProject === "") return;
+		addNodes([
+			
+		]);
+	}, [addNodes, currentProject]);
+
+	// useEffect(() => {
+	// 	if (blocks === undefined || !hasOpenProject) return;
+	// 	addNodes(
+	// 		blocks.map((block) => ({
+	// 			id: `${currentProject}-${block.id.toString()}`,
+	// 			type: block.is_file ? "file" : "folder",
+	// 			data: {},
+	// 			style: { width: block.width, height: block.height },
+	// 			parentId:
+	// 				block.block_id !== null
+	// 					? `${currentProject}-${block.block_id?.toString()}`
+	// 					: undefined,
+	// 			position:
+	// 				block.block_id === null
+	// 					? { x: block.x, y: block.y }
+	// 					: (() => {
+	// 							const parent = blocks.find((b) => b.id === block.block_id);
+	// 							if (parent)
+	// 								return { x: block.x - parent.x, y: block.y - parent.y };
+	// 							console.assert(
+	// 								parent !== undefined,
+	// 								`Block: ${block.path} has ${block.block_id}, but parent: ${block.block_id} doesnt exist???`,
+	// 							);
+	// 							return { x: 0, y: 0 };
+	// 						})(),
+	// 			expandParent: true,
+	// 		})),
+	// 	);
+	// }, [addNodes, blocks, currentProject, hasOpenProject]);
 
 	// Show welcome node if user is not logged in or if user is logged in shows projects node
 	useEffect(() => {
-		if (isSuccess) {
-			if (currentProject !== 0) return;
-			setNodes(
-				addOrUpdate({
-					id: "projects",
-					type: "projects",
-					position: { x: 0, y: 0 },
-					data: {
-						currentProject: currentProject,
-						setCurrentProject: setCurrentProject,
-					},
-				}),
-			);
-			fitView({
-				nodes: [{ id: "projects" }],
-				includeHiddenNodes: false,
-				padding: 20,
-			});
-			deleteElements({
-				nodes: [{ id: "auth" }, { id: "github" }, { id: "welcome" }],
-				edges: [{ id: "github-auth" }, { id: "welcome-auth" }],
-			});
+		addNodes({
+			id: "projects",
+			type: "projects",
+			position: gotUser ? { x: 0, y: 0 } : { x: 300, y: 20 },
+			data: {},
+		});
+		if (!gotUser) {
+			addNodes([
+				{ id: "auth", type: "auth", position: { x: 0, y: 0 }, data: {} },
+				{
+					id: "github",
+					type: "github",
+					position: { x: -50, y: -150 },
+					data: {},
+				},
+				{
+					id: "welcome",
+					type: "welcome",
+					position: { x: 170, y: -210 },
+					data: {},
+				},
+			]);
+			addEdges([
+				{
+					id: "github-auth",
+					source: "github",
+					target: "auth",
+				},
+				{
+					id: "welcome-auth",
+					source: "welcome",
+					target: "auth",
+				},
+			]);
 		} else {
-			setNodes(
-				addOrUpdate([
-					{ id: "auth", type: "auth", position: { x: 0, y: 0 }, data: {} },
-					{
-						id: "github",
-						type: "github",
-						position: { x: -50, y: -150 },
-						data: {},
-					},
-					{
-						id: "welcome",
-						type: "welcome",
-						position: { x: 170, y: -210 },
-						data: {},
-					},
-				]),
-			);
-			setEdges(
-				addOrUpdate([
-					{
-						id: "github-auth",
-						source: "github",
-						target: "auth",
-					},
-					{
-						id: "welcome-auth",
-						source: "welcome",
-						target: "auth",
-					},
-				]),
-			);
 			deleteElements({
-				nodes: [{ id: "projects" }],
+				edges: [{ id: "github-auth" }, { id: "welcome-auth" }],
+				nodes: [{ id: "welcome" }, { id: "github" }, { id: "auth" }],
 			});
 		}
-
 		// Add padding to fit view, so when user authenticates, the view is not zoomed in.
 		fitView({
-			padding: isSuccess ? 1.1 : 0.1,
+			padding: gotUser ? 1.1 : 0.1,
 		});
-	}, [currentProject, deleteElements, fitView, isSuccess, setEdges, setNodes]);
+	}, [addEdges, addNodes, deleteElements, fitView, gotUser]);
 
 	const onConnect = useCallback(
 		(connection: Connection) =>
@@ -282,12 +271,7 @@ function App() {
 
 	const onViewportChange = useCallback(
 		(viewport: Viewport) => {
-			if (
-				currentProject === 0 ||
-				!isCurrentProjectDataLoaded ||
-				currentProjectData === undefined
-			)
-				return;
+			if (currentProject === "") return;
 			const { domNode } = store.getState();
 			const boundingRect = domNode?.getBoundingClientRect();
 			if (!boundingRect) return;
@@ -295,31 +279,19 @@ function App() {
 				x: boundingRect.x + boundingRect.width / 2,
 				y: boundingRect.y + boundingRect.height / 2,
 			});
-
 			// Update form values with new center coordinates and zoom leve
 			setFieldValue("x", Math.round(center.x));
 			setFieldValue("y", Math.round(center.y));
 			setFieldValue("zoom", viewport.zoom);
 			validateAsync("change");
 		},
-		[
-			currentProject,
-			currentProjectData,
-			isCurrentProjectDataLoaded,
-			screenToFlowPosition,
-			setFieldValue,
-			store,
-			validateAsync,
-		],
+		[currentProject, screenToFlowPosition, setFieldValue, store, validateAsync],
 	);
 
-	const onPaneClick = useCallback(
-		() =>
-			deleteElements({
-				nodes: [{ id: "context" }],
-			}),
-		[deleteElements],
-	);
+	useEffect(() => {
+		if (quickCommand === false || addQuickCommand === undefined) return;
+		addQuickCommand();
+	}, [addQuickCommand, quickCommand]);
 
 	const onPaneContextMenu = useCallback(
 		(event: React.MouseEvent | MouseEvent) => {
@@ -331,23 +303,19 @@ function App() {
 				x: event.clientX,
 				y: event.clientY,
 			});
-			setNodes(
-				addOrUpdate<CustomNodeType>({
-					id: "context",
-					type: "contextMenu",
-					position: {
-						x: position.x,
-						y: position.y,
-					},
-					data: {
-						onClick: onPaneClick,
-						currentProject,
-						setCurrentProject,
-					},
-				}),
-			);
+			addNodes({
+				id: "context",
+				type: "contextMenu",
+				position: {
+					x: position.x,
+					y: position.y,
+				},
+				data: {
+					onClick: () => onPaneClick("context"),
+				},
+			});
 		},
-		[currentProject, onPaneClick, screenToFlowPosition, setNodes],
+		[addNodes, onPaneClick, screenToFlowPosition],
 	);
 	return (
 		<div
@@ -364,7 +332,10 @@ function App() {
 				onEdgesChange={onEdgesChange}
 				onConnect={onConnect}
 				onPaneContextMenu={onPaneContextMenu}
-				onPaneClick={onPaneClick}
+				onPaneClick={() => {
+					onPaneClick("context");
+					onPaneClick("quickCommand");
+				}}
 				fitView
 				maxZoom={100}
 				minZoom={0.05}
@@ -372,33 +343,22 @@ function App() {
 				snapGrid={[5, 5]}
 				onlyRenderVisibleElements={false}
 				fitViewOptions={{
-					padding: isSuccess ? 1.1 : 0.1,
+					padding: gotUser ? 1.1 : 0.1,
 				}}
 				proOptions={{ hideAttribution: true }}
 			>
-				{/* {!process.env.NODE_ENV ||
-					(process.env.NODE_ENV === "development" && <NodeInspector />)} */}
 				<Background variant={BackgroundVariant.Dots} />
-				{isSuccess && (
+				<Controls position={user?.settings?.style?.controlPosition} />
+				<MiniMap
+					zoomable
+					pannable
+					position={user?.settings?.style?.minimapPosition}
+				/>
+				{currentProject !== "" && (
 					<>
-						<Controls position={user.settings?.style?.controlPosition} />
-						<MiniMap
-							zoomable
-							pannable
-							position={user.settings?.style?.minimapPosition}
-						/>
-						{currentProject !== 0 && (
-							<>
-								<CloseProject
-									position="top-left"
-									setCurrentProject={setCurrentProject}
-								/>
-								{/* <Path
-									path="123/123/123"
-									position={user.settings?.style?.pathPosition}
-								/> */}
-							</>
-						)}
+						<UploadProject />
+						<CloseProject position="top-left" />
+						<Path path={cwd} position={user?.settings?.style?.pathPosition} />
 					</>
 				)}
 			</ReactFlow>
@@ -406,5 +366,3 @@ function App() {
 		</div>
 	);
 }
-
-export default App;

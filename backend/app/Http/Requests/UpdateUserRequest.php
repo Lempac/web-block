@@ -37,7 +37,7 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.Auth::user()->id,
+            'email' => 'required|email:rfc,dns|unique:users,email,'.Auth::user()->id,
             'password' => 'nullable|min:8|confirmed|password',
             'settings.hideExtensions' => 'required|boolean',
             'settings.defaultBranch' => 'required|string|max:255',

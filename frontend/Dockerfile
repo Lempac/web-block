@@ -14,7 +14,7 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Create the final image
-FROM node:22-slim AS production
+FROM node:24-slim AS production
 
 WORKDIR /var/www/
 

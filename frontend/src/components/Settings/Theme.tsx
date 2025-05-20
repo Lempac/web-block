@@ -1,24 +1,34 @@
-import type { Node } from "@xyflow/react";
+import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
 import Resize from "../Resize";
-import { $api, fetchClient, panelPositionToSet, themeToSet } from "@/bootstrap";
+import {
+	fetchClient,
+	INITAL_SETTINGS_WINDOW,
+	panelPositionToSet,
+	themeToSet,
+} from "@/bootstrap";
+import { type CustomNodeType } from "@/index";
 import { useForm } from "@tanstack/react-form";
 import type { components } from "@/api";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
 import IterToOptions from "../IterToOptions";
+import { useEffect } from "react";
+import { useUser } from "@/Providers/useUser";
 
 export type ThemeNode = Node<Record<string, never>, "theme">;
 
-export default function Theme() {
+export default function Theme({ width, height, id }: NodeProps<ThemeNode>) {
 	const queryClient = useQueryClient();
 	const { t } = useTranslation();
-	const { data: user } = $api.useQuery("get", "/api/user");
+	const { user, setUser, settings, setSettings } = useUser();
+	const { getNode } = useReactFlow<CustomNodeType>();
 	const { Field } = useForm({
 		defaultValues: user?.settings.style,
 		validators: {
 			onChangeAsyncDebounceMs: 500,
 			onChangeAsync: async ({ value }) => {
+				setUser({...user, settings: {...user.settings, style: value}});
 				const { error } = await fetchClient.PUT("/api/user/style", {
 					body: value,
 				});
@@ -28,9 +38,21 @@ export default function Theme() {
 			},
 		},
 	});
+	useEffect(() => {
+		//HACK: values are 0 on init
+		if (width === 0 || height === 0) return;
+		setSettings({
+			...settings,
+			theme: {
+				height: height ?? INITAL_SETTINGS_WINDOW.theme.height,
+				width: width ?? INITAL_SETTINGS_WINDOW.theme.width,
+				...getNode(id)?.position,
+			},
+		});
+	}, [getNode, height, id, setSettings, settings, width]);
 
 	return (
-		<div className="card h-full gap-2 border-2 bg-base-200/25 p-4 shadow ring-neutral first:mb-9 in-[.selected]:ring-4">
+		<div className="card min-h-max min-w-max gap-2 border-2 bg-base-200/25 p-4 shadow ring-neutral in-[.selected]:ring-4">
 			<div className="mb-3">
 				<h2 className="card absolute -top-6 card-body max-w-fit border-2 bg-base-200 p-2 text-2xl">
 					{t("settings.theme.name")}
@@ -41,7 +63,9 @@ export default function Theme() {
 				children={(field) => (
 					<>
 						<label className="floating-label">
-							<span className="!scale-100">{t("settings.theme.baseDarkTheme")}</span>
+							<span className="!scale-100">
+								{t("settings.theme.baseDarkTheme")}
+							</span>
 							<select
 								id={field.name}
 								name={field.name}
@@ -53,7 +77,7 @@ export default function Theme() {
 									)
 								}
 								className={clsx(
-									"nodrag select input-sm",
+									"nodrag select input-sm min-w-auto",
 									field.state.meta.errors.length !== 0 && "select-error",
 								)}
 							>
@@ -77,7 +101,9 @@ export default function Theme() {
 				children={(field) => (
 					<>
 						<label className="floating-label">
-							<span className="!scale-100">{t("settings.theme.baseLightTheme")}</span>
+							<span className="!scale-100">
+								{t("settings.theme.baseLightTheme")}
+							</span>
 							<select
 								id={field.name}
 								name={field.name}
@@ -113,7 +139,9 @@ export default function Theme() {
 				children={(field) => (
 					<>
 						<label className="floating-label">
-							<span className="!scale-100">{t("settings.theme.controlPosition")}</span>
+							<span className="!scale-100">
+								{t("settings.theme.controlPosition")}
+							</span>
 							<select
 								id={field.name}
 								name={field.name}
@@ -149,7 +177,9 @@ export default function Theme() {
 				children={(field) => (
 					<>
 						<label className="floating-label">
-							<span className="!scale-100">{t("settings.theme.minimapPosition")}</span>
+							<span className="!scale-100">
+								{t("settings.theme.minimapPosition")}
+							</span>
 							<select
 								id={field.name}
 								name={field.name}
@@ -185,7 +215,9 @@ export default function Theme() {
 				children={(field) => (
 					<>
 						<label className="floating-label">
-							<span className="!scale-100">{t("settings.theme.pathPosition")}</span>
+							<span className="!scale-100">
+								{t("settings.theme.pathPosition")}
+							</span>
 							<select
 								id={field.name}
 								name={field.name}

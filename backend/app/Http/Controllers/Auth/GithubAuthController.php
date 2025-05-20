@@ -41,7 +41,7 @@ class GithubAuthController extends Controller
             if (User::where('github_id', '=', $githubUser->getId())->count('github_id') > 0) {
                 session()->flash('register-github-error', 'Already have an account with same github!');
 
-                return response()->redirectTo(config('app.frontend_url'), status: 301);
+                return redirect(config('app.frontend_url'), 301);
             }
             Auth::user()->update(['name' => $githubUser->nickname, 'github_id' => $githubUser->getId(), 'github_token' => $githubUser->token, 'github_refresh_token' => $githubUser->refreshToken]);
         } else {
@@ -50,6 +50,6 @@ class GithubAuthController extends Controller
             Auth::user()->save();
         }
 
-        return response()->redirectTo(config('app.frontend_url'), status: 301);
+        return redirect(config('app.frontend_url'), 301);
     }
 }

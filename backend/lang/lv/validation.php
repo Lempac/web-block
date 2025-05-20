@@ -98,7 +98,7 @@ return [
         'numeric' => 'Lauks :attribute nedrīkst būt lielāks par :max.',
         'string' => 'Lauks :attribute nedrīkst būt lielāks par :max rakstzīmēm.',
     ],
-    'max_digits' => ':attribute laukā nedrīkst būt vairāk par :max cipariem.',
+    'max_digits' => ':Attribute laukā nedrīkst būt vairāk par :max cipariem.',
     'mimes' => 'Laukam :attribute ir jābūt failam, kura tips ir: :values.',
     'mimetypes' => 'Laukam :attribute ir jābūt failam, kura tips ir: :values.',
     'min' => [
@@ -107,7 +107,7 @@ return [
         'numeric' => 'Laukam :attribute jābūt vismaz :min.',
         'string' => 'Laukam :attribute ir jābūt vismaz :min rakstzīmēm.',
     ],
-    'min_digits' => ':attribute laukā ir jābūt vismaz :min cipariem.',
+    'min_digits' => ':Attribute laukā ir jābūt vismaz :min cipariem.',
     'missing' => 'Jātrūkst laukam :attribute.',
     'missing_if' => 'Jātrūkst laukam :attribute, ja :other ir :value.',
     'missing_unless' => 'Jātrūkst laukam :attribute, ja vien :other nav :value.',
@@ -133,8 +133,8 @@ return [
     'prohibited_if' => 'Lauks :attribute ir aizliegts, ja :other ir :value.',
     'prohibited_unless' => 'Lauks :attribute ir aizliegts, ja vien :other nav :values.',
     'prohibits' => 'Lauks :attribute aizliedz :other atrasties.',
-    'regex' => ':attribute lauka formāts nav derīgs.',
-    'required' => 'Atribūta lauks ir nepieciešams.',
+    'regex' => ':Attribute lauka formāts nav derīgs.',
+    'required' => ':Attribute lauks ir nepieciešams.',
     'required_array_keys' => 'Laukā :attribute ir jābūt ierakstiem: :values.',
     'required_if' => 'Lauls :attribute ir nepieciešams, ja :other ir :value.',
     'required_if_accepted' => 'Lauls :attribute ir nepieciešams, ja tiek pieņemts :other.',
@@ -189,6 +189,10 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'name' => 'nosaukums',
+        'email' => 'epasts',
+        'password' => 'parole',
+    ],
 
 ];
