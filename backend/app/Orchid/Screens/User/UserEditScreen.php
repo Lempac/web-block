@@ -74,11 +74,11 @@ class UserEditScreen extends Screen
     public function commandBar(): iterable
     {
         return [
-            Button::make(__('Impersonate user'))
-                ->icon('bg.box-arrow-in-right')
-                ->confirm(__('You can revert to your original state by logging out.'))
-                ->method('loginAs')
-                ->canSee($this->user->exists && $this->user->id !== \request()->user()->id),
+            // Button::make(__('Impersonate user'))
+            //     ->icon('bg.box-arrow-in-right')
+            //     ->confirm(__('You can revert to your original state by logging out.'))
+            //     ->method('loginAs')
+            //     ->canSee($this->user->exists && $this->user->id !== \request()->user()->id),
 
             Button::make(__('Remove'))
                 ->icon('bs.trash3')

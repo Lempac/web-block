@@ -7,6 +7,9 @@ use App\Http\Middleware\TrustProxies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Laravel\Sanctum\Http\Middleware\CheckAbilities;
+use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -20,13 +23,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append([
             TrustProxies::class,
         ]);
-        $middleware->redirectTo(env('FRONTEND_URL', 'http://localhost:3000'));
+        $middleware->redirectTo(env('ENV', 'production') ? env('FRONTEND_URL', 'http://localhost:3000').'/web-block' : env('FRONTEND_URL', 'http://localhost:3000'));
         $middleware->api(prepend: [
-            EnsureFrontendRequestsAreStateful::class,
             LocaleMiddleware::class,
         ]);
         $middleware->alias([
             'verified' => EnsureEmailIsVerified::class,
+            'abilities' => CheckAbilities::class,
+            'ability' => CheckForAnyAbility::class,
         ]);
         //
     })

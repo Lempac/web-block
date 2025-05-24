@@ -12,7 +12,7 @@ export default function Github() {
 				<a
 					className="nodrag btn"
 					type="button"
-					href={`${import.meta.env.VITE_SERVER_URL}/auth/redirect`}
+					href={`${import.meta.env.VITE_SERVER_URL}/api/redirect`}
 					title={t("github.title")}
 				>
 					<FaGithub />

@@ -3,7 +3,7 @@ services:
   cors-proxy:
     image: cors-proxy
     environment:
-      - ALLOW_ORIGIN=https://lempac.github.io/web-block/
+      - ALLOW_ORIGIN=https://lempac.github.io
     ports:
       - "127.0.0.1:9998:80"
   backend:

@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use OpenApi\Attributes\JsonContent;
@@ -29,17 +27,17 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    #[Post(path: '/register', tags: ['auth'])]
+    #[Post(path: '/api/register', operationId: 'apiRegister', tags: ['auth'])]
     #[RequestBody(description: 'Create user model and login in user.', required: true, content: new JsonContent(
         ref: '#/components/schemas/RegisterRequest'
     ))]
-    #[R(response: '204', description: 'User successfully registered.')]
+    #[R(response: '201', description: 'User successfully registered.', content: new JsonContent(ref: '#/components/schemas/AuthTokenResponse'))]
     #[R(response: '401', description: 'Error with registering.', content: new JsonContent(ref: '#/components/schemas/ErrorObject'))]
-    public function store(Request $request): Response
+    public function store(Request $request)
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email:rfc,dns', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'remember' => ['boolean'],
         ]);
@@ -52,8 +50,18 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        Auth::login($user, $request->remeber);
+        // --- Grab Device Info ---
+        $userAgent = $request->header('User-Agent');
+        $ipAddress = $request->ip();
+        $deviceNameInput = $request->input('device_name', 'Unknown Device'); // Still use input if provided
 
-        return response()->noContent();
+        $tokenName = $deviceNameInput . ' - ' . substr(md5($userAgent . $ipAddress), 0, 8); // Example: "web-client - 1a2b3c4d"
+
+        $token = $user->createToken($request->input($tokenName))->plainTextToken;
+
+        return response()->json([
+            'message' => 'Registration successful',
+            'token' => $token,
+        ], 201);
     }
 }

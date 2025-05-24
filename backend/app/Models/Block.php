@@ -2,9 +2,7 @@
 
 namespace App\Models;
 
-use Database\Factories\BlockFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -27,9 +25,6 @@ use OpenApi\Attributes\Schema;
 ], required: ['id', 'x', 'y', 'path', 'content', 'is_file', 'is_folder'])]
 class Block extends Model
 {
-    /** @use HasFactory<BlockFactory> */
-    use HasFactory;
-
     /**
      * The accessors to append to the model's array form.
      *

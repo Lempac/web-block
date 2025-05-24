@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/login": {
+    "/api/login": {
         parameters: {
             query?: never;
             header?: never;
@@ -14,14 +14,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Handle an incoming authentication request. */
-        post: operations["42f77e072dec84b0e1094cca1228298e"];
+        post: operations["bc76a9d52929cab7a147ca7b5c527430"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/logout": {
+    "/api/logout": {
         parameters: {
             query?: never;
             header?: never;
@@ -32,20 +32,20 @@ export interface paths {
         put?: never;
         post?: never;
         /** Destroy an authenticated session. */
-        delete: operations["c1f1a7fee7db3c314778d7d6f7d715ab"];
+        delete: operations["250045954f07adf40103e33a04e5d715"];
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/auth/redirect": {
+    "/api/redirect": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["90d17f2f0d31d7f84408f6b27d7dde7e"];
+        get: operations["0487fbb4c6d40e317fb4ec45582d09e5"];
         put?: never;
         post?: never;
         delete?: never;
@@ -54,14 +54,14 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/callback": {
+    "/api/callback": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["28e91517417a79e205bd570a4c5fa14f"];
+        get: operations["34a24a8f777c83598c6c30936c6f9a04"];
         put?: never;
         post?: never;
         delete?: never;
@@ -70,7 +70,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/register": {
+    "/api/register": {
         parameters: {
             query?: never;
             header?: never;
@@ -80,7 +80,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Handle an incoming registration request. */
-        post: operations["573de1fed352c1205a32c4d1b9877375"];
+        post: operations["apiRegister"];
         delete?: never;
         options?: never;
         head?: never;
@@ -278,6 +278,15 @@ export interface components {
          * @enum {string}
          */
         VisibilityType: "private" | "public";
+        AuthTokenResponse: {
+            /** @example Login successful */
+            message: string;
+            /**
+             * @description Sanctum plain text API token
+             * @example 1|abcdefghijklmnopqrstuvwxyzabcdefg
+             */
+            token: string;
+        };
         RegisterRequest: {
             name: string;
         } & components["schemas"]["LoginRequest"];
@@ -416,7 +425,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    "42f77e072dec84b0e1094cca1228298e": {
+    bc76a9d52929cab7a147ca7b5c527430: {
         parameters: {
             query?: never;
             header?: never;
@@ -430,15 +439,26 @@ export interface operations {
             };
         };
         responses: {
-            /** @description User successfully logged in. */
-            204: {
+            /** @description User successfully logged in and token issued. */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AuthTokenResponse"];
+                };
             };
-            /** @description Error with login. */
+            /** @description Error with login credentials. */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorObject"];
+                };
+            };
+            /** @description Validation error. */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -448,7 +468,7 @@ export interface operations {
             };
         };
     };
-    c1f1a7fee7db3c314778d7d6f7d715ab: {
+    "250045954f07adf40103e33a04e5d715": {
         parameters: {
             query?: never;
             header?: never;
@@ -466,9 +486,12 @@ export interface operations {
             };
         };
     };
-    "90d17f2f0d31d7f84408f6b27d7dde7e": {
+    "0487fbb4c6d40e317fb4ec45582d09e5": {
         parameters: {
-            query?: never;
+            query: {
+                /** @description A friendly name for the device initiating the login (e.g., 'web-browser', 'mobile-app'). Required to generate the API token name. */
+                device_name: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -491,7 +514,7 @@ export interface operations {
             };
         };
     };
-    "28e91517417a79e205bd570a4c5fa14f": {
+    "34a24a8f777c83598c6c30936c6f9a04": {
         parameters: {
             query?: never;
             header?: never;
@@ -516,7 +539,7 @@ export interface operations {
             };
         };
     };
-    "573de1fed352c1205a32c4d1b9877375": {
+    apiRegister: {
         parameters: {
             query?: never;
             header?: never;
@@ -531,11 +554,13 @@ export interface operations {
         };
         responses: {
             /** @description User successfully registered. */
-            204: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AuthTokenResponse"];
+                };
             };
             /** @description Error with registering. */
             401: {

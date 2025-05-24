@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Orchid\Screens;
 
+use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Screen;
 use Orchid\Support\Facades\Layout;
 
@@ -44,7 +45,11 @@ class PlatformScreen extends Screen
      */
     public function commandBar(): iterable
     {
-        return [];
+        return [
+            Link::make('Go to Frontend')
+                ->href(config('app.frontend_url'))
+                ->icon('bs.globe')
+        ];
     }
 
     /**
@@ -56,6 +61,7 @@ class PlatformScreen extends Screen
     {
         return [
             Layout::view('platform::partials.update-assets'),
+            // Layout::view('statistics')
             // Layout::view('platform::partials.welcome'),
         ];
     }

@@ -14,7 +14,7 @@ export default function Auth() {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const [toggle, setToggle] = useState(false);
-	const {Field, Subscribe, handleSubmit} = useForm({
+	const { Field, Subscribe, handleSubmit } = useForm({
 		defaultValues: {
 			email: "",
 			name: "",
@@ -24,13 +24,14 @@ export default function Auth() {
 		},
 		validators: {
 			onSubmitAsync: async ({ value }) => {
-				const { error } = await fetchClient.POST(
-					toggle ? "/register" : "/login",
+				const { error, data } = await fetchClient.POST(
+					"/api/login",
 					{
 						body: value,
 					},
 				);
 				if (error) return { fields: error.errors };
+				localStorage.setItem('token', data.token);
 				queryClient.invalidateQueries({ queryKey: ["get", "/api/user"] });
 				return null;
 			},

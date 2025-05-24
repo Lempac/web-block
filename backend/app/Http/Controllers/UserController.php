@@ -102,19 +102,6 @@ class UserController extends Controller
         return response()->noContent();
     }
 
-    // public function defaultUser()
-    // {
-    //     return User::default();
-    // }
-
-    // #[Get(path: '/api/user/settings', tags:['user'])]
-    // #[Response(response: '200', description: 'User settings.', content: new JsonContent(ref: '#/components/schemas/Settings'))]
-    // #[Response(response: '401', description: 'Unauthenticated.', content: new JsonContent(ref: '#/components/schemas/ErrorObject'))]
-    // public function indexSettings()
-    // {
-    //     return Auth::user()->settings;
-    // }
-
     #[Get(path: '/api/user/repos', tags: ['user'], security: ['sessionAuth'])]
     #[Response(response: '200', description: 'User repos from github.', content: new JsonContent(type: 'array', items: new Items(type: 'string'), nullable: false))]
     #[Response(response: '401', description: 'Unauthenticated.', content: new JsonContent(ref: '#/components/schemas/ErrorObject'))]

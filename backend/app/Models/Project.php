@@ -5,7 +5,6 @@ namespace App\Models;
 use Gitonomy\Git\Repository;
 use Gitonomy\Git\Tree;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -28,8 +27,7 @@ use Storage;
 ], required: ['id', 'name', 'description', 'x', 'y', 'zoom', 'default_branch', 'url', 'oid', 'cwd'])]
 class Project extends Model
 {
-    /** @use HasFactory<ProjectFactory> */
-    use HasFactory, HasUuids;
+    use HasUuids;
 
     protected $fillable = [
         'name',

@@ -29,7 +29,7 @@ return [
      |
      */
 
-    'prefix' => env('PLATFORM_PREFIX', '/admin'),
+    'prefix' => env('PLATFORM_PREFIX', '/'),
 
     /*
      |--------------------------------------------------------------------------
@@ -160,8 +160,8 @@ return [
      */
 
     'template' => [
-        'header' => '',
-        'footer' => '',
+        'header' => 'brand.header',
+        'footer' => 'brand.footer',
     ],
 
     /*

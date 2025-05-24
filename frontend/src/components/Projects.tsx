@@ -181,14 +181,15 @@ export default function Projects({
 						<button
 							className="nodrag btn btn-primary"
 							onClick={async () => {
-								await fetchClient.DELETE("/logout");
-								await queryClient.invalidateQueries({
+								await fetchClient.DELETE("/api/logout");
+								localStorage.removeItem('token');
+								queryClient.invalidateQueries({
 									queryKey: ["get", "/api/user"],
 								});
-								await queryClient.invalidateQueries({
+								queryClient.invalidateQueries({
 									queryKey: ["get", "/api/user/repos"],
 								});
-								await queryClient.invalidateQueries({
+								queryClient.invalidateQueries({
 									queryKey: ["get", "/api/projects"],
 								});
 							}}

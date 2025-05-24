@@ -313,43 +313,11 @@ if (import.meta.env.DEV)
 	//@ts-expect-error Debug
 	window.clearDir = clearDirectory;
 
-function getCookie(name: string) {
-	const value = `; ${document.cookie}`;
-	const parts = value.split(`; ${name}=`);
-	if (parts.length === 2) return parts.pop()?.split(";").shift();
-}
-
-//for csrf and xsrf token
-// fetch(`${import.meta.env.VITE_SERVER_URL}/sanctum/csrf-cookie`);
-if (!getCookie("XSRF-TOKEN"))
-	fetch(`${import.meta.env.VITE_SERVER_URL}/sanctum/csrf-cookie`, {
-		credentials: "include",
-	});
-
-// (async () => {
-// 	try {
-// 		if(getCookie("XSRF-TOKEN")) return;
-// 		const response = await fetch(
-// 			`${import.meta.env.VITE_SERVER_URL}/api/csrf-token`,
-// 			{
-// 				method: "GET",
-// 				credentials: "include",
-// 			},
-// 		);
-	
-// 		if (!response.ok) {
-// 			throw new Error(`HTTP error! status: ${response.status}`);
-// 		}
-	
-// 		const data = await response.json();
-// 		document.cookie = 'XSRF-TOKEN='+data.csrf_token;
-// 		console.log("CSRF Token received from backend:", data.csrf_token);
-// 	} catch (error) {
-// 		console.error("Error fetching CSRF token:", error);
-// 		// Handle error: e.g., show a message to the user, prevent further API calls
-// 		throw error; // Propagate the error
-// 	}
-// })()
+// function getCookie(name: string) {
+// 	const value = `; ${document.cookie}`;
+// 	const parts = value.split(`; ${name}=`);
+// 	if (parts.length === 2) return parts.pop()?.split(";").shift();
+// }
 
 export const fetchClient = createFetchClient<paths>({
 	credentials: "include",
@@ -439,17 +407,14 @@ export const INITAL_USER = {
 	settings: typeof INITAL_SETTINGS;
 };
 
-const myMiddleware: Middleware = {
+const authMiddleware: Middleware = {
 	async onRequest({ request }) {
-		request.headers.set(
-			"X-XSRF-TOKEN",
-			decodeURIComponent(getCookie("XSRF-TOKEN") ?? ""),
-		);
+		request.headers.set("Authorization", `Bearer ${localStorage.getItem("token")}`);
 		return request;
 	},
 };
 
-fetchClient.use(myMiddleware);
+fetchClient.use(authMiddleware);
 export const $api = createClient(fetchClient);
 export const fileExtensionMap = {
 	js: "javascript",

@@ -35,6 +35,16 @@ class PlatformProvider extends OrchidServiceProvider
             //     ->title('Navigation')
             //     ->route(config('platform.index')),
 
+            Menu::make('Go to Frontend')
+                ->icon('bs.globe')
+                ->url(config('app.frontend_url'))
+                ->target('_blank'),
+
+            Menu::make('Statistics')
+                ->icon('chart')
+                ->route('platform.statistics')
+                ->title('Analytics'),
+
             Menu::make(__('Users'))
                 ->icon('bs.people')
                 ->route('platform.systems.users')

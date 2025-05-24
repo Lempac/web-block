@@ -10,6 +10,14 @@ import i18n from "./i18n.ts";
 import ProjectProvider from "./Providers/ProjectProvider.tsx";
 import { initExample } from "./bootstrap.ts";
 import UserProvider from "./Providers/UserProvider.tsx";
+if(['auth-error', 'auth-success'].some(path => window.location.pathname.includes(path))){
+	const params = new URLSearchParams(window.location.search);
+	const token = params.get('token');
+	if (token) {
+		localStorage.setItem('token', token);
+		window.location.replace(`${import.meta.env.BASE_URL}${import.meta.env.DEV ? '' : '/web-block'}`);
+	}
+}
 
 const queryClient = new QueryClient({
 	defaultOptions: {

@@ -10,12 +10,12 @@ servers:
     url: 'http://localhost:8000/'
     description: 'Backend server'
 paths:
-  /login:
+  /api/login:
     post:
       tags:
         - auth
       summary: 'Handle an incoming authentication request.'
-      operationId: 42f77e072dec84b0e1094cca1228298e
+      operationId: bc76a9d52929cab7a147ca7b5c527430
       requestBody:
         description: 'Login the user'
         content:
@@ -23,54 +23,72 @@ paths:
             schema:
               $ref: '#/components/schemas/LoginRequest'
       responses:
-        '204':
-          description: 'User successfully logged in.'
+        '200':
+          description: 'User successfully logged in and token issued.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
         '401':
-          description: 'Error with login.'
+          description: 'Error with login credentials.'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorObject'
-  /logout:
+        '422':
+          description: 'Validation error.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+  /api/logout:
     delete:
       tags:
         - auth
       summary: 'Destroy an authenticated session.'
-      operationId: c1f1a7fee7db3c314778d7d6f7d715ab
+      operationId: 250045954f07adf40103e33a04e5d715
       responses:
         '204':
           description: 'User successfully logged out.'
       security:
         -
           scalar: sessionAuth
-  /auth/redirect:
+  /api/redirect:
     get:
       tags:
         - github
         - auth
-      operationId: 90d17f2f0d31d7f84408f6b27d7dde7e
+      operationId: 0487fbb4c6d40e317fb4ec45582d09e5
+      parameters:
+        -
+          name: device_name
+          in: query
+          description: "A friendly name for the device initiating the login (e.g., 'web-browser', 'mobile-app'). Required to generate the API token name."
+          required: true
+          schema:
+            type: string
       responses:
         '302':
           description: 'Redirects to GitHub for authentication.'
         '400':
           description: 'GitHub client redirect not configured.'
-  /auth/callback:
+  /api/callback:
     get:
       tags:
         - github
         - auth
-      operationId: 28e91517417a79e205bd570a4c5fa14f
+      operationId: 34a24a8f777c83598c6c30936c6f9a04
       responses:
         '301':
           description: 'Redirects to the frontend URL after authentication.'
         '400':
           description: 'Error during GitHub authentication.'
-  /register:
+  /api/register:
     post:
       tags:
         - auth
       summary: 'Handle an incoming registration request.'
-      operationId: 573de1fed352c1205a32c4d1b9877375
+      operationId: apiRegister
       requestBody:
         description: 'Create user model and login in user.'
         required: true
@@ -79,8 +97,12 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterRequest'
       responses:
-        '204':
+        '201':
           description: 'User successfully registered.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
         '401':
           description: 'Error with registering.'
           content:
@@ -666,6 +688,19 @@ components:
         - private
         - public
       deprecated: true
+    AuthTokenResponse:
+      required:
+        - message
+        - token
+      properties:
+        message:
+          type: string
+          example: 'Login successful'
+        token:
+          description: 'Sanctum plain text API token'
+          type: string
+          example: 1|abcdefghijklmnopqrstuvwxyzabcdefg
+      type: object
     RegisterRequest:
       required:
         - name
