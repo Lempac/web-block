@@ -16,7 +16,7 @@ use Storage;
 #[Schema(properties: [
     new Property(property: 'id', type: 'string', format: 'uuid'),
     new Property(property: 'name', type: 'string'),
-    new Property(property: 'description', type: 'string', nullable: true),
+    new Property(property: 'description', type: 'string'),
     new Property(property: 'x', type: 'integer', default: 0),
     new Property(property: 'y', type: 'integer', default: 0),
     new Property(property: 'zoom', type: 'number', default: 1, format: 'float'),

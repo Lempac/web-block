@@ -8,10 +8,10 @@ import git from "isomorphic-git";
 import useProjects from "@/Providers/useProjects";
 export default function UploadProject({ position }: PanelProps) {
 	const { t } = useTranslation();
-	const { getCurrentProject } = useProjects();
+	const { getProject } = useProjects();
 	const { mutateAsync, isPending, isError } = useMutation({
 		mutationFn: async () => {
-			const project = getCurrentProject();
+			const project = getProject();
 			await git.commit({ fs, dir: `/${project?.name}` });
 		},
 	});
@@ -19,8 +19,8 @@ export default function UploadProject({ position }: PanelProps) {
 	//TODO: logic for file changes
 	const {data: files} = useQuery({
 		queryKey: ['currentProjectStatus'],
-		queryFn: async () => git.listFiles({fs, dir: `/${getCurrentProject()?.name}`}),
-		enabled: getCurrentProject() !== undefined
+		queryFn: async () => git.listFiles({fs, dir: `/${getProject()?.name}`}),
+		enabled: getProject() !== undefined
 	})
 	return (
 		<Panel

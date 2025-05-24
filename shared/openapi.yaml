@@ -880,9 +880,7 @@ components:
         name:
           type: string
         description:
-          type:
-            - string
-            - 'null'
+          type: string
         x:
           type: integer
           default: 0

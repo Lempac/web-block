@@ -25,7 +25,12 @@ return [
         'logout' => 'Logout',
         'settings' => 'Settings',
         'new-project' => 'New Project',
-        'search-repo' => 'Search for repo',
+        'search-repo' => [
+            'placeholder' => 'Search for repo/New project name',
+            'add' => 'Add project from github',
+            'create' => 'Create/Open project',
+        ],
+
     ],
     'projects-card' => [
         'description' => 'Description',
@@ -85,6 +90,6 @@ return [
         'name' => 'Quick command',
     ],
     'upload-project' => [
-        'tooltip' => 'Upload project'
-    ]
+        'tooltip' => 'Upload project',
+    ],
 ];

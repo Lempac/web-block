@@ -1,10 +1,10 @@
 import { $api, INITAL_SETTINGS_WINDOW, INITAL_USER } from "@/bootstrap";
 import { UserContext } from "./useUser";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useLocalStorage } from "@uidotdev/usehooks";
 
 export default function UserProvider({ children }: { children: ReactNode }) {
-	const [user, setUser] = useLocalStorage('user', INITAL_USER);
+	const [user, setUser] = useLocalStorage("user", INITAL_USER);
 	const {
 		data: OnlineUser,
 		isError,
@@ -22,9 +22,14 @@ export default function UserProvider({ children }: { children: ReactNode }) {
 		},
 	);
 	const { data: repos } = $api.useQuery("get", "/api/user/repos");
-	const [settings, setSettings] = useLocalStorage("settings", INITAL_SETTINGS_WINDOW);
-	
-	if(isSuccess) setUser(OnlineUser);
+	const [settings, setSettings] = useLocalStorage(
+		"settings",
+		INITAL_SETTINGS_WINDOW,
+	);
+
+	useEffect(() => {
+		if (isSuccess) setUser(OnlineUser);
+	}, [OnlineUser, isSuccess, setUser]);
 
 	return (
 		<UserContext.Provider

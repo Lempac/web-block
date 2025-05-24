@@ -1,14 +1,16 @@
 import { FaTrashCan } from "react-icons/fa6";
 import { MdOutlineOpenInNew } from "react-icons/md";
 import clsx from "clsx";
-import { useForm } from "@tanstack/react-form";
-import { useQueryClient } from "@tanstack/react-query";
+import { useForm, useStore } from "@tanstack/react-form";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	BlockTypeSelect,
 	BoldItalicUnderlineToggles,
 	codeBlockPlugin,
 	CodeToggle,
 	CreateLink,
+	imagePlugin,
+	InsertImage,
 	linkPlugin,
 	listsPlugin,
 	MDXEditor,
@@ -20,38 +22,34 @@ import {
 import { headingsPlugin } from "@mdxeditor/editor";
 import { useReactFlow } from "@xyflow/react";
 import type { CustomNodeType } from "..";
-import { fetchClient, pfs } from "@/bootstrap";
-import type { components } from "@/api";
+import { clearDirectory, fetchClient, pfs } from "@/bootstrap";
 import { useTranslation } from "react-i18next";
 import { useRef } from "react";
 import useProjects from "@/Providers/useProjects";
+import type { components } from "@/api";
 
-export default function ProjectCard({
-	project,
-}: {
-	//HACK: Tehnically, by this point description cant be null.
-	project: components["schemas"]["Project"] & {
-		description: string;
-		raw_description: string;
-	};
-}) {
+export default function ProjectCard({ id }: { id: string }) {
 	const { t } = useTranslation(["base", "md"]);
 	const queryClient = useQueryClient();
-	const { setCurrentProject, currentProject } = useProjects();
+	const { setCurrentProject, currentProject, projects } = useProjects();
+
 	const { deleteElements } = useReactFlow<CustomNodeType>();
 	const description = useRef<MDXEditorMethods>(null);
-
 	async function deleteCard(id: string) {
-		const { error } = await fetchClient.DELETE("/api/projects/{project}", {
+		await clearDirectory(`/${projects.get(id)?.name}`);
+		await pfs.rmdir(`/${projects.get(id)?.name}`);
+		projects.delete(id);
+		if (currentProject === id) setCurrentProject("");
+		queryClient.invalidateQueries({ queryKey: ["get", "/api/projects"] });
+		queryClient.invalidateQueries({ queryKey: ["getProjects"] });
+		queryClient.invalidateQueries({ queryKey: ["filteredProjects"] });
+		fetchClient.DELETE("/api/projects/{project}", {
 			params: {
 				path: {
 					project: id,
 				},
 			},
 		});
-		if (error) return;
-		setCurrentProject("");
-		await queryClient.invalidateQueries({ queryKey: ["get", "/api/projects"] });
 	}
 
 	function openProject(id: string) {
@@ -61,31 +59,60 @@ export default function ProjectCard({
 		});
 	}
 
-	const { Field } = useForm({
+	const { data: project, isSuccess } = useQuery({
+		queryKey: ["project", id],
+		queryFn: async () =>
+			({
+				...projects.get(id),
+				description: await pfs.readFile(projects.get(id)!.description!, "utf8"),
+			}) as components["schemas"]["Project"],
+	});
+
+	const { Field, store } = useForm({
 		defaultValues: project,
 		validators: {
 			onChangeAsyncDebounceMs: 500,
 			onChangeAsync: async ({ value }) => {
-				await pfs.writeFile(project.raw_description, value.description);
-				const { error } = await fetchClient.PUT("/api/projects/{project}", {
+				await pfs.writeFile(projects.get(id)!.description, value.description);
+				if (projects.get(id)?.name !== value.name) {
+					await pfs.rename(`/${projects.get(id)?.name}`, `/${value.name}`);
+					projects.set(id, { ...value, description: projects.get(id)?.description as string });
+				}
+				queryClient.invalidateQueries({
+					queryKey: ["get", "/api/projects"],
+				});
+				queryClient.invalidateQueries({
+					queryKey: ["filteredProjects"],
+				});
+				queryClient.invalidateQueries({
+					queryKey: ["getProjects"],
+				});
+				queryClient.invalidateQueries({
+					queryKey: ["project", id],
+				});
+				fetchClient.PUT("/api/projects/{project}", {
 					params: {
 						path: {
 							project: value.id,
 						},
 					},
 					credentials: "include",
-					body: { ...value, description: project.description },
+					body: {
+						...value,
+						description: projects.get(id)?.description as string,
+					},
 				});
-				if (error) return { fields: error.errors };
-
-				await queryClient.invalidateQueries({
-					queryKey: ["get", "/api/projects"],
-				});
-
+				// if (error) return { fields: error.errors };
+				console.log(project, projects.get(id), value)
 				return null;
 			},
 		},
 	});
+
+	const des = useStore(store, (state) => state.values.description);
+
+	if (!isSuccess || !des || des === "") return <></>;
+
 	return (
 		<div
 			className={clsx(
@@ -111,20 +138,20 @@ export default function ProjectCard({
 				/>
 				<button
 					className="nodrag btn btn-outline btn-success"
-					onClick={() => openProject(project.id)}
+					onClick={() => openProject(id)}
 					title={t("projects-card.open")}
 				>
 					<MdOutlineOpenInNew size={20} />
 				</button>
 				<button
 					className="nodrag btn btn-outline btn-error"
-					onClick={() => deleteCard(project.id)}
+					onClick={() => deleteCard(id)}
 					title={t("projects-card.delete")}
 				>
 					<FaTrashCan />
 				</button>
 			</div>
-			<div className="collapse-arrow collapse shadow">
+			<div className="collapse-arrow collapse shadow bg-base-300">
 				<input type="checkbox" />
 				<div className="collapse-title font-semibold">
 					{t("projects-card.description")}
@@ -133,24 +160,19 @@ export default function ProjectCard({
 					<Field
 						name="description"
 						asyncDebounceMs={1000}
-						// listeners={{
-						// onChange: ({ value }) => {
-
-						// },
-						// onMount: ({value}) => {
-						// 	description.current?.setMarkdown(value as string);
-						// },
-						// }}
 						children={(field) => (
 							<MDXEditor
 								ref={description}
-								className="nodrag"
+								className="nodrag "
 								contentEditableClassName="prose"
 								onBlur={field.handleBlur}
 								markdown={field.state.value}
 								onChange={(e, init) => !init && field.handleChange(e)}
 								translation={(key, defaultValue, interpolations) => {
-									return t(key, defaultValue, { ns: "md", ...interpolations });
+									return t(key, defaultValue, {
+										ns: "md",
+										...interpolations,
+									});
 								}}
 								plugins={[
 									toolbarPlugin({
@@ -161,6 +183,7 @@ export default function ProjectCard({
 												<BlockTypeSelect />
 												<CreateLink />
 												<CodeToggle />
+												<InsertImage />
 											</>
 										),
 									}),
@@ -168,6 +191,7 @@ export default function ProjectCard({
 									listsPlugin(),
 									quotePlugin(),
 									linkPlugin(),
+									imagePlugin(),
 									codeBlockPlugin({ defaultCodeBlockLanguage: "markdown" }),
 								]}
 							/>

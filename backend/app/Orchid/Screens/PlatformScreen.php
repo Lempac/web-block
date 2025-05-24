@@ -33,6 +33,7 @@ class PlatformScreen extends Screen
     public function description(): ?string
     {
         $name = \Auth::user()->name;
+
         return "Welcome {$name} to your Application dashboard.";
     }
 

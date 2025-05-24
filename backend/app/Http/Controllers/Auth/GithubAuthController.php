@@ -33,7 +33,7 @@ class GithubAuthController extends Controller
         if (request()->has('error')) {
             Log::error(request());
 
-            return redirect(config('app.frontend_url'), status: 400);
+            return redirect(\App::environment('production') ? config('app.frontend_url').'/web-block' : config('app.frontend_url'), status: 400);
         }
 
         $githubUser = Socialite::driver('github')->user();
@@ -41,7 +41,7 @@ class GithubAuthController extends Controller
             if (User::where('github_id', '=', $githubUser->getId())->count('github_id') > 0) {
                 session()->flash('register-github-error', 'Already have an account with same github!');
 
-                return redirect(config('app.frontend_url'), 301);
+                return redirect(\App::environment('production') ? config('app.frontend_url').'/web-block' : config('app.frontend_url'), 301);
             }
             Auth::user()->update(['name' => $githubUser->nickname, 'github_id' => $githubUser->getId(), 'github_token' => $githubUser->token, 'github_refresh_token' => $githubUser->refreshToken]);
         } else {
@@ -50,6 +50,6 @@ class GithubAuthController extends Controller
             Auth::user()->save();
         }
 
-        return redirect(config('app.frontend_url'), 301);
+        return redirect(\App::environment('production') ? config('app.frontend_url').'/web-block' : config('app.frontend_url'), 301);
     }
 }

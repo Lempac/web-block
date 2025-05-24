@@ -361,7 +361,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             name: string;
-            description: string | null;
+            description: string;
             /** @default 0 */
             x: number;
             /** @default 0 */

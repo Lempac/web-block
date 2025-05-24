@@ -5,7 +5,6 @@ import { VscNewFile, VscNewFolder } from "react-icons/vsc";
 import { useTranslation } from "react-i18next";
 import { FaArrowRight } from "react-icons/fa6";
 import { useLocalStorage } from "@uidotdev/usehooks";
-import useProjects from "@/Providers/useProjects";
 
 export type ContextMenuNode = Node<{ onClick: () => void }, "contextMenu">;
 
@@ -17,7 +16,6 @@ export default function ContextMenu({
 	const addQuickCommand = useAddQuickCommand();
 	const [settings] = useLocalStorage("settings", INITAL_SETTINGS_WINDOW);
 	const { t } = useTranslation();
-	const { currentProject, setCurrentProject } = useProjects();
 	const { addNodes } = useReactFlow<CustomNodeType>();
 
 	const addFile = () =>
@@ -42,7 +40,7 @@ export default function ContextMenu({
 			id: "projects",
 			type: "projects",
 			position: { x: positionAbsoluteX, y: positionAbsoluteY },
-			data: { currentProject, setCurrentProject },
+			data: { },
 		});
 
 	const showSettings = () =>

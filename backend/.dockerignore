@@ -16,7 +16,7 @@ devenv.lock
 devenv.nix
 devenv.yaml
 tests
-storage/app/private/**
-storage/logs/**
-storage/pail
+storage/
+!storage/framework
 public/vendor
+resources/views/vendor

@@ -84,6 +84,6 @@ return [
         'name' => 'Quick command',
     ],
     'upload-project' => [
-        'tooltip' => 'Upload project'
-    ]
+        'tooltip' => 'Upload project',
+    ],
 ];

@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/translations/{locate}/{module}', [TranslationController::class, 'index']);
 
+// Route::get('/csrf-token', 
+// fn () => response()->json(['csrf_token' => csrf_token()])
+// );
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [UserController::class, 'index'])->name('user.index');
     Route::put('/user', [UserController::class, 'update'])->name('user.update');

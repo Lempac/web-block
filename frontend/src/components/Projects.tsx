@@ -6,12 +6,15 @@ import ProjectCard from "@/components/ProjectCard.tsx";
 import clsx from "clsx";
 import { IoIosAdd, IoMdSearch } from "react-icons/io";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { type CustomNodeType } from "@/index";
-import { $api, fetchClient, pfs } from "@/bootstrap";
+import { $api, fetchClient, fs } from "@/bootstrap";
 import { useTranslation } from "react-i18next";
 import useProjects from "@/Providers/useProjects";
 import { useUser } from "@/Providers/useUser";
+import { LuPackagePlus } from "react-icons/lu";
+import git from "isomorphic-git";
+import http from "isomorphic-git/http/web";
 
 export type ProjectsNode = Node<Record<never, never>, "projects">;
 
@@ -20,21 +23,15 @@ export default function Projects({
 	positionAbsoluteY,
 }: NodeProps<ProjectsNode>) {
 	const { projects, isLoading, isSuccess } = useProjects();
-	const {isSuccess: gotUser, repos, settings} = useUser();
+	const { isSuccess: gotUser, repos, settings, user } = useUser();
 	const { t } = useTranslation();
-	
+
 	const queryClient = useQueryClient();
 	const [search, setSearch] = useState("");
 	const { getNode, addNodes, deleteElements } = useReactFlow<CustomNodeType>();
-	
-	
-	const { mutateAsync: createProject, isPending: isCreating } =
-		$api.useMutation("post", "/api/projects", {
-			onSuccess: () => {
-				queryClient.invalidateQueries({ queryKey: ["get", "/api/projects"] });
-				setSearch("");
-			},
-		});
+
+	const { mutateAsync: createProjectOnServer, isPending: isCreating } =
+		$api.useMutation("post", "/api/projects");
 
 	const toggleSettings = () => {
 		if (getNode("settings")) {
@@ -61,7 +58,7 @@ export default function Projects({
 			<li key={i}>
 				<button
 					className="btn"
-					onClick={() => createProject({ body: { nameOrUrl: repo } })}
+					onClick={() => createProject(repo)}
 					disabled={isCreating}
 				>
 					{repo}
@@ -72,42 +69,91 @@ export default function Projects({
 	const { data: filteredProjects } = useQuery({
 		queryKey: ["filteredProjects"],
 		queryFn: async () =>
-			(
-				await Promise.all(
-					projects.values().map(async (project) => ({
-						...project,
-						raw_description: project.description!,
-						description: await pfs.readFile(project.description!, "utf8"),
-					})),
+			projects
+				.values()
+				.filter((project) =>
+					project.name.toLowerCase().includes(search.toLowerCase()),
 				)
-			).filter((project) =>
-				project.name.toLowerCase().includes(search.toLowerCase()),
-			),
+				.map((project) => project.id)
+				.toArray(),
 		enabled: isSuccess,
 	});
 	const filRepoLen = filteredRepos?.length;
+
+	useEffect(() => {
+		queryClient.invalidateQueries({ queryKey: ["filteredProjects"] });
+	}, [projects, queryClient])
+
+	const createProject = async (nameOrUrl: string) => {
+		if (filRepoLen === 0 || filRepoLen === undefined) {
+			if (URL.canParse(nameOrUrl)) {
+				await git.clone({
+					fs,
+					http,
+					dir: `/${nameOrUrl
+						.split("/")
+						.filter((route) => route !== "")
+						.at(-1)}`,
+					corsProxy: import.meta.env.VITE_PROXY_URL,
+					url: nameOrUrl,
+				});
+			} else {
+				await git.init({
+					fs,
+					dir: `/${nameOrUrl}`,
+					defaultBranch: user.settings.defaultBranch,
+				});
+				await git.commit({
+					fs,
+					dir: `/${nameOrUrl}`,
+					message: "init",
+					author: { name: user.name, email: user.email },
+				});
+			}
+		} else {
+			createProjectOnServer({ body: { nameOrUrl } });
+		}
+		setSearch("");
+		await queryClient.invalidateQueries({ queryKey: ["getProjects"] });
+		queryClient.invalidateQueries({ queryKey: ["get", "/api/projects"] });
+	};
+
 	return (
 		<div className="grid gap-2 rounded-box bg-base-300 p-4 shadow ring-neutral in-[.selected]:ring-4">
 			<div className="navbar gap-2 rounded-box bg-base-200 p-4">
-				<h1 className="flex-1 text-2xl font-bold">{t("projects.name")}</h1>
-				<div className="flex gap-2">
+				<h1 className="navbar-start text-2xl font-bold">
+					{t("projects.name")}
+				</h1>
+				<div className="navbar-end flex gap-2">
 					<div className="dropdown dropdown-start">
 						<div className="join">
 							<label tabIndex={0} className="input join-item">
 								<IoMdSearch />
 								<input
 									type="search"
-									placeholder={t("projects.search-repo")}
+									className="w-60"
+									placeholder={t("projects.search-repo.placeholder")}
 									value={search}
 									disabled={isCreating}
 									onChange={(e) => setSearch(e.target.value)}
+									onKeyDown={(e) => {
+										if(e.key === "Enter") createProject(search)}}
 								/>
 							</label>
 							<button
-								className="btn join-item btn-success"
-								onClick={() => createProject({ body: { nameOrUrl: search } })}
+								className="tooltip btn join-item btn-success"
+								onClick={() => createProject(search)}
+								data-tip={
+									filRepoLen === 0 || filRepoLen === undefined
+										? t("projects.search-repo.create")
+										: t("projects.search-repo.add")
+								}
 							>
-								<IoIosAdd size="1.5em" />
+								{filRepoLen === 0 || filRepoLen === undefined ? (
+									<LuPackagePlus size="1.5em" />
+								) : (
+									<IoIosAdd size="1.5em" />
+								)}
 							</button>
 						</div>
 						<ul
@@ -164,7 +210,7 @@ export default function Projects({
 					<p>{t("projects.no-projects")}</p>
 				) : (
 					filteredProjects.map((project) => (
-						<ProjectCard project={project} key={project.id} />
+						<ProjectCard id={project} key={project} />
 					))
 				)}
 			</div>

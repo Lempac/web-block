@@ -21,9 +21,14 @@ const queryClient = new QueryClient({
 
 if (
 	localStorage.getItem("firstTime") === null ||
-	!!localStorage.getItem("firstTime")
-)
+	localStorage.getItem("firstTime") === "true"
+) {
+	console.log("Generating example data...")
 	initExample();
+}
+
+//@ts-expect-error for debug
+if(import.meta.env.DEV) window.initExample = initExample;
 
 createRoot(document.getElementById("root")!).render(
 	<StrictMode>

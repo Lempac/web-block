@@ -1,42 +1,105 @@
 import {
 	useReactFlow,
-	useStore,
-	useViewport,
 	type Node,
 	type NodeProps,
+	type ReactFlowInstance,
 } from "@xyflow/react";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
+import { useEffect, useState } from "react";
 import type { CustomNodeType } from "..";
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { useUser } from "@/Providers/useUser";
+import type { INITAL_SETTINGS_WINDOW } from "@/bootstrap";
 
 const commands = new Map([
-	["addFile", () => {}],
-	["addFolder", () => {}],
-	["showProjects", () => {}],
-	["showSettings", () => {}],
+	[
+		"addFile",
+		(
+			ReactFlowInstance: ReactFlowInstance<CustomNodeType>,
+			x: number,
+			y: number,
+		) => {
+			const { addNodes } = ReactFlowInstance;
+			addNodes({
+				id: crypto.randomUUID(),
+				type: "file",
+				data: {},
+				position: { x, y },
+			});
+		},
+	],
+	[
+		"addFolder",
+		(
+			ReactFlowInstance: ReactFlowInstance<CustomNodeType>,
+			x: number,
+			y: number,
+		) => {
+			const { addNodes } = ReactFlowInstance;
+			addNodes({
+				id: crypto.randomUUID(),
+				type: "folder",
+				data: {},
+				position: { x, y },
+			});
+		},
+	],
+	[
+		"showProjects",
+		(
+			ReactFlowInstance: ReactFlowInstance<CustomNodeType>,
+			x: number,
+			y: number,
+		) => {
+			const { addNodes } = ReactFlowInstance;
+			addNodes({
+				id: "projects",
+				type: "projects",
+				position: { x, y },
+				data: {},
+			});
+		},
+	],
+	[
+		"showSettings",
+		(
+			ReactFlowInstance: ReactFlowInstance<CustomNodeType>,
+			x: number,
+			y: number,
+			settings: typeof INITAL_SETTINGS_WINDOW
+		) => {
+			const { addNodes } = ReactFlowInstance;
+			addNodes({
+				id: "settings",
+				type: "settings",
+				position: { x, y },
+				style: { width: settings.width, height: settings.height },
+				data: {},
+			});
+		},
+	],
 ]);
 
 export type QuickCommandNode = Node<
 	{
 		onPaneClick: () => void;
-		setX: Dispatch<SetStateAction<number | undefined>>;
-		setY: Dispatch<SetStateAction<number | undefined>>;
-		x: number | undefined;
-		y: number | undefined;
 	},
 	"quickCommand"
 >;
 
 export default function QuickCommand({
 	data,
-	id,
+	// id,
 	width,
 	height,
+	positionAbsoluteX,
+	positionAbsoluteY,
 }: NodeProps<QuickCommandNode>) {
+	const {settings} = useUser();
+	const reactFlow = useReactFlow<CustomNodeType>();
 	const [size, setSize] = useState([0, 0]);
-	const { zoom } = useViewport();
-	const { updateNode } = useReactFlow<CustomNodeType>();
+	// const { zoom } = useViewport();
+	// const { updateNode } = useReactFlow<CustomNodeType>();
 	const { t } = useTranslation();
 	useEffect(() => {
 		if (
@@ -56,22 +119,19 @@ export default function QuickCommand({
 		);
 		setSize([width, height]);
 	}, [height, size, width]);
-	const position = useStore((state) => state.nodeLookup.get(id)?.position);
-	useEffect(() => {
-		if (!position) return;
-		console.log("position updated", position, data.x, data.y);
-		data.setX(position.x);
-		data.setY(position.y);
-		updateNode(id, (node) => {
-			if (!node || !size[0] || !size[1]) return node;
-			return {
-				...node,
-				style: {
-					transform: `scale(${1 / zoom})`,
-				},
-			};
-		});
-	}, [data, id, position, size, updateNode, zoom]);
+	// const position = useStore((state) => state.nodeLookup.get(id)?.position);
+	// useEffect(() => {
+	// 	if (!position) return;
+	// 	updateNode(id, (node) => {
+	// 		if (!node || !size[0] || !size[1]) return node;
+	// 		return {
+	// 			...node,
+	// 			style: {
+	// 				transform: `scale(${1 / zoom})`,
+	// 			},
+	// 		};
+	// 	});
+	// }, [data, id, position, size, updateNode, zoom]);
 
 	// useEffect(() => {
 	// 	updateNode(id, (node) => {
@@ -151,7 +211,7 @@ export default function QuickCommand({
 							<button
 								className="btn"
 								onClick={() => {
-									command();
+									command(reactFlow, positionAbsoluteX, positionAbsoluteY, settings);
 									data.onPaneClick();
 								}}
 							>

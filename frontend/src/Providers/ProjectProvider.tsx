@@ -1,11 +1,13 @@
 import { useState, type ReactNode } from "react";
 import git from "isomorphic-git";
 import { useQuery } from "@tanstack/react-query";
-import { getProjects, fs, findMdFiles, pfs } from "../bootstrap";
+import { getProjects, fs, findMdFiles, pfs, gitAddAll } from "../bootstrap";
 import { ProjectContext } from "./useProjects";
 import type { components } from "../api";
+import { useUser } from "./useUser";
 
 export default function ProjectProvider({ children }: { children: ReactNode }) {
+	const { user } = useUser();
 	const {
 		data: projects,
 		isLoading,
@@ -14,7 +16,8 @@ export default function ProjectProvider({ children }: { children: ReactNode }) {
 	} = useQuery({
 		queryKey: ["getProjects"],
 		queryFn: async () => {
-			const data = await getProjects();
+			const data = await getProjects(await pfs.readdir("/"));
+			// console.log(data)
 			const projects = new Map<string, components["schemas"]["Project"]>();
 			const pro = await Promise.all(
 				data.map(async (project) => ({
@@ -62,8 +65,28 @@ export default function ProjectProvider({ children }: { children: ReactNode }) {
 					x: 0,
 					y: 0,
 					zoom: 1,
-					default_branch: (await git.currentBranch({ fs, dir: `/${project}`})) ?? 'master',
-					oid: "",
+					default_branch:
+						(await git.currentBranch({ fs, dir: `/${project}` })) ?? "master",
+					oid: await git
+						.resolveRef({ fs, dir: `/${project}`, ref: "HEAD" })
+						.catch(async (e: typeof git.Errors.NotFoundError) => {
+							console.assert(
+								e.code === "NotFoundError",
+								`Other error?, code is: ${e.code}`,
+							);
+							await gitAddAll(`/${project}`);
+							await git.commit({
+								fs,
+								dir: `/${project}`,
+								message: "init",
+								author: { name: user.name, email: user.email },
+							});
+							return await git.resolveRef({
+								fs,
+								dir: `/${project}`,
+								ref: "HEAD",
+							});
+						}),
 					url: "",
 				})),
 			);
@@ -74,7 +97,7 @@ export default function ProjectProvider({ children }: { children: ReactNode }) {
 		},
 	});
 	const [currentProject, setCurrentProject] = useState("");
-	const getCurrentProject = (id = currentProject) => projects?.get(id);
+	const getProject = (id = currentProject) => projects?.get(id);
 
 	return (
 		<ProjectContext.Provider
@@ -85,8 +108,8 @@ export default function ProjectProvider({ children }: { children: ReactNode }) {
 				isLoading,
 				isError,
 				isSuccess,
-				getCurrentProject,
-				cwd: getCurrentProject()?.cwd ?? "/",
+				getProject,
+				cwd: getProject()?.cwd ?? "/",
 			}}
 			children={children}
 		/>

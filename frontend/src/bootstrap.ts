@@ -18,8 +18,9 @@ import LightningFS from "@isomorphic-git/lightning-fs";
 import git from "isomorphic-git";
 import { Buffer } from "buffer";
 import dedent from "dedent";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import type { CustomNodeType } from ".";
+import http from "isomorphic-git/http/web";
 // Bundlers require Buffer to be defined on window
 window.Buffer = Buffer;
 export const fs = new LightningFS("fs");
@@ -28,62 +29,73 @@ if (import.meta.env.DEV) {
 	window.fs = fs;
 	window.pfs = pfs;
 	window.git = git;
+	//@ts-expect-error debug
+	window.http = http;
 }
 
-export async function getProjects() {
-	const paths = await pfs.readdir("/");
-	return paths.filter(
+export const FILE = 0,
+	HEAD = 1,
+	WORKDIR = 2,
+	STAGE = 3;
+
+export const unstageChanges = async (dir: string) =>
+	(await git.statusMatrix({ fs, dir }))
+		.filter((row) => row[WORKDIR] !== row[STAGE])
+		.map((row) => row[FILE]);
+//@ts-expect-error debug
+if (import.meta.env.DEV) window.unstageChanges = unstageChanges;
+
+export const getProjects = async (paths: string[]) =>
+	paths.filter(
 		async (path) => (await pfs.readdir(`/${path}/.git`)).length !== 0,
 	);
-}
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function getFileStateChanges(
-	commitHash1: string,
-	commitHash2: string,
-	dir: string,
-) {
-	return git.walk({
-		fs,
-		dir,
-		trees: [git.TREE({ ref: commitHash1 }), git.TREE({ ref: commitHash2 })],
-		map: async function (filepath, [A, B]) {
-			// ignore directories
-			if (filepath === ".") {
-				return;
-			}
-			if ((await A?.type()) === "tree" || (await B?.type()) === "tree") {
-				return;
-			}
+// async function getFileStateChanges(
+// 	commitHash1: string,
+// 	commitHash2: string,
+// 	dir: string,
+// ) {
+// 	return git.walk({
+// 		fs,
+// 		dir,
+// 		trees: [git.TREE({ ref: commitHash1 }), git.TREE({ ref: commitHash2 })],
+// 		map: async function (filepath, [A, B]) {
+// 			// ignore directories
+// 			if (filepath === ".") {
+// 				return;
+// 			}
+// 			if ((await A?.type()) === "tree" || (await B?.type()) === "tree") {
+// 				return;
+// 			}
 
-			// generate ids
-			const Aoid = await A?.oid();
-			const Boid = await B?.oid();
+// 			// generate ids
+// 			const Aoid = await A?.oid();
+// 			const Boid = await B?.oid();
 
-			// determine modification type
-			let type = "equal";
-			if (Aoid !== Boid) {
-				type = "modify";
-			}
-			if (Aoid === undefined) {
-				type = "add";
-			}
-			if (Boid === undefined) {
-				type = "remove";
-			}
-			if (Aoid === undefined && Boid === undefined) {
-				console.log("Something weird happened:");
-				console.log(A);
-				console.log(B);
-			}
+// 			// determine modification type
+// 			let type = "equal";
+// 			if (Aoid !== Boid) {
+// 				type = "modify";
+// 			}
+// 			if (Aoid === undefined) {
+// 				type = "add";
+// 			}
+// 			if (Boid === undefined) {
+// 				type = "remove";
+// 			}
+// 			if (Aoid === undefined && Boid === undefined) {
+// 				console.log("Something weird happened:");
+// 				console.log(A);
+// 				console.log(B);
+// 			}
 
-			return {
-				path: `/${filepath}`,
-				type: type,
-			};
-		},
-	});
-}
+// 			return {
+// 				path: `/${filepath}`,
+// 				type: type,
+// 			};
+// 		},
+// 	});
+// }
 
 export const useOnPaneClick = () => {
 	const { deleteElements } = useReactFlow<CustomNodeType>();
@@ -104,18 +116,16 @@ export function useAddQuickCommand() {
 		const { domNode } = store.getState();
 		const boundingRect = domNode?.getBoundingClientRect();
 		if (!boundingRect) return;
-		const center =
-			x === undefined || y === undefined
-				? screenToFlowPosition({
-						x: boundingRect.x + boundingRect.width / 2,
-						y: boundingRect.y + boundingRect.height / 8,
-					})
-				: { x, y };
-		console.log(x, y)
+		const center = screenToFlowPosition({
+			x: boundingRect.x + boundingRect.width / 2,
+			y: boundingRect.y + boundingRect.height / 8,
+		});
 		addNodes({
 			id: "quickCommand",
 			type: "quickCommand",
-			data: { onPaneClick: () => onPaneClick("quickCommand"), setX, setY, x, y },
+			data: {
+				onPaneClick: () => onPaneClick("quickCommand"),
+			},
 			position: center,
 			origin: [0.5, 0.5], //uses center, but will through off all calculations
 		});
@@ -309,17 +319,46 @@ function getCookie(name: string) {
 	if (parts.length === 2) return parts.pop()?.split(";").shift();
 }
 
+//for csrf and xsrf token
+// fetch(`${import.meta.env.VITE_SERVER_URL}/sanctum/csrf-cookie`);
+if (!getCookie("XSRF-TOKEN"))
+	fetch(`${import.meta.env.VITE_SERVER_URL}/sanctum/csrf-cookie`, {
+		credentials: "include",
+	});
+
+// (async () => {
+// 	try {
+// 		if(getCookie("XSRF-TOKEN")) return;
+// 		const response = await fetch(
+// 			`${import.meta.env.VITE_SERVER_URL}/api/csrf-token`,
+// 			{
+// 				method: "GET",
+// 				credentials: "include",
+// 			},
+// 		);
+	
+// 		if (!response.ok) {
+// 			throw new Error(`HTTP error! status: ${response.status}`);
+// 		}
+	
+// 		const data = await response.json();
+// 		document.cookie = 'XSRF-TOKEN='+data.csrf_token;
+// 		console.log("CSRF Token received from backend:", data.csrf_token);
+// 	} catch (error) {
+// 		console.error("Error fetching CSRF token:", error);
+// 		// Handle error: e.g., show a message to the user, prevent further API calls
+// 		throw error; // Propagate the error
+// 	}
+// })()
+
 export const fetchClient = createFetchClient<paths>({
 	credentials: "include",
 	baseUrl: import.meta.env.VITE_SERVER_URL,
 	headers: {
 		"X-Requested-With": "XMLHttpRequest",
+		// "X-XSRF-TOKEN": decodeURIComponent(getCookie("XSRF-TOKEN") ?? ""),
 	},
 });
-//for csrf and xsrf token
-// fetch(`${import.meta.env.VITE_SERVER_URL}/sanctum/csrf-cookie`);
-if (!getCookie("XSRF-TOKEN"))
-	fetch(`${import.meta.env.VITE_SERVER_URL}/sanctum/csrf-cookie`);
 
 export const INITAL_SETTINGS_WINDOW = {
 	width: 1000,
@@ -399,6 +438,7 @@ export const INITAL_USER = {
 	email: string;
 	settings: typeof INITAL_SETTINGS;
 };
+
 const myMiddleware: Middleware = {
 	async onRequest({ request }) {
 		request.headers.set(

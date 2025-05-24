@@ -29,3 +29,5 @@ devenv.local.nix
 .devdbrc
 .idea
 web-block.code-workspace
+frontend/src/bootstrap.ts
+web-block.tar

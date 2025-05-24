@@ -102,7 +102,7 @@ export default function App() {
 		isLoading,
 		isSuccess,
 		cwd,
-		getCurrentProject,
+		getProject,
 	} = useProjects();
 	const { user, isSuccess: gotUser } = useUser();
 	const { i18n } = useTranslation();
@@ -114,13 +114,13 @@ export default function App() {
 	//If new user create example project
 	useEffect(() => {
 		if (!firstTime || isLoading) return;
-		const project = getCurrentProject();
+		const project = getProject();
 		if (isSuccess && project?.name === "untitled")
 			setCurrentProject(project.id);
 		setFirstTime(false);
 	}, [
 		firstTime,
-		getCurrentProject,
+		getProject,
 		isLoading,
 		isSuccess,
 		projects,
@@ -150,7 +150,7 @@ export default function App() {
 		preventDefault: true,
 	});
 	const { validateAsync, setFieldValue } = useForm({
-		defaultValues: getCurrentProject(),
+		defaultValues: getProject(),
 		validators: {
 			onChangeAsyncDebounceMs: 250,
 			onChangeAsync: async ({ value }) => {
@@ -171,12 +171,12 @@ export default function App() {
 
 	useEffect(() => {
 		if (currentProject === "") return;
-		const { x, y, zoom } = getCurrentProject()!;
+		const { x, y, zoom } = getProject()!;
 		setCenter(x, y, {
 			duration: 300,
 			zoom: zoom || 1,
 		});
-	}, [currentProject, getCurrentProject, setCenter]);
+	}, [currentProject, getProject, setCenter]);
 
 	useEffect(() => {
 		if (currentProject === "") return;

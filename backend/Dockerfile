@@ -35,6 +35,10 @@ RUN php artisan storage:link
 
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
+RUN php artisan optimize -e config
+
+RUN php artisan vendor:publish --tag=laravel-assets --force
+
 EXPOSE 8000 465 
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD curl --fail localhost:8000/up || exit 1

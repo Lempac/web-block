@@ -24,7 +24,6 @@ export default defineConfig({
 		alias: {
 			"@/index": path.resolve(__dirname, "./src/index.d.ts"),
 			"@": path.resolve(__dirname, "src/"),
-			'unicorn-magic': 'src/unicorn-magic.ts'
 		},
 	},
 });

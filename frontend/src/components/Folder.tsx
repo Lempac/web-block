@@ -53,10 +53,6 @@ export default function Folder({
 			},
 		},
 	});
-	// const x = useStore(store, (state) => state.values.x ?? 0);
-	// const y = useStore(store, (state) => state.values.y ?? 0);
-	// const w = useStore(store, (state) => state.values.width ?? 0);
-	// const h = useStore(store, (state) => state.values.height ?? 0);
 	const hasValues = useStore(store, (state) => state.values !== undefined);
 
 	useEffect(() => {
@@ -90,7 +86,7 @@ export default function Folder({
 						type="text"
 						id={field.name}
 						name={field.name}
-						value={field.state.value ?? "Unknown state"}
+						value={field.state.value}
 						onChange={(e) => field.handleChange(e.target.value)}
 						onBlur={field.handleBlur}
 					/>

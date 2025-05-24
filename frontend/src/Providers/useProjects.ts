@@ -13,7 +13,11 @@ export const ProjectContext = createContext(
 		isError: boolean;
 		isSuccess: boolean;
 		cwd: string;
-		getCurrentProject: (
+		/**
+		 * @param id - The id of the project to get. If not provided, it will return the current project.
+		 * @returns The project with the given id
+		 */
+		getProject: (
 			id?: string,
 		) => components["schemas"]["Project"] | undefined;
 	},

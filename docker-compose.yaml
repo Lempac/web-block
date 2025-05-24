@@ -1,28 +1,23 @@
 name: "web-block"
-
 services:
-  #frontend:
-  #  build:
-  #    context: ./frontend
-  #    dockerfile: Dockerfile
-  #  ports:
-  #    - "3000:3000"  # Adjust the port as needed
   cors-proxy:
     image: cors-proxy
     environment:
       - ALLOW_ORIGIN=https://lempac.github.io/web-block/
     ports:
-      - "127.0.0.1:9999:80"
+      - "127.0.0.1:9998:80"
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    environment:
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
     ports:
-      - "8000:8000"  # Adjust the port as needed
+      - "127.0.0.1:8003:8000"
     volumes:
       - dbdata:/var/www/database:rw
-      - web-block:/var/www/storage:rw
+      - storage:/var/www/storage:rw
 
 volumes:
-  dbdata:  # Define the volume for the SQLite database
-  web-block: 
+  dbdata:
+  storage:
