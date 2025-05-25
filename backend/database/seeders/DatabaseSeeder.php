@@ -6,8 +6,8 @@ use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use Orchid\Support\Facades\Dashboard;
 use Orchid\Platform\Models\Role;
+use Orchid\Support\Facades\Dashboard;
 
 class DatabaseSeeder extends Seeder
 {

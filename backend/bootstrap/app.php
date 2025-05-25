@@ -1,13 +1,11 @@
 <?php
 
 use App\Http\Middleware\EnsureEmailIsVerified;
-use App\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use App\Http\Middleware\LocaleMiddleware;
 use App\Http\Middleware\TrustProxies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 

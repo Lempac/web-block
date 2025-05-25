@@ -47,8 +47,8 @@ class PlatformScreen extends Screen
     {
         return [
             Link::make('Go to Frontend')
-                ->href(config('app.frontend_url'))
-                ->icon('bs.globe')
+                ->href(\App::environment('production') ? config('app.frontend_url').'/web-block' : config('app.frontend_url'))
+                ->icon('bs.globe'),
         ];
     }
 

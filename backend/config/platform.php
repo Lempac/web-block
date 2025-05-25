@@ -29,7 +29,7 @@ return [
      |
      */
 
-    'prefix' => env('PLATFORM_PREFIX', '/'),
+    'prefix' => env('PLATFORM_PREFIX', '/panel'),
 
     /*
      |--------------------------------------------------------------------------

@@ -7,12 +7,11 @@ use App\Models\Project;
 use App\Models\User; // Assuming you have a User model for tracking logins/sessions
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Orchid\Screen\Actions\Link;
-use Orchid\Screen\Screen;
-use Orchid\Support\Facades\Layout;
-use Orchid\Metrics\Metric;
 use Orchid\Screen\Fields\Label;
-use Illuminate\Support\Facades\Storage; // Import the Storage facade
+use Orchid\Screen\Screen;
+use Orchid\Support\Facades\Layout; // Import the Storage facade
 
 class StatisticsScreen extends Screen
 {
@@ -115,38 +114,38 @@ class StatisticsScreen extends Screen
 
         return [
             'metrics' => [
-                'blocks_created_today'      => $blocksCreatedToday,
-                'blocks_created_week'       => $blocksCreatedThisWeek,
-                'blocks_created_month'      => $blocksCreatedThisMonth,
-                'total_blocks'              => $totalBlocks,
+                'blocks_created_today' => $blocksCreatedToday,
+                'blocks_created_week' => $blocksCreatedThisWeek,
+                'blocks_created_month' => $blocksCreatedThisMonth,
+                'total_blocks' => $totalBlocks,
 
-                'projects_created_today'   => $projectsCreatedToday,
-                'projects_created_week'    => $projectsCreatedThisWeek,
-                'projects_created_month'   => $projectsCreatedThisMonth,
-                'total_projects'           => $totalProjects,
+                'projects_created_today' => $projectsCreatedToday,
+                'projects_created_week' => $projectsCreatedThisWeek,
+                'projects_created_month' => $projectsCreatedThisMonth,
+                'total_projects' => $totalProjects,
 
-                'new_sessions_today'       => $newSessionsToday,
-                'new_sessions_month'       => $newSessionsThisMonth,
-                'logins_today'             => $loginsToday,
-                'logins_month'             => $loginsThisMonth,
-                'storage_used_private'     => $storageUsedPrivate,
+                'new_sessions_today' => $newSessionsToday,
+                'new_sessions_month' => $newSessionsThisMonth,
+                'logins_today' => $loginsToday,
+                'logins_month' => $loginsThisMonth,
+                'storage_used_private' => $storageUsedPrivate,
             ],
             'charts' => [
                 // Data for the "Blocks Created" chart
                 [
-                    'labels'   => array_keys($blocksCreatedDaily),
-                    'values'   => array_values($blocksCreatedDaily),
-                    'name'     => 'Blocks Created Last 7 Days',
+                    'labels' => array_keys($blocksCreatedDaily),
+                    'values' => array_values($blocksCreatedDaily),
+                    'name' => 'Blocks Created Last 7 Days',
                 ],
                 // Data for the "Projects Created" chart
                 [
-                    'labels'   => array_keys($projectsCreatedDaily),
-                    'values'   => array_values($projectsCreatedDaily),
-                    'name'     => 'Projects Created Last 7 Days',
+                    'labels' => array_keys($projectsCreatedDaily),
+                    'values' => array_values($projectsCreatedDaily),
+                    'name' => 'Projects Created Last 7 Days',
                 ],
             ],
             // Flags to indicate if chart data is present
-            'hasBlocksChartData'   => $hasBlocksChartData,
+            'hasBlocksChartData' => $hasBlocksChartData,
             'hasProjectsChartData' => $hasProjectsChartData,
         ];
     }
@@ -176,7 +175,7 @@ class StatisticsScreen extends Screen
 
         // --- Blocks Statistics Metrics ---
         $layouts[] = Layout::metrics([
-            'Blocks Created (Today)'     => 'metrics.blocks_created_today',
+            'Blocks Created (Today)' => 'metrics.blocks_created_today',
             'Blocks Created (This Week)' => 'metrics.blocks_created_week',
             'Blocks Created (This Month)' => 'metrics.blocks_created_month',
         ])->title('Blocks Created');
@@ -187,7 +186,7 @@ class StatisticsScreen extends Screen
 
         // --- Projects Statistics Metrics ---
         $layouts[] = Layout::metrics([
-            'Projects Created (Today)'     => 'metrics.projects_created_today',
+            'Projects Created (Today)' => 'metrics.projects_created_today',
             'Projects Created (This Week)' => 'metrics.projects_created_week',
             'Projects Created (This Month)' => 'metrics.projects_created_month',
         ])->title('Projects Created');
@@ -198,17 +197,16 @@ class StatisticsScreen extends Screen
 
         // --- User Sessions and Logins Metrics ---
         $layouts[] = Layout::metrics([
-            'New Sessions (Today)'    => 'metrics.new_sessions_today',
+            'New Sessions (Today)' => 'metrics.new_sessions_today',
             'New Sessions (This Month)' => 'metrics.new_sessions_month',
-            'Logins (Today)'          => 'metrics.logins_today',
-            'Logins (This Month)'     => 'metrics.logins_month',
+            'Logins (Today)' => 'metrics.logins_today',
+            'Logins (This Month)' => 'metrics.logins_month',
         ])->title('User Activity');
 
         // --- Storage Used Metrics ---
         $layouts[] = Layout::metrics([
             'Storage Used (Private)' => 'metrics.storage_used_private',
         ])->title('Storage Usage');
-
 
         // --- Conditional Charts ---
         $chartLayouts = [];
@@ -246,13 +244,13 @@ class StatisticsScreen extends Screen
     /**
      * Recursively calculates the size of a directory.
      *
-     * @param string $directoryPath The full path to the directory.
+     * @param  string  $directoryPath  The full path to the directory.
      * @return int The size of the directory in bytes.
      */
     private function getDirectorySize(string $directoryPath): int
     {
         $size = 0;
-        if (!is_dir($directoryPath)) {
+        if (! is_dir($directoryPath)) {
             return $size;
         }
 
@@ -272,8 +270,8 @@ class StatisticsScreen extends Screen
     /**
      * Formats a byte value into a human-readable string (e.g., KB, MB, GB).
      *
-     * @param int $bytes The number of bytes.
-     * @param int $precision The number of decimal places to round to.
+     * @param  int  $bytes  The number of bytes.
+     * @param  int  $precision  The number of decimal places to round to.
      * @return string The formatted string.
      */
     private function formatBytes(int $bytes, int $precision = 2): string
@@ -283,8 +281,8 @@ class StatisticsScreen extends Screen
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
         $pow = min($pow, count($units) - 1);
 
-        $bytes /=(1 << (10 * $pow));
+        $bytes /= (1 << (10 * $pow));
 
-        return round($bytes, $precision) . ' ' . $units[$pow];
+        return round($bytes, $precision).' '.$units[$pow];
     }
 }

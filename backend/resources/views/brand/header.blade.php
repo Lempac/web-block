@@ -12,10 +12,10 @@
     @endauth
     <p class="my-0 invert {{ auth()->check() ? 'd-none d-xl-block' : '' }}">
         
-        @if (request()->is('login'))
+        @if (Route::currentRouteName() === "platform.login")
             {{ ucfirst(config('app.name')) }}
         @else
-        <a href="{{ config('app.frontend_url') }}" class=" text-white">
+        <a href="{{ \App::environment('production') ? config('app.frontend_url').'/web-block' : config('app.frontend_url') }}" class=" text-white">
             {{ ucfirst(config('app.name')) }}
         </a>
         @endif

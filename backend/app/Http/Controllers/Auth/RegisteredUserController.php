@@ -55,7 +55,7 @@ class RegisteredUserController extends Controller
         $ipAddress = $request->ip();
         $deviceNameInput = $request->input('device_name', 'Unknown Device'); // Still use input if provided
 
-        $tokenName = $deviceNameInput . ' - ' . substr(md5($userAgent . $ipAddress), 0, 8); // Example: "web-client - 1a2b3c4d"
+        $tokenName = $deviceNameInput.' - '.substr(md5($userAgent.$ipAddress), 0, 8); // Example: "web-client - 1a2b3c4d"
 
         $token = $user->createToken($request->input($tokenName))->plainTextToken;
 

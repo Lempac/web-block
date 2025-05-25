@@ -12,11 +12,12 @@ use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use OpenApi\Attributes\Response as R;
 use OpenApi\Attributes\Schema;
+
 #[Schema(
-    schema: "AuthTokenResponse",
+    schema: 'AuthTokenResponse',
     properties: [
-        new Property(property: "message", type: "string", example: "Login successful"),
-        new Property(property: "token", type: "string", description: "Sanctum plain text API token", example: "1|abcdefghijklmnopqrstuvwxyzabcdefg")
+        new Property(property: 'message', type: 'string', example: 'Login successful'),
+        new Property(property: 'token', type: 'string', description: 'Sanctum plain text API token', example: '1|abcdefghijklmnopqrstuvwxyzabcdefg'),
     ],
     required: ['message', 'token']
 )]
@@ -48,6 +49,7 @@ class AuthenticatedSessionController extends Controller
         $tokenName = $deviceNameInput.' - '.substr(md5($userAgent.$ipAddress), 0, 8); // Example: "web-client - 1a2b3c4d"
 
         $token = Auth::user()->createToken($tokenName)->plainTextToken;
+
         return response()->json([
             'message' => 'Login successful',
             'token' => $token,
@@ -62,6 +64,7 @@ class AuthenticatedSessionController extends Controller
     public function destroy()
     {
         Auth::user()->currentAccessToken()->delete();
+
         return response()->noContent();
     }
 }

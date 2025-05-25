@@ -82,5 +82,4 @@ Route::screen('statistics', StatisticsScreen::class)
         ->parent('platform.index')
         ->push('Statistics'));
 
-
 // Route::screen('idea', Idea::class, 'platform.screens.idea');

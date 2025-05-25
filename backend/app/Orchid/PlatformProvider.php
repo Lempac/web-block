@@ -37,7 +37,7 @@ class PlatformProvider extends OrchidServiceProvider
 
             Menu::make('Go to Frontend')
                 ->icon('bs.globe')
-                ->url(config('app.frontend_url'))
+                ->url(\App::environment('production') ? config('app.frontend_url').'/web-block' : config('app.frontend_url'))
                 ->target('_blank'),
 
             Menu::make('Statistics')

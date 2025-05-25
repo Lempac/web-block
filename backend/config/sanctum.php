@@ -18,7 +18,7 @@ return [
     'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
         '%s%s%s',
         '',
-        Sanctum::currentApplicationUrlWithPort(),''
+        Sanctum::currentApplicationUrlWithPort(), ''
     ))),
 
     /*
