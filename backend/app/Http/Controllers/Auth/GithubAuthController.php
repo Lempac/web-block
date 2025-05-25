@@ -23,51 +23,49 @@ class GithubAuthController extends Controller
             return response()->json(['error' => 'GitHub client redirect not configured'], 400);
         }
 
-        $state = Str::random(40);
+        // $state = Str::random(40);
 
-        $deviceInfo = [
-            'device_name' => request()->query('device_name'),
-            'user_agent' => request()->header('User-Agent'),
-            'ip_address' => request()->ip(),
-        ];
+        // $deviceInfo = [
+        //     'device_name' => request()->query('device_name'),
+        //     'user_agent' => request()->header('User-Agent'),
+        //     'ip_address' => request()->ip(),
+        // ];
 
-        cache(['github_oauth_state_'.$state => $deviceInfo], now()->addMinutes(10));
+        // cache(['github_oauth_state_'.$state => $deviceInfo], now()->addMinutes(10));
 
-        return Socialite::driver('github')->with(['state' => $state])->scopes(['repo', 'user:email'])->redirect();
+        return Socialite::driver('github')->stateless()->scopes(['repo', 'user:email'])->redirect();
     }
 
     #[Get(path: '/api/callback', tags: ['github', 'auth'])]
     #[Response(response: '301', description: 'Redirects to the frontend URL after authentication.')]
     #[Response(response: '400', description: 'Error during GitHub authentication.')]
-    public function callback(Request $request)
+    public function callback()
     {
         // Get stored device info from session
-        $frontendurl = \App::environment('production') ? config('app.frontend_url').'/web-block' : config('app.frontend_url');
-        $state = $request->input('state');
-        dd($state);
-        if (! $state) {
-            Log::error('GitHub OAuth callback missing state parameter.');
-            $frontendUrl = $frontendurl.'/auth-error?message=GitHub%20authentication%20failed%20(missing%20state)';
+        $frontendurl = config('app.frontend_url').'/web-block';
+        
+        // if (! $state) {
+        //     Log::error('GitHub OAuth callback missing state parameter.');
+        //     $frontendUrl = $frontendurl.'/auth-error?message=GitHub%20authentication%20failed%20(missing%20state)';
 
-            return redirect($frontendUrl, 400);
-        }
-
+        //     return redirect($frontendUrl, 400);
+        // }
+        // dd(request()->has('error'));
         // Handle errors from GitHub
-        if ($request->has('error')) {
-            Log::error('GitHub OAuth error:', $request->all());
+        if (request()->has('error')) {
+            Log::error('GitHub OAuth error:', request()->all());
             // Redirect to frontend error page or with an error message
-            $frontendUrl = "{$frontendurl}/auth-error?message=GitHub%20authentication%20failed";
+            $redirectUrl = "{$frontendurl}/auth-error?message=GitHub%20authentication%20failed";
 
-            return redirect($frontendUrl, 301);
+            return redirect($redirectUrl, 301);
         }
 
         try {
-            $githubUser = Socialite::driver('github')->user();
+            $githubUser = Socialite::driver('github')->stateless()->user();
         } catch (\Exception $e) {
             Log::error('Socialite GitHub user fetch error: '.$e->getMessage());
-            $frontendUrl = "{$frontendUrl}/auth-error?message=Could%20not%20retrieve%20GitHub%20user%20details";
-
-            return redirect($frontendUrl, 400); // Changed to 400 as it's a server-side error with GitHub
+            $redirectUrl = "{$frontendurl}/auth-error?message=Could%20not%20retrieve%20GitHub%20user%20details";
+            return redirect($redirectUrl, 301);
         }
 
         // Find or create the user in your database
@@ -84,10 +82,14 @@ class GithubAuthController extends Controller
 
         if (! method_exists($user, 'createToken')) {
             Log::error('User model is missing HasApiTokens trait for GitHub callback.');
-            $frontendUrl = "{$frontendurl}/auth-error?message=Server%20configuration%20error";
+            $redirectUrl = "{$frontendurl}/auth-error?message=Server%20configuration%20error";
 
-            return redirect($frontendUrl, 500);
+            return redirect($redirectUrl, 301);
         }
+
+        $userAgent = request()->header('User-Agent');
+        $ipAddress = request()->ip();
+        $deviceNameInput = request()->input('device_name', 'Unknown Device');
 
         // Generate a unique token name
         $tokenName = $deviceNameInput.' - '.substr(md5($userAgent.$ipAddress), 0, 8);
