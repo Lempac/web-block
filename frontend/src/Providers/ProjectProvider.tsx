@@ -1,7 +1,14 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import git from "isomorphic-git";
 import { useQuery } from "@tanstack/react-query";
-import { getProjects, fs, findMdFiles, pfs, gitAddAll } from "../bootstrap";
+import {
+	getProjects,
+	fs,
+	findMdFiles,
+	pfs,
+	gitAddAll,
+	fetchClient,
+} from "../bootstrap";
 import { ProjectContext } from "./useProjects";
 import type { components } from "../api";
 import { useUser } from "./useUser";
@@ -17,7 +24,6 @@ export default function ProjectProvider({ children }: { children: ReactNode }) {
 		queryKey: ["getProjects"],
 		queryFn: async () => {
 			const data = await getProjects(await pfs.readdir("/"));
-			// console.log(data)
 			const projects = new Map<string, components["schemas"]["Project"]>();
 			const pro = await Promise.all(
 				data.map(async (project) => ({
@@ -47,24 +53,9 @@ export default function ProjectProvider({ children }: { children: ReactNode }) {
 							);
 							return `/${project}/README.md`;
 						})()),
-					cwd: "/",
-					// (await ((await git.getConfig({
-					// 	fs,
-					// 	dir: `/${project}`,
-					// 	path: "project.cwd",
-					// })) as Promise<string | undefined>)) ??
-					// (await (async () => {
-					// 	await git.setConfig({
-					// 		fs,
-					// 		dir: `/${project}`,
-					// 		path: "project.cwd",
-					// 		value: `/`,
-					// 	});
-					// 	return `/`;
-					// })()),
-					x: 0,
-					y: 0,
-					zoom: 1,
+					...(JSON.parse(
+						await pfs.readFile(`/${project}/.web-block.json`, "utf8"),
+					) as { x: number; y: number; cwd: string; zoom: number }),
 					default_branch:
 						(await git.currentBranch({ fs, dir: `/${project}` })) ?? "master",
 					oid: await git
@@ -87,7 +78,12 @@ export default function ProjectProvider({ children }: { children: ReactNode }) {
 								ref: "HEAD",
 							});
 						}),
-					url: "",
+					url:
+						((await git.getConfig({
+							fs,
+							dir: `/${project}`,
+							path: "remote.origin.url",
+						})) as string) ?? "",
 				})),
 			);
 			for (const project of pro) {
@@ -98,6 +94,15 @@ export default function ProjectProvider({ children }: { children: ReactNode }) {
 	});
 	const [currentProject, setCurrentProject] = useState("");
 	const getProject = (id = currentProject) => projects?.get(id);
+
+	useEffect(() => {
+		if (!projects) return;
+		projects.forEach((project) =>
+			fetchClient.POST("/api/projects/create", {
+				body: project,
+			}),
+		);
+	}, [projects]);
 
 	return (
 		<ProjectContext.Provider

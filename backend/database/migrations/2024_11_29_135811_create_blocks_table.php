@@ -14,7 +14,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('blocks', function (Blueprint $table) {
-            $table->string('path')->primary();
+            $table->id();
+            $table->string('path');
             $table->integer('x')->default(0);
             $table->integer('y')->default(0);
             $table->integer('width')->default(0);

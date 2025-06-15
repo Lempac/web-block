@@ -17,14 +17,21 @@ return [
         'show-project' => 'Rādīt projektus',
         'show-settings' => 'Rādīt iestatījumus',
         'show-quick-command' => 'Rādīt ātrās komandas',
+        'admin-panel' => 'Administrātora panelis',
     ],
     'projects' => [
         'name' => 'Projekti',
+        'no-search' => 'Nav Github projekti atrasti.',
         'no-projects' => 'Nav atlasīts neviens projekts.',
+        'directory-exists' => 'Folderis eksistē.',
         'logout' => 'Izrakstīties',
         'settings' => 'Iestatījumi',
         'new-project' => 'Jauns Projekts',
-        'search-repo' => 'Meklēt repo',
+        'search-repo' => [
+            'placeholder' => 'Meklēt repozitoriju/Jauna projekta nosaukums',
+            'add' => 'Pievienot projektu no Github',
+            'create' => 'Izveidot/Atvērt projektu',
+        ],
     ],
     'projects-card' => [
         'description' => 'Apraksts',
@@ -37,18 +44,18 @@ return [
             'name' => 'Profils',
             'hideExtensions' => 'Rādīt visus failu paplašinājumus',
             'defaultBranch' => 'Pamatā izvēlēto koka nosaukums',
-            'password' => 'Password',
-            'password-placeholder' => 'Enter your new password',
-            'email' => 'Email',
-            'lang' => 'Language',
+            'password' => 'Jauna parole',
+            'email' => 'E-pasts',
+            'lang' => 'Valoda',
+            'delete' => 'Dzēst profilu',
         ],
         'theme' => [
             'name' => 'Motīvi',
-            'controlPosition' => 'Control position',
-            'minimapPosition' => 'Minimap position',
-            'pathPosition' => 'Path position',
-            'baseLightTheme' => 'Base light theme',
-            'baseDarkTheme' => 'Base dark theme',
+            'controlPosition' => 'Vadības pozīcija',
+            'minimapPosition' => 'Minimap pozīcija',
+            'pathPosition' => 'Ceļa pozīcija',
+            'baseLightTheme' => 'Pamata gaišā tēma',
+            'baseDarkTheme' => 'Pamata tumšā tēma',
         ],
     ],
     'auth' => [
@@ -81,9 +88,58 @@ return [
         ],
     ],
     'quick-command' => [
-        'name' => 'Quick command',
+        'name' => 'Ārta darbība',
     ],
     'upload-project' => [
-        'tooltip' => 'Upload project',
+        'tooltip' => 'Aukšupielādēt projektu',
+        'title' => 'Git informācija:',
+        'name' => [
+            'label' => 'Nosaukums',
+            'placeholder' => 'Ievadiet savu nosaukumu',
+        ],
+        'email' => [
+            'label' => 'Epasts(opcionāls)',
+            'placeholder' => 'Ievadiet savu epastu',
+        ],
+        'back' => 'Atpakaļ',
+        'confirm' => 'Apstiprināt',
+    ],
+    'close-project' => [
+        'tooltip' => 'Aizvērt projektu',
+    ],
+    'delete-account' => [
+        'title' => 'Izdzēst profilu',
+        'label' => 'Parole',
+        'placeholder' => 'Ievadiet savu paroli',
+        'back' => 'Atpakaļ',
+        'confirm' => 'Apstiprināt',
+    ],
+    'update-password' => [
+        'title' => 'Atjaunināt paroli',
+        'old-password' => [
+            'label' => 'Vecā parole',
+            'placeholder' => 'Ievadiet veco paroli',
+        ],
+
+        'new-password' => [
+            'label' => 'Jauna parole',
+            'placeholder' => 'Ievadiet jauno paroli',
+        ],
+
+        'confirm-new-password' => [
+            'label' => 'Atkārtoti ievadīt jauno paroli',
+
+            'placeholder' => 'Atkārtoti ievadīt jauno paroli',
+        ],
+        'back' => 'Atpakaļ',
+        'confirm' => 'Apstiprināt',
+    ],
+    'delete-project' => [
+        'title' => 'Izdzēst projektu',
+        'back' => 'Atpakaļ',
+        'confirm' => 'Apstiprināt',
+    ],
+    'folder' => [
+        'title' => 'Atvērt',
     ],
 ];

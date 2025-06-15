@@ -13,6 +13,8 @@ export type AuthNode = Node<Record<never, never>, "auth">;
 export default function Auth() {
 	const { t } = useTranslation();
 	const queryClient = useQueryClient();
+	//If false it login,
+	//If true it register
 	const [toggle, setToggle] = useState(false);
 	const { Field, Subscribe, handleSubmit } = useForm({
 		defaultValues: {
@@ -25,13 +27,13 @@ export default function Auth() {
 		validators: {
 			onSubmitAsync: async ({ value }) => {
 				const { error, data } = await fetchClient.POST(
-					"/api/login",
+					toggle ? "/api/register" : "/api/login",
 					{
 						body: value,
 					},
 				);
 				if (error) return { fields: error.errors };
-				localStorage.setItem('token', data.token);
+				localStorage.setItem("token", data.token);
 				queryClient.invalidateQueries({ queryKey: ["get", "/api/user"] });
 				return null;
 			},
@@ -43,10 +45,10 @@ export default function Auth() {
 			<Handle
 				type="target"
 				position={Position.Top}
-				className="z-20 p-1 transition-[padding] hover:p-2"
+				className="z-20 p-1 transition-[padding] hover:p-2 shadow"
 			/>
 			<form
-				className="card bg-base-100 p-4 shadow"
+				className="card bg-base-100 p-4 shadow ring-neutral in-[.selected]:ring-4"
 				onSubmit={(e) => {
 					e.preventDefault();
 					e.stopPropagation();

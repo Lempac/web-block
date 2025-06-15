@@ -31,8 +31,8 @@ class RegisteredUserController extends Controller
     #[RequestBody(description: 'Create user model and login in user.', required: true, content: new JsonContent(
         ref: '#/components/schemas/RegisterRequest'
     ))]
-    #[R(response: '201', description: 'User successfully registered.', content: new JsonContent(ref: '#/components/schemas/AuthTokenResponse'))]
-    #[R(response: '401', description: 'Error with registering.', content: new JsonContent(ref: '#/components/schemas/ErrorObject'))]
+    #[R(response: 201, description: 'User successfully registered.', content: new JsonContent(ref: '#/components/schemas/AuthTokenResponse'))]
+    #[R(response: 401, description: 'Error with registering.', content: new JsonContent(ref: '#/components/schemas/ErrorObject'))]
     public function store(Request $request)
     {
         $request->validate([
@@ -57,7 +57,7 @@ class RegisteredUserController extends Controller
 
         $tokenName = $deviceNameInput.' - '.substr(md5($userAgent.$ipAddress), 0, 8); // Example: "web-client - 1a2b3c4d"
 
-        $token = $user->createToken($request->input($tokenName))->plainTextToken;
+        $token = $user->createToken($tokenName)->plainTextToken;
 
         return response()->json([
             'message' => 'Registration successful',

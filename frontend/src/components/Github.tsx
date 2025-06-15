@@ -7,7 +7,7 @@ export type GithubNode = Node<Record<never, never>, "github">;
 export default function Github() {
 	const { t } = useTranslation();
 	return (
-		<div className="card bg-base-100 shadow card-sm">
+		<div className="card bg-base-100 card-sm shadow ring-neutral in-[.selected]:ring-4">
 			<div className="card-body">
 				<a
 					className="nodrag btn"

@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
         // Role::factory()->create([
         //     'name' => 'Admin',
         //     'slug' => 'admin',
-        //     'permissions' => Dashboard::getAllowAllPermission()
+        //    'permissions' => Dashboard::getAllowAllPermission()
         // ]);
 
         User::factory()->admin()->create([

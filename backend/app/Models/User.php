@@ -5,6 +5,7 @@ namespace App\Models;
 use Auth;
 use Github\AuthMethod;
 use Github\Client;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
@@ -21,7 +22,7 @@ use Orchid\Platform\Models\User as Authenticatable;
 ], required: ['quickCommand'])]
 // TODO: fix settings enum to have a default value
 #[Schema(schema: 'Style', description: 'User style', properties: [
-    new Property(property: 'controlPosition', allOf: [new Schema(ref: '#/components/schemas/PanelPosition'), new Schema(type: 'string', default: 'bottom-left')]),
+    new Property(property: 'controlPosition', allOf: [new Schema(ref: '#/components/schemas/PanelPosition')]),
     new Property(property: 'minimapPosition', ref: '#/components/schemas/PanelPosition'),
     new Property(property: 'pathPosition', ref: '#/components/schemas/PanelPosition'),
     new Property(property: 'baseLightTheme', ref: '#/components/schemas/Themes'),
@@ -39,13 +40,21 @@ use Orchid\Platform\Models\User as Authenticatable;
 #[Schema(properties: [
     new Property(property: 'name', type: 'string'),
     new Property(property: 'email', type: 'string'),
-    // new Property(property: 'is_admin', type: 'boolean'),
+    new Property(property: 'has_github', type: 'boolean'),
+    new Property(property: 'is_admin', type: 'boolean'),
     new Property(property: 'settings', ref: '#/components/schemas/Settings'),
 ], required: ['name', 'email', 'settings'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['is_admin', 'has_github'];
 
     /**
      * The attributes that are mass assignable.
@@ -59,7 +68,6 @@ class User extends Authenticatable
         'github_id',
         'github_token',
         'github_refresh_token',
-        // 'is_admin',
         'settings',
     ];
 
@@ -119,27 +127,34 @@ class User extends Authenticatable
         return $this->hasMany(Project::class);
     }
 
-    public function hasGithub(): bool
+    protected function hasGithub(): Attribute
     {
-        return Auth::user()->github_token != null;
+        return new Attribute(fn () => $this->github_token !== null);
+    }
+
+    protected function isAdmin(): Attribute
+    {
+        return new Attribute(fn () => $this->hasAccess('platform.index', false));
     }
 
     public function getGithubProjects()
     {
-        if (! $this->hasGithub()) {
+        if (! $this->has_github) {
             return [];
         }
         $client = new Client;
-        // $client->api('')
         $client->authenticate($this->github_token, authMethod: AuthMethod::CLIENT_ID);
         $repos = $client->currentUser()->repositories();
 
-        return array_map(fn ($repo) => $repo['name'], $repos);
+        // $oids = array_map(fn($repo) => $client->repo()->showById($repo['id']),$repos);
+        // dd($repos);
+        // dd( array_merge(...array_map(fn ($repo) => [$repo['name'] => $repo['size']], $repos)));
+        return array_merge(...array_map(fn ($repo) => [$repo['name'] => $repo['size']], $repos));
     }
 
     public function getGithubProject(string $repoName)
     {
-        if (! $this->hasGithub()) {
+        if (! $this->hasGithub) {
             return null;
         }
         $client = new Client;

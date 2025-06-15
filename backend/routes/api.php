@@ -65,12 +65,16 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [UserController::class, 'index'])->name('user.index');
     Route::put('/user', [UserController::class, 'update'])->name('user.update');
+    Route::delete('/user', [UserController::class, 'destroy'])->name('user.destroy');
 
     // Route::get('/user/settings', [UserController::class, 'indexSettings'])->name('user.settings');
     Route::get('/user/repos', [UserController::class, 'indexRepos'])->name('user.repos');
+    Route::get('/user/repo/{name}', [UserController::class, 'indexRepoUrl'])->name('user.repo.url');
     Route::put('/user/style', [UserController::class, 'updateStyle'])->name('user.style');
+    Route::patch('/user/password', [UserController::class, 'updatePassword'])->name('user.password');
 
     Route::apiResource('projects', ProjectController::class);
+    Route::post('/projects/create', [ProjectController::class, 'storeClientProject'])->name('projects.store.create');
     // Route::controller(ProjectController::class)->prefix('/projects')->name('projects')->group(function () {
     //     Route::get('/', 'index')->name('.index');
     //     Route::get('/{project}', 'show')->name('.show');

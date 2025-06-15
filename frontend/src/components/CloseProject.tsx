@@ -6,20 +6,16 @@ import type { CustomNodeType } from "..";
 import useProjects from "@/Providers/useProjects";
 export default function CloseProject({ position }: PanelProps) {
 	const queryClient = useQueryClient();
-	const { currentProject, setCurrentProject } = useProjects();
+	const { setCurrentProject, getProject, currentProject } = useProjects();
 	const { deleteElements, getNodes } = useReactFlow<CustomNodeType>();
 	const handleClick = () => {
 		deleteElements({
 			nodes: getNodes().filter((node) =>
-				node.id.startsWith(`${currentProject}-`),
+				node.id.startsWith(`${getProject(currentProject)?.name}|*|`),
 			),
 		});
 		setCurrentProject("");
-		queryClient.invalidateQueries({ queryKey: ["get", "/api/projects"] });
-		queryClient.invalidateQueries({
-			queryKey: ["get", "/api/projects/{project}"],
-		});
-		queryClient.invalidateQueries({ queryKey: ["get", "/api/blocks/{block}"] });
+		queryClient.invalidateQueries({ queryKey: ["getProjects"] });
 	};
 
 	return (

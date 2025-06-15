@@ -15,11 +15,15 @@ import {
 	type Viewport,
 } from "@xyflow/react";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import git, { STAGE, TREE, WORKDIR } from "isomorphic-git";
 import {
 	fetchClient,
 	nodeTypes,
+	pfs,
+	fs,
 	useAddQuickCommand,
 	useOnPaneClick,
+	gitAddAll,
 } from "./bootstrap";
 import { type CustomNodeType } from "@/index";
 import CloseProject from "@/components/CloseProject";
@@ -91,7 +95,6 @@ export default function App() {
 	const [nodes, , onNodesChange] = useNodesState<CustomNodeType>([]);
 	const [edges, setEdgeInternal, onEdgesChange] = useEdgesState([]);
 	const store = useStoreApi();
-
 	const onPaneClick = useOnPaneClick();
 	const addQuickCommand = useAddQuickCommand();
 	const [firstTime, setFirstTime] = useLocalStorage("firstTime", true);
@@ -101,7 +104,6 @@ export default function App() {
 		setCurrentProject,
 		isLoading,
 		isSuccess,
-		cwd,
 		getProject,
 	} = useProjects();
 	const { user, isSuccess: gotUser } = useUser();
@@ -149,11 +151,27 @@ export default function App() {
 	const quickCommand = useKeyPress("Control+p", {
 		preventDefault: true,
 	});
-	const { validateAsync, setFieldValue } = useForm({
-		defaultValues: getProject(),
+
+	const { validateAsync, setFieldValue, reset } = useForm({
+		defaultValues: getProject(currentProject),
 		validators: {
 			onChangeAsyncDebounceMs: 250,
 			onChangeAsync: async ({ value }) => {
+				if (currentProject !== value.id) {
+					console.warn("attempt to update wrong project");
+					reset(getProject(currentProject));
+					return null;
+				}
+				const project = getProject();
+				await pfs.writeFile(
+					`/${value.name}/.web-block.json`,
+					JSON.stringify({
+						x: value.x,
+						y: value.y,
+						zoom: value.zoom,
+						cwd: project?.cwd,
+					}),
+				);
 				projects.set(currentProject, value);
 				const { error } = await fetchClient.PUT("/api/projects/{project}", {
 					params: {
@@ -180,40 +198,87 @@ export default function App() {
 
 	useEffect(() => {
 		if (currentProject === "") return;
-		addNodes([
-			
-		]);
-	}, [addNodes, currentProject]);
-
-	// useEffect(() => {
-	// 	if (blocks === undefined || !hasOpenProject) return;
-	// 	addNodes(
-	// 		blocks.map((block) => ({
-	// 			id: `${currentProject}-${block.id.toString()}`,
-	// 			type: block.is_file ? "file" : "folder",
-	// 			data: {},
-	// 			style: { width: block.width, height: block.height },
-	// 			parentId:
-	// 				block.block_id !== null
-	// 					? `${currentProject}-${block.block_id?.toString()}`
-	// 					: undefined,
-	// 			position:
-	// 				block.block_id === null
-	// 					? { x: block.x, y: block.y }
-	// 					: (() => {
-	// 							const parent = blocks.find((b) => b.id === block.block_id);
-	// 							if (parent)
-	// 								return { x: block.x - parent.x, y: block.y - parent.y };
-	// 							console.assert(
-	// 								parent !== undefined,
-	// 								`Block: ${block.path} has ${block.block_id}, but parent: ${block.block_id} doesnt exist???`,
-	// 							);
-	// 							return { x: 0, y: 0 };
-	// 						})(),
-	// 			expandParent: true,
-	// 		})),
-	// 	);
-	// }, [addNodes, blocks, currentProject, hasOpenProject]);
+		const data = getProject();
+		const dir =
+			data?.cwd === "/" ? `/${data?.name}` : `/${data?.name}${data?.cwd}`;
+		git.walk({
+			fs,
+			dir: dir,
+			trees: [TREE({ ref: "HEAD" }), WORKDIR(), STAGE()],
+			map: async (filename, [, workdir]) => {
+				if (
+					(await git.isIgnored({ fs, dir: dir!, filepath: filename })) ||
+					filename.includes(".web-block") ||
+					filename === ".gitignore"
+				)
+					return null;
+				//HACK: ignore hidden files and directories
+				if (filename !== "." && !filename.startsWith(".")) {
+					const blockType = (await workdir?.mode())?.toString(8);
+					let pos;
+					if (
+						!(await pfs.readdir(`/${data?.name}/.web-block/`)).includes(
+							`${filename.replaceAll("/", "-")}.json`,
+						)
+					) {
+						await pfs.writeFile(
+							`/${data?.name}/.web-block/${filename.replaceAll("/", "-")}.json`,
+							JSON.stringify({
+								x: 0,
+								y: 0,
+								width: 100,
+								height: 100,
+							}),
+						);
+						pos = {
+							x: 0,
+							y: 0,
+							width: 100,
+							height: 100,
+						};
+					} else {
+						pos = JSON.parse(
+							await pfs.readFile(
+								`/${data?.name}/.web-block/${filename.replaceAll("/", "-")}.json`,
+								"utf8",
+							),
+						) as { x: number; y: number; width: number; height: number };
+					}
+					const dirname = filename.split("/").slice(0, -1);
+					// console.log(filename, blockType, dirname);
+					const parent =
+						dirname.length === 0
+							? undefined
+							: (JSON.parse(
+									await pfs.readFile(
+										`/${data?.name}/.web-block/${dirname.join("/")}.json`,
+										`utf8`,
+									),
+								) as { x: number; y: number; width: number; height: number });
+					//HACK: dir are exe :D
+					if (["40000", "100755", "100644"].includes(blockType ?? ""))
+						addNodes({
+							id: `${data?.name}|*|${filename}`,
+							type:
+								blockType === "40000" || blockType === "100755"
+									? "folder"
+									: "file",
+							data: {},
+							position: parent
+								? { x: pos.x - parent.x, y: pos.y - parent.y }
+								: { x: pos.x, y: pos.y },
+							style: { width: pos.width, height: pos.height },
+							parentId:
+								dirname.length === 0
+									? undefined
+									: `${data?.name}|*|${dirname.join("/")}`,
+							expandParent: true,
+						});
+				}
+			},
+		});
+		gitAddAll(dir ?? "");
+	}, [addNodes, currentProject, getProject]);
 
 	// Show welcome node if user is not logged in or if user is logged in shows projects node
 	useEffect(() => {
@@ -317,6 +382,7 @@ export default function App() {
 		},
 		[addNodes, onPaneClick, screenToFlowPosition],
 	);
+
 	return (
 		<div
 			className="absolute m-0 overflow-hidden"
@@ -335,6 +401,10 @@ export default function App() {
 				onPaneClick={() => {
 					onPaneClick("context");
 					onPaneClick("quickCommand");
+					onPaneClick("updatePassword");
+					onPaneClick("uploadProject");
+					onPaneClick("deleteAccount");
+					onPaneClick("deleteProject");
 				}}
 				fitView
 				maxZoom={100}
@@ -358,7 +428,10 @@ export default function App() {
 					<>
 						<UploadProject />
 						<CloseProject position="top-left" />
-						<Path path={cwd} position={user?.settings?.style?.pathPosition} />
+						<Path
+							path={getProject()?.cwd ?? "/"}
+							position={user?.settings?.style?.pathPosition}
+						/>
 					</>
 				)}
 			</ReactFlow>

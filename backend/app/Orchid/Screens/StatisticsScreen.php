@@ -4,14 +4,14 @@ namespace App\Orchid\Screens;
 
 use App\Models\Block;
 use App\Models\Project;
-use App\Models\User; // Assuming you have a User model for tracking logins/sessions
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Fields\Label;
 use Orchid\Screen\Screen;
-use Orchid\Support\Facades\Layout; // Import the Storage facade
+use Orchid\Support\Facades\Layout;
 
 class StatisticsScreen extends Screen
 {
@@ -28,6 +28,13 @@ class StatisticsScreen extends Screen
      * @var string|null
      */
     public $description = 'Overview of application usage and performance.';
+
+    /**
+     * Stores the queried data.
+     *
+     * @var array
+     */
+    protected $data;
 
     /**
      * Query data.
@@ -83,10 +90,7 @@ class StatisticsScreen extends Screen
             ->where('last_activity', '>=', $thisMonthTimestamp)
             ->count();
 
-        // --- Storage Used (Actual Calculation) ---
-        // Assuming 'app' disk points to storage_path('app')
-        // And 'private' files are within storage_path('app/private')
-        $privateStoragePath = Storage::disk('local')->path('app/private'); // This points to storage/app/private
+        $privateStoragePath = Storage::path('');
 
         // Calculate actual directory sizes
         $storageUsedPrivateBytes = $this->getDirectorySize($privateStoragePath);
@@ -96,23 +100,35 @@ class StatisticsScreen extends Screen
 
         // --- Historical data for Charts (Last 7 Days) ---
         $blocksCreatedDaily = [];
-        for ($i = 6; $i >= 0; $i--) {
+        for ($i = 0; $i < 7; $i++) {
             $date = Carbon::today()->subDays($i);
             $blocksCreatedDaily[$date->format('M d')] = Block::whereDate('created_at', $date)->count();
         }
 
         $projectsCreatedDaily = [];
-        for ($i = 6; $i >= 0; $i--) {
+        for ($i = 0; $i < 7; $i++) {
             $date = Carbon::today()->subDays($i);
             $projectsCreatedDaily[$date->format('M d')] = Project::whereDate('created_at', $date)->count();
         }
 
-        // --- Determine if chart data exists ---
-        // Check if the sum of values for the last 7 days is greater than 0
         $hasBlocksChartData = array_sum($blocksCreatedDaily) > 0;
         $hasProjectsChartData = array_sum($projectsCreatedDaily) > 0;
 
-        return [
+        // Prepare data in the format expected by Orchid's Chart layout
+        $blockChartData = [
+            'labels' => array_keys($blocksCreatedDaily),
+            'name' => 'Blocks Created Last 7 Days',
+            'values' => array_values($blocksCreatedDaily),
+        ];
+
+        $projectChartData = [
+            'labels' => array_keys($projectsCreatedDaily),
+            'name' => 'Projects Created Last 7 Days',
+            'values' => array_values($projectsCreatedDaily),
+        ];
+
+        // Store the data in a protected property
+        $this->data = [
             'metrics' => [
                 'blocks_created_today' => $blocksCreatedToday,
                 'blocks_created_week' => $blocksCreatedThisWeek,
@@ -131,23 +147,17 @@ class StatisticsScreen extends Screen
                 'storage_used_private' => $storageUsedPrivate,
             ],
             'charts' => [
-                // Data for the "Blocks Created" chart
-                [
-                    'labels' => array_keys($blocksCreatedDaily),
-                    'values' => array_values($blocksCreatedDaily),
-                    'name' => 'Blocks Created Last 7 Days',
-                ],
-                // Data for the "Projects Created" chart
-                [
-                    'labels' => array_keys($projectsCreatedDaily),
-                    'values' => array_values($projectsCreatedDaily),
-                    'name' => 'Projects Created Last 7 Days',
-                ],
+                // Pass chart data under distinct keys
+                'blocksChart' => [$blockChartData],
+                'projectsChart' => [$projectChartData],
             ],
             // Flags to indicate if chart data is present
             'hasBlocksChartData' => $hasBlocksChartData,
             'hasProjectsChartData' => $hasProjectsChartData,
         ];
+
+        // dd($this->data);
+        return $this->data;
     }
 
     /**
@@ -171,6 +181,8 @@ class StatisticsScreen extends Screen
      */
     public function layout(): iterable
     {
+        $data = $this->data;
+
         $layouts = [];
 
         // --- Blocks Statistics Metrics ---
@@ -212,8 +224,10 @@ class StatisticsScreen extends Screen
         $chartLayouts = [];
 
         // Check if there's data for the Blocks Created chart
-        if ($this->query()['hasBlocksChartData']) {
-            $chartLayouts[] = Layout::chart('charts.0')->title('Blocks Created Last 7 Days');
+        if ($data['hasBlocksChartData']) {
+            // Reference the new distinct key for blocks chart data
+            $chartLayouts[] = Layout::chart('charts.blocksChart', 'Blocks Created Last 7 Days');
+            // dd($chartLayouts);
         } else {
             // If no data, display a message using a Label field within a row layout
             $chartLayouts[] = Layout::rows([
@@ -224,8 +238,9 @@ class StatisticsScreen extends Screen
         }
 
         // Check if there's data for the Projects Created chart
-        if ($this->query()['hasProjectsChartData']) {
-            $chartLayouts[] = Layout::chart('charts.1')->title('Projects Created Last 7 Days');
+        if ($data['hasProjectsChartData']) {
+            // Reference the new distinct key for projects chart data
+            $chartLayouts[] = Layout::chart('charts.projectsChart', 'Projects Created Last 7 Days');
         } else {
             // If no data, display a message using a Label field within a row layout
             $chartLayouts[] = Layout::rows([
@@ -234,7 +249,7 @@ class StatisticsScreen extends Screen
                     ->value('No data available for Projects Created chart.'),
             ]);
         }
-
+        // dd($chartLayouts);
         // Combine the conditional chart layouts into a columns layout
         $layouts[] = Layout::columns($chartLayouts);
 

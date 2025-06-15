@@ -2,7 +2,8 @@ FROM php:8.4-fpm-alpine AS backend
 
 WORKDIR /var/www/
 
-RUN apk add --no-cache
+RUN apk add --no-cache sqlite libzip-dev && \
+    docker-php-ext-install zip
 
 COPY . .
 
@@ -35,7 +36,7 @@ RUN php artisan storage:link
 
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-RUN php artisan optimize -e config
+# RUN php artisan optimize -e config
 
 RUN php artisan vendor:publish --tag=laravel-assets --force
 

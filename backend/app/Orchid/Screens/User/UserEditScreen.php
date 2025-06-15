@@ -6,6 +6,7 @@ namespace App\Orchid\Screens\User;
 
 use App\Models\User;
 use App\Orchid\Layouts\Role\RolePermissionLayout;
+use App\Orchid\Layouts\User\ProfileSettingsLayout;
 use App\Orchid\Layouts\User\UserEditLayout;
 use App\Orchid\Layouts\User\UserPasswordLayout;
 use App\Orchid\Layouts\User\UserRoleLayout;
@@ -109,6 +110,16 @@ class UserEditScreen extends Screen
                         ->canSee($this->user->exists)
                         ->method('save')
                 ),
+            // Layout::block(ProfileSettingsLayout::class)
+            //     ->title(__('Profile Settings'))
+            //     ->description(__('')
+            //     )->commands(
+            //         Button::make(__('Save'))
+            //             ->type(Color::BASIC)
+            //             ->icon('bs.check-circle')
+            //             ->canSee($this->user->exists)
+            //             ->method('save')
+            //     ),
 
             Layout::block(UserPasswordLayout::class)
                 ->title(__('Password'))
@@ -188,7 +199,7 @@ class UserEditScreen extends Screen
     {
         $user->delete();
 
-        Toast::info(__('User was removed'));
+        Toast::info(__('User was removed.'));
 
         return redirect()->route('platform.systems.users');
     }
@@ -200,7 +211,7 @@ class UserEditScreen extends Screen
     {
         Impersonation::loginAs($user);
 
-        Toast::info(__('You are now impersonating this user'));
+        Toast::info(__('You are now impersonating this user.'));
 
         return redirect()->route(config('platform.index'));
     }

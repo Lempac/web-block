@@ -10,73 +10,87 @@ import { useEffect, useState } from "react";
 import type { CustomNodeType } from "..";
 import { useUser } from "@/Providers/useUser";
 import type { INITAL_SETTINGS_WINDOW } from "@/bootstrap";
+import useProjects from "@/Providers/useProjects";
+import { IoMdSearch } from "react-icons/io";
 
 const commands = new Map([
 	[
 		"addFile",
-		(
-			ReactFlowInstance: ReactFlowInstance<CustomNodeType>,
-			x: number,
-			y: number,
-		) => {
-			const { addNodes } = ReactFlowInstance;
-			addNodes({
-				id: crypto.randomUUID(),
-				type: "file",
-				data: {},
-				position: { x, y },
-			});
-		},
+		[
+			(
+				ReactFlowInstance: ReactFlowInstance<CustomNodeType>,
+				x: number,
+				y: number,
+			) => {
+				const { addNodes } = ReactFlowInstance;
+				addNodes({
+					id: crypto.randomUUID(),
+					type: "file",
+					data: {},
+					position: { x, y },
+				});
+			},
+			false,
+		],
 	],
 	[
 		"addFolder",
-		(
-			ReactFlowInstance: ReactFlowInstance<CustomNodeType>,
-			x: number,
-			y: number,
-		) => {
-			const { addNodes } = ReactFlowInstance;
-			addNodes({
-				id: crypto.randomUUID(),
-				type: "folder",
-				data: {},
-				position: { x, y },
-			});
-		},
+		[
+			(
+				ReactFlowInstance: ReactFlowInstance<CustomNodeType>,
+				x: number,
+				y: number,
+			) => {
+				const { addNodes } = ReactFlowInstance;
+				addNodes({
+					id: crypto.randomUUID(),
+					type: "folder",
+					data: {},
+					position: { x, y },
+				});
+			},
+			false,
+		],
 	],
 	[
 		"showProjects",
-		(
-			ReactFlowInstance: ReactFlowInstance<CustomNodeType>,
-			x: number,
-			y: number,
-		) => {
-			const { addNodes } = ReactFlowInstance;
-			addNodes({
-				id: "projects",
-				type: "projects",
-				position: { x, y },
-				data: {},
-			});
-		},
+		[
+			(
+				ReactFlowInstance: ReactFlowInstance<CustomNodeType>,
+				x: number,
+				y: number,
+			) => {
+				const { addNodes } = ReactFlowInstance;
+				addNodes({
+					id: "projects",
+					type: "projects",
+					position: { x, y },
+					data: {},
+				});
+			},
+			true,
+		],
 	],
 	[
 		"showSettings",
-		(
-			ReactFlowInstance: ReactFlowInstance<CustomNodeType>,
-			x: number,
-			y: number,
-			settings: typeof INITAL_SETTINGS_WINDOW
-		) => {
-			const { addNodes } = ReactFlowInstance;
-			addNodes({
-				id: "settings",
-				type: "settings",
-				position: { x, y },
-				style: { width: settings.width, height: settings.height },
-				data: {},
-			});
-		},
+		[
+			(
+				ReactFlowInstance: ReactFlowInstance<CustomNodeType>,
+				x: number,
+				y: number,
+				settings: typeof INITAL_SETTINGS_WINDOW,
+			) => {
+				const { addNodes } = ReactFlowInstance;
+				addNodes({
+					id: "settings",
+					type: "settings",
+					position: { x, y },
+					style: { width: settings.width, height: settings.height },
+					data: {},
+				});
+			},
+			true,
+		],
 	],
 ]);
 
@@ -95,7 +109,8 @@ export default function QuickCommand({
 	positionAbsoluteX,
 	positionAbsoluteY,
 }: NodeProps<QuickCommandNode>) {
-	const {settings} = useUser();
+	const { settings } = useUser();
+	const { currentProject } = useProjects();
 	const reactFlow = useReactFlow<CustomNodeType>();
 	const [size, setSize] = useState([0, 0]);
 	// const { zoom } = useViewport();
@@ -149,25 +164,10 @@ export default function QuickCommand({
 		<>
 			<div
 				onClick={data.onPaneClick}
-				className="flex gap-1 rounded-box bg-base-300 p-2 shadow"
+				className="flex gap-1 rounded-box bg-base-300 p-2 shadow ring-neutral in-[.selected]:ring-4"
 			>
 				<label className="input grow">
-					<svg
-						className="h-[1em] opacity-50"
-						xmlns="http://www.w3.org/2000/svg"
-						viewBox="0 0 24 24"
-					>
-						<g
-							strokeLinejoin="round"
-							strokeLinecap="round"
-							strokeWidth="2.5"
-							fill="none"
-							stroke="currentColor"
-						>
-							<circle cx="11" cy="11" r="8"></circle>
-							<path d="m21 21-4.3-4.3"></path>
-						</g>
-					</svg>
+					<IoMdSearch size={30}/>
 					<input
 						autoFocus
 						type="search"
@@ -182,11 +182,10 @@ export default function QuickCommand({
 						// 	e.preventDefault();
 						// 	e.stopPropagation();
 						// }}
-						// onClick={(e) => {
-						// 	console.log(e);
-						// 	e.preventDefault();
-						// 	e.stopPropagation();
-						// }}
+						onClick={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
+						}}
 						// onSubmit={(e) => {
 						// 	console.log(e);
 						// 	e.preventDefault();
@@ -206,12 +205,26 @@ export default function QuickCommand({
 			>
 				{commands
 					.entries()
-					.map(([name, command], i) => (
+					.filter(([, [, anytime]]) => anytime || currentProject !== "")
+					.map(([name, [command]], i) => (
 						<li key={i}>
 							<button
 								className="btn"
 								onClick={() => {
-									command(reactFlow, positionAbsoluteX, positionAbsoluteY, settings);
+									if (command === undefined || typeof command === "boolean") {
+										data.onPaneClick();
+										return;
+									}
+									console.assert(
+										typeof command !== "boolean",
+										`Some how command(${name}) is bool?: ${command}`,
+									);
+									command(
+										reactFlow,
+										positionAbsoluteX,
+										positionAbsoluteY,
+										settings,
+									);
 									data.onPaneClick();
 								}}
 							>

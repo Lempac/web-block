@@ -8,7 +8,7 @@ export default function Welcome() {
 	const { t } = useTranslation();
 
 	return (
-		<div className="card flex-row bg-base-100 shadow">
+		<div className="card flex-row bg-base-100 shadow ring-neutral in-[.selected]:ring-4">
 			<div className="card-body">
 				<h1 className="card-title max-w-fit">{t("welcome.title")}</h1>
 				<p className="w-80 pr-1">{t("welcome.description")}</p>

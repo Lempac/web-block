@@ -1,4 +1,9 @@
-import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
+import {
+	useReactFlow,
+	useStore,
+	type Node,
+	type NodeProps,
+} from "@xyflow/react";
 import Resize from "../Resize";
 import {
 	fetchClient,
@@ -28,7 +33,7 @@ export default function Theme({ width, height, id }: NodeProps<ThemeNode>) {
 		validators: {
 			onChangeAsyncDebounceMs: 500,
 			onChangeAsync: async ({ value }) => {
-				setUser({...user, settings: {...user.settings, style: value}});
+				setUser({ ...user, settings: { ...user.settings, style: value } });
 				const { error } = await fetchClient.PUT("/api/user/style", {
 					body: value,
 				});
@@ -38,18 +43,31 @@ export default function Theme({ width, height, id }: NodeProps<ThemeNode>) {
 			},
 		},
 	});
+
+	const position = useStore((state) => state.nodeLookup.get(id)?.position);
 	useEffect(() => {
 		//HACK: values are 0 on init
 		if (width === 0 || height === 0) return;
 		setSettings({
 			...settings,
 			theme: {
+				...settings.theme,
 				height: height ?? INITAL_SETTINGS_WINDOW.theme.height,
 				width: width ?? INITAL_SETTINGS_WINDOW.theme.width,
-				...getNode(id)?.position,
 			},
 		});
 	}, [getNode, height, id, setSettings, settings, width]);
+
+	useEffect(() => {
+		if (!position) return;
+		setSettings({
+			...settings,
+			theme: {
+				...settings.theme,
+				...position,
+			},
+		});
+	}, [position, setSettings, settings]);
 
 	return (
 		<div className="card min-h-max min-w-max gap-2 border-2 bg-base-200/25 p-4 shadow ring-neutral in-[.selected]:ring-4">

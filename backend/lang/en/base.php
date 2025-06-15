@@ -17,17 +17,19 @@ return [
         'show-project' => 'Show projects',
         'show-settings' => 'Show settings',
         'show-quick-command' => 'Show quick command',
+        'admin-panel' => 'Admin panel',
     ],
     'projects' => [
         'name' => 'Projects',
-        'no-search' => 'No github projects found.',
+        'no-search' => 'No Github projects found.',
         'no-projects' => 'No project selected.',
+        'directory-exists' => 'Directory exists.',
         'logout' => 'Logout',
         'settings' => 'Settings',
         'new-project' => 'New Project',
         'search-repo' => [
             'placeholder' => 'Search for repo/New project name',
-            'add' => 'Add project from github',
+            'add' => 'Add project from Github',
             'create' => 'Create/Open project',
         ],
 
@@ -43,10 +45,10 @@ return [
             'name' => 'Profile',
             'hideExtensions' => 'Hide extensions',
             'defaultBranch' => 'Default branch name',
-            'password' => 'Password',
-            'password-placeholder' => 'Enter your new password',
+            'password' => 'New password',
             'email' => 'Email',
             'lang' => 'Language',
+            'delete' => 'Delete profile',
         ],
         'theme' => [
             'name' => 'Theme',
@@ -91,5 +93,51 @@ return [
     ],
     'upload-project' => [
         'tooltip' => 'Upload project',
+        'title' => 'Git information:',
+        'name' => [
+            'label' => 'Name',
+            'placeholder' => 'Enter name',
+        ],
+        'email' => [
+            'label' => 'Email(optional)',
+            'placeholder' => 'Enter email',
+        ],
+        'back' => 'Back',
+        'confirm' => 'Confirm',
+    ],
+    'close-project' => [
+        'tooltip' => 'Close project',
+    ],
+    'delete-account' => [
+        'title' => 'Delete account',
+        'label' => 'Password',
+        'placeholder' => 'Enter password',
+        'back' => 'Back',
+        'confirm' => 'Confirm',
+    ],
+    'update-password' => [
+        'title' => 'Update password',
+        'old-password' => [
+            'label' => 'Old password',
+            'placeholder' => 'Enter old password',
+        ],
+        'new-password' => [
+            'label' => 'New password',
+            'placeholder' => 'Enter new password',
+        ],
+        'confirm-new-password' => [
+            'label' => 'Re-enter new password',
+            'placeholder' => 'Re-enter new password',
+        ],
+        'back' => 'Back',
+        'confirm' => 'Confirm',
+    ],
+    'delete-project' => [
+        'title' => 'Delete project',
+        'back' => 'Back',
+        'confirm' => 'Confirm',
+    ],
+    'folder' => [
+        'title' => 'Open',
     ],
 ];

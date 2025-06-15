@@ -27,13 +27,17 @@ import { useTranslation } from "react-i18next";
 import { useRef } from "react";
 import useProjects from "@/Providers/useProjects";
 import type { components } from "@/api";
+import { useMediaQuery, useMouse } from "@uidotdev/usehooks";
 
 export default function ProjectCard({ id }: { id: string }) {
+	const isDark = useMediaQuery("(prefers-color-scheme: dark)");
 	const { t } = useTranslation(["base", "md"]);
 	const queryClient = useQueryClient();
+	const [position] = useMouse();
 	const { setCurrentProject, currentProject, projects } = useProjects();
 
-	const { deleteElements } = useReactFlow<CustomNodeType>();
+	const { deleteElements, addNodes, screenToFlowPosition } =
+		useReactFlow<CustomNodeType>();
 	const description = useRef<MDXEditorMethods>(null);
 	async function deleteCard(id: string) {
 		await clearDirectory(`/${projects.get(id)?.name}`);
@@ -53,6 +57,7 @@ export default function ProjectCard({ id }: { id: string }) {
 	}
 
 	function openProject(id: string) {
+		console.log(id)
 		setCurrentProject(id);
 		deleteElements({
 			nodes: [{ id: "projects" }],
@@ -76,7 +81,10 @@ export default function ProjectCard({ id }: { id: string }) {
 				await pfs.writeFile(projects.get(id)!.description, value.description);
 				if (projects.get(id)?.name !== value.name) {
 					await pfs.rename(`/${projects.get(id)?.name}`, `/${value.name}`);
-					projects.set(id, { ...value, description: projects.get(id)?.description as string });
+					projects.set(id, {
+						...value,
+						description: projects.get(id)?.description as string,
+					});
 				}
 				queryClient.invalidateQueries({
 					queryKey: ["get", "/api/projects"],
@@ -103,7 +111,7 @@ export default function ProjectCard({ id }: { id: string }) {
 					},
 				});
 				// if (error) return { fields: error.errors };
-				console.log(project, projects.get(id), value)
+				console.log(project, projects.get(id), value);
 				return null;
 			},
 		},
@@ -145,13 +153,21 @@ export default function ProjectCard({ id }: { id: string }) {
 				</button>
 				<button
 					className="nodrag btn btn-outline btn-error"
-					onClick={() => deleteCard(id)}
+					onClick={() =>
+						addNodes({
+							id: "deleteProject",
+							type: "deleteProject",
+							zIndex: 9999,
+							data: { onConfirm: () => deleteCard(id) },
+							position: screenToFlowPosition(position),
+						})
+					}
 					title={t("projects-card.delete")}
 				>
 					<FaTrashCan />
 				</button>
 			</div>
-			<div className="collapse-arrow collapse shadow bg-base-300">
+			<div className="collapse-arrow collapse bg-base-300 shadow">
 				<input type="checkbox" />
 				<div className="collapse-title font-semibold">
 					{t("projects-card.description")}
@@ -163,7 +179,7 @@ export default function ProjectCard({ id }: { id: string }) {
 						children={(field) => (
 							<MDXEditor
 								ref={description}
-								className="nodrag "
+								className={clsx("nodrag", isDark && "dark-theme")}
 								contentEditableClassName="prose"
 								onBlur={field.handleBlur}
 								markdown={field.state.value}

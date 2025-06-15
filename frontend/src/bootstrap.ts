@@ -21,6 +21,11 @@ import dedent from "dedent";
 import { useCallback } from "react";
 import type { CustomNodeType } from ".";
 import http from "isomorphic-git/http/web";
+import DeleteAccount from "./components/modals/DeleteAccount";
+import DeleteProject from "./components/modals/DeleteProject";
+import UpdatePassword from "./components/modals/UpdatePassword";
+import UploadProject from "./components/modals/UploadProject";
+import mime from 'mime';
 // Bundlers require Buffer to be defined on window
 window.Buffer = Buffer;
 export const fs = new LightningFS("fs");
@@ -31,17 +36,14 @@ if (import.meta.env.DEV) {
 	window.git = git;
 	//@ts-expect-error debug
 	window.http = http;
+	//@ts-expect-error debug
+	window.mime = mime;
 }
-
-export const FILE = 0,
-	HEAD = 1,
-	WORKDIR = 2,
-	STAGE = 3;
 
 export const unstageChanges = async (dir: string) =>
 	(await git.statusMatrix({ fs, dir }))
-		.filter((row) => row[WORKDIR] !== row[STAGE])
-		.map((row) => row[FILE]);
+		.filter((row) => row["2"] !== row["3"])
+		.map((row) => row["0"]);
 //@ts-expect-error debug
 if (import.meta.env.DEV) window.unstageChanges = unstageChanges;
 
@@ -164,12 +166,56 @@ export const findMdFiles = async (dir: `/${string}`) =>
 	(await pfs.readdir(dir))
 		.filter((path) => path.endsWith(".md"))
 		.map((path) => `${dir}/${path}`);
+// import { TREE } from "isomorphic-git";
+// const ref = "HEAD";
+// const trees = [TREE({ ref }), WORKDIR(), STAGE()];
+// window.test = await git.walk({
+// 	fs,
+// 	dir: "/untitled",
+// 	trees,
+// 	map: async (filepath, [head, workdir]) => {
+// 		const content = Buffer.from(await workdir?.content() ?? []).toString("utf8");
+// 		console.log((await head?.mode())?.toString(8));
+// 		if (content?.includes("foo")) {
+// 			return {
+// 				filepath,
+// 				content,
+// 			};
+// 		}
+// 	},
+// });
+
+// export async function map(filepath: string, [head, workdir]: [head: string, workdir: string]) {
+//   let content = (await workdir.content()).toString('utf8')
+//   if (content.contains('foo')) {
+//     return {
+//       filepath,
+//       content
+//     }
+//   }
+// }
 
 export async function initExample() {
 	const dir = "/untitled";
 	if ((await pfs.readdir("/")).includes("untitled")) return;
 	await git.init({ fs, dir });
 	if ((await pfs.readdir(dir)).length === 0) return;
+	await pfs.writeFile(
+		`${dir}/.gitignore`,
+		dedent`
+		.web-block.json
+		`,
+	);
+	await pfs.mkdir(`${dir}/.web-block`);
+	await pfs.writeFile(
+		`${dir}/.web-block.json`,
+		JSON.stringify({
+			cwd: "/",
+			x: 0,
+			y: 0,
+			zoom: 1,
+		}),
+	);
 	await pfs.writeFile(
 		`${dir}/README.md`,
 		dedent`
@@ -377,8 +423,8 @@ export const INITAL_PROFILE = {
 };
 export const INITAL_THEME = {
 	controlPosition: "bottom-left",
-	baseDarkTheme: "dark",
-	baseLightTheme: "light",
+	baseDarkTheme: "sunset",
+	baseLightTheme: "nord",
 	minimapPosition: "bottom-right",
 	pathPosition: "top-left",
 } as {
@@ -409,7 +455,10 @@ export const INITAL_USER = {
 
 const authMiddleware: Middleware = {
 	async onRequest({ request }) {
-		request.headers.set("Authorization", `Bearer ${localStorage.getItem("token")}`);
+		request.headers.set(
+			"Authorization",
+			`Bearer ${localStorage.getItem("token")}`,
+		);
 		return request;
 	},
 };
@@ -420,28 +469,29 @@ export const fileExtensionMap = {
 	js: "javascript",
 	py: "python",
 	java: "java",
-	c: "c",
+	// c: "c",
 	cpp: "cpp",
 	cs: "c#",
 	rb: "ruby",
 	php: "php",
 	html: "html",
 	css: "css",
-	swift: "swift",
-	go: "go",
-	rs: "rust",
-	kt: "kotlin",
-	pl: "perl",
+	// swift: "swift",
+	// go: "go",
+	// rs: "rust",
+	// kt: "kotlin",
+	// pl: "perl",
 	r: "r",
-	sql: "sql",
-	sh: "shell",
+	// sql: "sql",
+	// sh: "shell",
 	ts: "typescript",
-	dart: "dart",
+	// dart: "dart",
 	xml: "xml",
 	json: "json",
 	md: "markdown",
 	yml: "yaml",
-	nix: "nix",
+	yaml: "yaml",
+	// nix: "nix",
 } as const;
 
 export const allowedLang = { en: "en", lv: "lv" } as const;
@@ -511,4 +561,8 @@ export const nodeTypes: NodeTypes = {
 	github: Github,
 	contextMenu: ContextMenu,
 	quickCommand: QuickCommand,
+	deleteAccount: DeleteAccount,
+	deleteProject: DeleteProject,
+	uploadProject: UploadProject,
+	updatePassword: UpdatePassword,
 } as const;

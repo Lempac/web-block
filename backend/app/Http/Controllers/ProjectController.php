@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreClientProjectRequest;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
@@ -28,6 +29,7 @@ class ProjectController extends Controller
      */
     #[Get(path: '/api/projects', tags: ['project'], security: ['sessionAuth'])]
     #[Response(response: 200, description: 'test', content: new JsonContent(type: 'array', items: new Items(ref: '#/components/schemas/Project')))]
+    #[Response(response: 401, description: 'Unauthenticated.', content: new JsonContent(ref: '#/components/schemas/ErrorObject'))]
     public function index()
     {
         return Auth::user()->projects;
@@ -42,6 +44,7 @@ class ProjectController extends Controller
         new Property(property: 'message', type: 'string'),
     ]))]
     #[Response(response: 400, description: 'Invalid url', content: new JsonContent(type: 'array', items: new Items(ref: '#/components/schemas/ErrorObject')))]
+    #[Response(response: 401, description: 'Unauthenticated.', content: new JsonContent(ref: '#/components/schemas/ErrorObject'))]
     public function store(StoreProjectRequest $request)
     {
         $val = $request->validated();
@@ -76,6 +79,23 @@ class ProjectController extends Controller
         $project->generateGitProject();
 
         return response()->json(['message' => 'Project created successfully'], 201);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    #[Post(path: '/api/projects/create', tags: ['project'], security: ['sessionAuth'])]
+    #[RequestBody(description: 'Project data', content: new JsonContent(ref: '#/components/schemas/StoreClientProjectRequest'))]
+    #[Response(response: 204, description: 'Project created successfully')]
+    #[Response(response: 400, description: 'Invalid data.', content: new JsonContent(type: 'array', items: new Items(ref: '#/components/schemas/ErrorObject')))]
+    #[Response(response: 401, description: 'Unauthenticated.', content: new JsonContent(ref: '#/components/schemas/ErrorObject'))]
+    public function storeClientProject(StoreClientProjectRequest $request)
+    {
+        // TODO: Client needed to delete project or do something about them, before going out,
+        // otherwise if there is project and it tried to store one same id from different account it fails UNIQUE constraint.
+        Auth::user()->projects()->updateOrCreate(['id' => $request->only(['id'])], $request->validated());
+
+        return response()->noContent();
     }
 
     /**

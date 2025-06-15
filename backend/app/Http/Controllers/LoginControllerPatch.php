@@ -30,6 +30,7 @@ class LoginControllerPatch extends LoginController
 
         return $request->wantsJson()
             ? new JsonResponse([], 204)
-            : redirect(\App::environment('production') ? config('app.frontend_url').'/web-block' : config('app.frontend_url'));
+            // : redirect(\App::environment('production') ? config('app.frontend_url').'/web-block' : config('app.frontend_url'));
+            : redirect(config('app.url').'/panel');
     }
 }

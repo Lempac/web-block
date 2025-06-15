@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\Schema;
+use Orchid\Screen\AsSource;
 use Storage;
 
 #[Schema(properties: [
@@ -27,9 +28,14 @@ use Storage;
 ], required: ['id', 'name', 'description', 'x', 'y', 'zoom', 'default_branch', 'url', 'oid', 'cwd'])]
 class Project extends Model
 {
-    use HasUuids;
+    protected $keyType = 'string';
+
+    public $incrementing = false;
+
+    use AsSource, HasUuids;
 
     protected $fillable = [
+        'id',
         'name',
         'description',
         'x',
@@ -44,6 +50,36 @@ class Project extends Model
 
     protected $hidden = [
         'user_id',
+    ];
+
+    /**
+     * The attributes for which you can use filters in url.
+     *
+     * @var array
+     */
+    protected $allowedFilters = [
+        'id' => Where::class,
+        'name' => Like::class,
+        'description' => Like::class, // Added description filter
+        'url' => Like::class, // Added URL filter
+        'default_branch' => Like::class, // Added default_branch filter
+        'created_at' => WhereDateStartEnd::class,
+        'updated_at' => WhereDateStartEnd::class,
+    ];
+
+    /**
+     * The attributes for which can use sort in url.
+     *
+     * @var array
+     */
+    protected $allowedSorts = [
+        'id',
+        'name',
+        'description', // Added description sort
+        'url',         // Added URL sort
+        'default_branch', // Added default_branch sort
+        'created_at',
+        'updated_at',
     ];
 
     public function user(): BelongsTo

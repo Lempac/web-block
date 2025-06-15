@@ -23,7 +23,7 @@ paths:
             schema:
               $ref: '#/components/schemas/LoginRequest'
       responses:
-        '200':
+        '201':
           description: 'User successfully logged in and token issued.'
           content:
             application/json:
@@ -59,14 +59,6 @@ paths:
         - github
         - auth
       operationId: 0487fbb4c6d40e317fb4ec45582d09e5
-      parameters:
-        -
-          name: device_name
-          in: query
-          description: "A friendly name for the device initiating the login (e.g., 'web-browser', 'mobile-app'). Required to generate the API token name."
-          required: true
-          schema:
-            type: string
       responses:
         '302':
           description: 'Redirects to GitHub for authentication.'
@@ -299,6 +291,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Project'
+        '401':
+          description: Unauthenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
       security:
         -
           scalar: sessionAuth
@@ -330,6 +328,44 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ErrorObject'
+        '401':
+          description: Unauthenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+      security:
+        -
+          scalar: sessionAuth
+  /api/projects/create:
+    post:
+      tags:
+        - project
+      summary: 'Store a newly created resource in storage.'
+      operationId: 5dae9d6654a488de0a9e7fc0a8800669
+      requestBody:
+        description: 'Project data'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreClientProjectRequest'
+      responses:
+        '204':
+          description: 'Project created successfully'
+        '400':
+          description: 'Invalid data.'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ErrorObject'
+        '401':
+          description: Unauthenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
       security:
         -
           scalar: sessionAuth
@@ -518,6 +554,12 @@ paths:
       tags:
         - user
       operationId: db0c8ea1c902ed078a87cf1fa6497994
+      requestBody:
+        description: 'User password'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteUserRequest'
       responses:
         '204':
           description: 'User deleted.'
@@ -597,6 +639,51 @@ paths:
       security:
         -
           scalar: sessionAuth
+  /api/user/password:
+    put:
+      tags:
+        - user
+      operationId: 57ddbc5bebe0cd30c268a0d8a4640660
+      requestBody:
+        description: 'User password to update.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasswordRequest'
+      responses:
+        '204':
+          description: 'User password updated.'
+        '401':
+          description: Unauthenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+      security:
+        -
+          scalar: sessionAuth
+    patch:
+      tags:
+        - user
+      operationId: 75f8f589d8162c3ebb0a27049232e804
+      requestBody:
+        description: 'User password to update.'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasswordRequest'
+      responses:
+        '204':
+          description: 'User password updated.'
+        '401':
+          description: Unauthenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+      security:
+        -
+          scalar: sessionAuth
   /api/user/repos:
     get:
       tags:
@@ -608,9 +695,39 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
+                type: object
+                additionalProperties:
+                  type: number
+        '401':
+          description: Unauthenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorObject'
+      security:
+        -
+          scalar: sessionAuth
+  '/api/user/repo/{name}':
+    get:
+      tags:
+        - user
+      operationId: 5dcb8b09ef61f0dd409ac3fbf1c59d74
+      parameters:
+        -
+          name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 'Repos url.'
+          content:
+            application/json:
+              schema:
+                type:
+                  - string
+                  - 'null'
         '401':
           description: Unauthenticated.
           content:
@@ -638,6 +755,11 @@ components:
               type: string
               example: 'Field is required'
       type: object
+    Lang:
+      type: string
+      enum:
+        - lv
+        - en
     PanelPosition:
       type: string
       enum:
@@ -737,6 +859,21 @@ components:
           type: boolean
           default: true
       type: object
+    DeleteUserRequest:
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          format: password
+      type: object
+    IndexProjectRequest:
+      required:
+        - name
+      properties:
+        name:
+          type: string
+      type: object
     StoreBlockRequest:
       required:
         - x
@@ -760,6 +897,41 @@ components:
           type:
             - string
             - 'null'
+      type: object
+    StoreClientProjectRequest:
+      required:
+        - id
+        - name
+        - description
+        - x
+        - 'y'
+        - zoom
+        - default_branch
+        - oid
+        - cwd
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        x:
+          type: integer
+        'y':
+          type: integer
+        zoom:
+          type: number
+          format: float
+        default_branch:
+          type: string
+        url:
+          type: string
+        oid:
+          type: string
+        cwd:
+          type: string
       type: object
     StoreProjectRequest:
       required:
@@ -791,6 +963,23 @@ components:
           type:
             - string
             - 'null'
+      type: object
+    UpdatePasswordRequest:
+      description: 'Request to update user password'
+      required:
+        - oldpassword
+        - newpassword
+        - newPassword_confirmation
+      properties:
+        oldPassword:
+          type: string
+          format: password
+        newPassword:
+          type: string
+          format: password
+        newPassword_confirmation:
+          type: string
+          format: password
       type: object
     UpdateProjectRequest:
       required:
@@ -860,7 +1049,6 @@ components:
         - x
         - 'y'
         - path
-        - content
         - is_file
         - is_folder
       properties:
@@ -880,8 +1068,6 @@ components:
           default: 0
         path:
           type: string
-        content:
-          type: string
         is_file:
           type: boolean
         is_folder:
@@ -892,9 +1078,6 @@ components:
             - 'null'
         project_id:
           type: integer
-        mimetype:
-          type: string
-          pattern: '(application|audio|font|example|image|message|model|multipart|text|video|x-(?:[0-9A-Za-z!#$%&''*+.^_`|~-]+))\/([0-9A-Za-z!#$%&''*+.^_`|~-]+)((?:[ \t]*;[ \t]*[0-9A-Za-z!#$%&''*+.^_`|~-]+=(?:[0-9A-Za-z!#$%&''*+.^_`|~-]+|\"(?:[^\"\\]|\.)*\"))*)'
       type: object
     Project:
       required:
@@ -959,9 +1142,6 @@ components:
           allOf:
             -
               $ref: '#/components/schemas/PanelPosition'
-            -
-              type: string
-              default: bottom-left
         minimapPosition:
           $ref: '#/components/schemas/PanelPosition'
         pathPosition:
@@ -1004,6 +1184,10 @@ components:
           type: string
         email:
           type: string
+        has_github:
+          type: boolean
+        is_admin:
+          type: boolean
         settings:
           $ref: '#/components/schemas/Settings'
       type: object

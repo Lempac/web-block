@@ -1,10 +1,16 @@
-import { INITAL_SETTINGS_WINDOW, useAddQuickCommand } from "@/bootstrap";
+import {
+	gitAddAll,
+	INITAL_SETTINGS_WINDOW,
+	pfs,
+	useAddQuickCommand,
+} from "@/bootstrap";
 import { type CustomNodeType } from "@/index";
 import { useReactFlow, type Node, type NodeProps } from "@xyflow/react";
 import { VscNewFile, VscNewFolder } from "react-icons/vsc";
 import { useTranslation } from "react-i18next";
 import { FaArrowRight } from "react-icons/fa6";
 import { useLocalStorage } from "@uidotdev/usehooks";
+import useProjects from "@/Providers/useProjects";
 
 export type ContextMenuNode = Node<{ onClick: () => void }, "contextMenu">;
 
@@ -13,34 +19,63 @@ export default function ContextMenu({
 	positionAbsoluteY,
 	data,
 }: NodeProps<ContextMenuNode>) {
+	const { getProject } = useProjects();
 	const addQuickCommand = useAddQuickCommand();
 	const [settings] = useLocalStorage("settings", INITAL_SETTINGS_WINDOW);
 	const { t } = useTranslation();
-	const { addNodes } = useReactFlow<CustomNodeType>();
+	const { addNodes, getNodes } = useReactFlow<CustomNodeType>();
 
-	const addFile = () =>
-		addNodes([
-			{
-				id: crypto.randomUUID(),
-				type: "file",
-				data: {},
-				position: { x: positionAbsoluteX, y: positionAbsoluteY },
-			},
-		]);
-
-	const addFolder = () =>
+	const addFile = async () => {
+		const por = getProject();
+		const filename = `untitled-${getNodes().length}.txt`;
+		await pfs.writeFile(
+			`/${por?.name}/.web-block/${filename}.json`,
+			JSON.stringify({
+				x: 0,
+				y: 0,
+				width: 100,
+				height: 100,
+			}),
+		);
+		await pfs.writeFile(`/${por?.name}/${filename}`, ``);
 		addNodes({
-			id: crypto.randomUUID(),
+			id: `/${por?.name}|*|${filename}`,
+			type: "file",
+			data: {},
+			position: { x: positionAbsoluteX, y: positionAbsoluteY },
+			style: { width: 100, height: 100 },
+		});
+		gitAddAll(`/${por?.name}`);
+	};
+
+	const addFolder = async () => {
+		const por = getProject();
+		const filename = `untitled-${getNodes().length}`;
+		await pfs.writeFile(
+			`/${por?.name}/.web-block/${filename}.json`,
+			JSON.stringify({
+				x: 0,
+				y: 0,
+				width: 100,
+				height: 100,
+			}),
+		);
+		await pfs.mkdir(`/${por?.name}/${filename}`);
+		addNodes({
+			id: `/${por?.name}|*|${filename}`,
 			type: "folder",
 			data: {},
 			position: { x: positionAbsoluteX, y: positionAbsoluteY },
+			style: { width: 100, height: 100 },
 		});
+		gitAddAll(`/${por?.name}`);
+	};
 	const showProjects = () =>
 		addNodes({
 			id: "projects",
 			type: "projects",
 			position: { x: positionAbsoluteX, y: positionAbsoluteY },
-			data: { },
+			data: {},
 		});
 
 	const showSettings = () =>
@@ -87,6 +122,12 @@ export default function ContextMenu({
 			<button className="nodrag btn" onClick={showQuickCommand}>
 				{t("context-menu.show-quick-command")}
 			</button>
+			<a
+				href={`${import.meta.env.VITE_SERVER_URL}/panel`}
+				className="nodarg btn"
+			>
+				{t("context-menu.admin-panel")}
+			</a>
 		</div>
 	);
 }

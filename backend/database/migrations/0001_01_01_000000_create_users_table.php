@@ -31,8 +31,8 @@ return new class extends Migration
                     'controlPosition' => PanelPosition::BottomLeft,
                     'minimapPosition' => PanelPosition::BottomRight,
                     'pathPosition' => PanelPosition::TopLeft,
-                    'baseLightTheme' => Themes::Light,
-                    'baseDarkTheme' => Themes::Dark,
+                    'baseLightTheme' => Themes::Nord,
+                    'baseDarkTheme' => Themes::Sunset,
                 ],
                 'keybinds' => [
                     'quickCommand' => 'Control+p',

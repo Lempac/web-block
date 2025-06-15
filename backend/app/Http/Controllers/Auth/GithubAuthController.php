@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Log;
 use OpenApi\Attributes\Get;
@@ -23,16 +21,6 @@ class GithubAuthController extends Controller
             return response()->json(['error' => 'GitHub client redirect not configured'], 400);
         }
 
-        // $state = Str::random(40);
-
-        // $deviceInfo = [
-        //     'device_name' => request()->query('device_name'),
-        //     'user_agent' => request()->header('User-Agent'),
-        //     'ip_address' => request()->ip(),
-        // ];
-
-        // cache(['github_oauth_state_'.$state => $deviceInfo], now()->addMinutes(10));
-
         return Socialite::driver('github')->stateless()->scopes(['repo', 'user:email'])->redirect();
     }
 
@@ -43,19 +31,12 @@ class GithubAuthController extends Controller
     {
         // Get stored device info from session
         $frontendurl = config('app.frontend_url').'/web-block';
-        
-        // if (! $state) {
-        //     Log::error('GitHub OAuth callback missing state parameter.');
-        //     $frontendUrl = $frontendurl.'/auth-error?message=GitHub%20authentication%20failed%20(missing%20state)';
 
-        //     return redirect($frontendUrl, 400);
-        // }
-        // dd(request()->has('error'));
         // Handle errors from GitHub
         if (request()->has('error')) {
             Log::error('GitHub OAuth error:', request()->all());
             // Redirect to frontend error page or with an error message
-            $redirectUrl = "{$frontendurl}/auth-error?message=GitHub%20authentication%20failed";
+            $redirectUrl = "{$frontendurl}?message=GitHub%20authentication%20failed";
 
             return redirect($redirectUrl, 301);
         }
@@ -64,7 +45,8 @@ class GithubAuthController extends Controller
             $githubUser = Socialite::driver('github')->stateless()->user();
         } catch (\Exception $e) {
             Log::error('Socialite GitHub user fetch error: '.$e->getMessage());
-            $redirectUrl = "{$frontendurl}/auth-error?message=Could%20not%20retrieve%20GitHub%20user%20details";
+            $redirectUrl = "{$frontendurl}?message=Could%20not%20retrieve%20GitHub%20user%20details";
+
             return redirect($redirectUrl, 301);
         }
 
@@ -82,7 +64,7 @@ class GithubAuthController extends Controller
 
         if (! method_exists($user, 'createToken')) {
             Log::error('User model is missing HasApiTokens trait for GitHub callback.');
-            $redirectUrl = "{$frontendurl}/auth-error?message=Server%20configuration%20error";
+            $redirectUrl = "{$frontendurl}?message=Server%20configuration%20error";
 
             return redirect($redirectUrl, 301);
         }
@@ -96,7 +78,7 @@ class GithubAuthController extends Controller
 
         $token = $user->createToken($tokenName)->plainTextToken;
 
-        $redirectUrl = $frontendurl.'/auth-success?'.http_build_query([
+        $redirectUrl = $frontendurl.'?'.http_build_query([
             'token' => $token,
         ]);
 

@@ -175,6 +175,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/projects/create": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Store a newly created resource in storage. */
+        post: operations["5dae9d6654a488de0a9e7fc0a8800669"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/projects/{project}": {
         parameters: {
             query?: never;
@@ -242,6 +259,22 @@ export interface paths {
         patch: operations["54ba995c0c13dd114980733de45f7ffa"];
         trace?: never;
     };
+    "/api/user/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["57ddbc5bebe0cd30c268a0d8a4640660"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["75f8f589d8162c3ebb0a27049232e804"];
+        trace?: never;
+    };
     "/api/user/repos": {
         parameters: {
             query?: never;
@@ -250,6 +283,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["395814df2599dc7a564535035ede73fb"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/user/repo/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["5dcb8b09ef61f0dd409ac3fbf1c59d74"];
         put?: never;
         post?: never;
         delete?: never;
@@ -269,6 +318,8 @@ export interface components {
                 [key: string]: string[];
             };
         };
+        /** @enum {string} */
+        Lang: "lv" | "en";
         /** @enum {string} */
         PanelPosition: "top-left" | "top-right" | "top-center" | "bottom-left" | "bottom-center" | "bottom-right";
         /** @enum {string} */
@@ -301,6 +352,13 @@ export interface components {
             /** @default true */
             remember: boolean;
         };
+        DeleteUserRequest: {
+            /** Format: password */
+            password: string;
+        };
+        IndexProjectRequest: {
+            name: string;
+        };
         StoreBlockRequest: {
             x: number;
             y: number;
@@ -308,6 +366,20 @@ export interface components {
             height: number;
             path: string;
             content: string | null;
+        };
+        StoreClientProjectRequest: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            description: string;
+            x: number;
+            y: number;
+            /** Format: float */
+            zoom: number;
+            default_branch: string;
+            url?: string;
+            oid: string;
+            cwd: string;
         };
         StoreProjectRequest: {
             nameOrUrl: string;
@@ -319,6 +391,15 @@ export interface components {
             height: number;
             path: string;
             content: string | null;
+        };
+        /** @description Request to update user password */
+        UpdatePasswordRequest: {
+            /** Format: password */
+            oldPassword?: string;
+            /** Format: password */
+            newPassword?: string;
+            /** Format: password */
+            newPassword_confirmation: string;
         };
         UpdateProjectRequest: {
             name: string;
@@ -359,12 +440,10 @@ export interface components {
             /** @default 0 */
             height: number;
             path: string;
-            content: string;
             is_file: boolean;
             is_folder: boolean;
             block_id?: number | null;
             project_id?: number;
-            mimetype?: string;
         };
         Project: {
             /** Format: uuid */
@@ -394,7 +473,7 @@ export interface components {
         };
         /** @description User style */
         Style: {
-            controlPosition: components["schemas"]["PanelPosition"] & string;
+            controlPosition: components["schemas"]["PanelPosition"];
             minimapPosition: components["schemas"]["PanelPosition"];
             pathPosition: components["schemas"]["PanelPosition"];
             baseLightTheme: components["schemas"]["Themes"];
@@ -414,6 +493,8 @@ export interface components {
         User: {
             name: string;
             email: string;
+            has_github?: boolean;
+            is_admin?: boolean;
             settings: components["schemas"]["Settings"];
         };
     };
@@ -440,7 +521,7 @@ export interface operations {
         };
         responses: {
             /** @description User successfully logged in and token issued. */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -488,10 +569,7 @@ export interface operations {
     };
     "0487fbb4c6d40e317fb4ec45582d09e5": {
         parameters: {
-            query: {
-                /** @description A friendly name for the device initiating the login (e.g., 'web-browser', 'mobile-app'). Required to generate the API token name. */
-                device_name: string;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -789,6 +867,15 @@ export interface operations {
                     "application/json": components["schemas"]["Project"][];
                 };
             };
+            /** @description Unauthenticated. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorObject"];
+                };
+            };
         };
     };
     a4dd4c17bf5fc24c224357f03dcc848a: {
@@ -823,6 +910,56 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorObject"][];
+                };
+            };
+            /** @description Unauthenticated. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorObject"];
+                };
+            };
+        };
+    };
+    "5dae9d6654a488de0a9e7fc0a8800669": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Project data */
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["StoreClientProjectRequest"];
+            };
+        };
+        responses: {
+            /** @description Project created successfully */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid data. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorObject"][];
+                };
+            };
+            /** @description Unauthenticated. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorObject"];
                 };
             };
         };
@@ -1046,7 +1183,12 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        /** @description User password */
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["DeleteUserRequest"];
+            };
+        };
         responses: {
             /** @description User deleted. */
             204: {
@@ -1162,6 +1304,70 @@ export interface operations {
             };
         };
     };
+    "57ddbc5bebe0cd30c268a0d8a4640660": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description User password to update. */
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdatePasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description User password updated. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorObject"];
+                };
+            };
+        };
+    };
+    "75f8f589d8162c3ebb0a27049232e804": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description User password to update. */
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["UpdatePasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description User password updated. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorObject"];
+                };
+            };
+        };
+    };
     "395814df2599dc7a564535035ede73fb": {
         parameters: {
             query?: never;
@@ -1177,7 +1383,40 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string[];
+                    "application/json": {
+                        [key: string]: number;
+                    };
+                };
+            };
+            /** @description Unauthenticated. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorObject"];
+                };
+            };
+        };
+    };
+    "5dcb8b09ef61f0dd409ac3fbf1c59d74": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Repos url. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string | null;
                 };
             };
             /** @description Unauthenticated. */

@@ -28,7 +28,7 @@ class AuthenticatedSessionController extends Controller
      */
     #[Post(path: '/api/login', tags: ['auth'])]
     #[RequestBody(description: 'Login the user', content: new JsonContent(ref: '#/components/schemas/LoginRequest'))]
-    #[R(response: 200,
+    #[R(response: 201,
         description: 'User successfully logged in and token issued.',
         content: new JsonContent(ref: '#/components/schemas/AuthTokenResponse'))]
     #[R(response: 401,

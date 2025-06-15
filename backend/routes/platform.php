@@ -2,7 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Orchid\Screens\BackupScreen;
 use App\Orchid\Screens\PlatformScreen;
+use App\Orchid\Screens\Project\ProjectListScreen;
+use App\Orchid\Screens\Project\ProjectViewScreen;
 use App\Orchid\Screens\Role\RoleEditScreen;
 use App\Orchid\Screens\Role\RoleListScreen;
 use App\Orchid\Screens\StatisticsScreen;
@@ -81,5 +84,29 @@ Route::screen('statistics', StatisticsScreen::class)
     ->breadcrumbs(fn (Trail $trail) => $trail
         ->parent('platform.index')
         ->push('Statistics'));
+
+Route::screen('projects', ProjectListScreen::class)
+    ->name('platform.projects.list')
+    ->breadcrumbs(fn (Trail $trail) => $trail
+        ->parent('platform.index')
+        ->push('Projects', route('platform.projects.list')));
+
+Route::screen('projects/{project}', ProjectViewScreen::class)
+    ->name('platform.projects.view')
+    ->breadcrumbs(fn (Trail $trail, $project) => $trail
+        ->parent('platform.projects.list')
+        ->push($project->name));
+
+Route::screen('backups', BackupScreen::class)
+    ->name('platform.backups.list');
+
+Route::post('backups/delete', [BackupScreen::class, 'delete'])
+    ->name('platform.backups.delete');
+
+Route::get('backups/create-db', [BackupScreen::class, 'createDbBackup'])
+    ->name('platform.backups.create-db');
+
+Route::get('backups/download/backup', [BackupScreen::class, 'download'])
+    ->name('platform.backups.download');
 
 // Route::screen('idea', Idea::class, 'platform.screens.idea');

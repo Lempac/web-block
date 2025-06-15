@@ -3,6 +3,10 @@ import type { ContextMenuNode } from "./components/ContextMenu";
 import type { FileNode } from "./components/File";
 import type { FolderNode } from "./components/Folder";
 import type { GithubNode } from "./components/Github";
+import type { DeleteAccountNode } from "./components/modals/DeleteAccount";
+import type { DeleteProjectNode } from "./components/modals/DeleteProject";
+import type { UpdatePasswordNode } from "./components/modals/UpdatePassword";
+import type { UploadProjectNode } from "./components/modals/UploadProject";
 import type { ProjectsNode } from "./components/Projects";
 import type { QuickCommandNode } from "./components/QuickCommand";
 import type { SettingsNode } from "./components/Settings";
@@ -31,7 +35,11 @@ export type CustomNodeType =
 	| FolderNode
 	| FileNode
 	| ContextMenuNode
-	| QuickCommandNode;
+	| QuickCommandNode
+	| DeleteAccountNode
+	| DeleteProjectNode
+	| UploadProjectNode
+	| UpdatePasswordNode;
 // export type ProjectVisibility =
 // 	(typeof ProjectVisibility)[keyof typeof ProjectVisibility];
 

@@ -35,15 +35,21 @@ class PlatformProvider extends OrchidServiceProvider
             //     ->title('Navigation')
             //     ->route(config('platform.index')),
 
-            Menu::make('Go to Frontend')
+            Menu::make(__('Go to Frontend'))
                 ->icon('bs.globe')
                 ->url(\App::environment('production') ? config('app.frontend_url').'/web-block' : config('app.frontend_url'))
                 ->target('_blank'),
 
-            Menu::make('Statistics')
-                ->icon('chart')
+            Menu::make(__('Statistics'))
+                ->icon('bs.bar-chart-steps')
                 ->route('platform.statistics')
-                ->title('Analytics'),
+                ->title(__('Analytics')),
+
+            Menu::make(__('Projects'))
+                ->icon('bs.folder')
+                ->route('platform.projects.list')
+                ->permission('platform.projects.list')
+                ->title(__('Project Management')),
 
             Menu::make(__('Users'))
                 ->icon('bs.people')
@@ -56,6 +62,12 @@ class PlatformProvider extends OrchidServiceProvider
                 ->route('platform.systems.roles')
                 ->permission('platform.systems.roles')
                 ->divider(),
+
+            Menu::make('Backups')
+                ->icon('database')
+                ->route('platform.backups.list')
+                ->title('System')
+                ->permission('platform.backups.list'),
 
             // Menu::make('Documentation')
             //     ->title('Docs')
@@ -82,6 +94,15 @@ class PlatformProvider extends OrchidServiceProvider
             ItemPermission::group(__('System'))
                 ->addPermission('platform.systems.roles', __('Roles'))
                 ->addPermission('platform.systems.users', __('Users')),
+            ItemPermission::group(__('Projects'))
+                ->addPermission('platform.projects.list', 'List Projects')
+                ->addPermission('platform.projects.view', 'View Project Details') // If you have a view screen
+                ->addPermission('platform.projects.remove', 'Delete Projects'),
+            ItemPermission::group(__('System'))
+                ->addPermission('platform.backups.list', __('View Backups'))
+                ->addPermission('platform.backups.create', __('Create Backups'))
+                ->addPermission('platform.backups.delete', __('Delete Backups'))
+                ->addPermission('platform.backups.download', __('Download Backups')),
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 {
     name = "web-block-backend";
+    packages = with pkgs; [ sqlite ];
 #    dotenv.enable = true;
     languages.php.enable = true;
     languages.php.version = "8.4";
