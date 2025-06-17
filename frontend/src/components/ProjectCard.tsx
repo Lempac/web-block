@@ -57,7 +57,6 @@ export default function ProjectCard({ id }: { id: string }) {
 	}
 
 	function openProject(id: string) {
-		console.log(id)
 		setCurrentProject(id);
 		deleteElements({
 			nodes: [{ id: "projects" }],
@@ -111,7 +110,7 @@ export default function ProjectCard({ id }: { id: string }) {
 					},
 				});
 				// if (error) return { fields: error.errors };
-				console.log(project, projects.get(id), value);
+				// console.log(project, projects.get(id), value);
 				return null;
 			},
 		},

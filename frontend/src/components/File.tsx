@@ -73,7 +73,7 @@ export default function File({
 					JSON.stringify(value),
 				);
 				if (path !== "" && path !== value.path) {
-					console.log(path, value.path);
+					// console.log(path, value.path);
 					await pfs.rename(
 						`/${name}/.web-block/${id.split("|*|")[1]?.replaceAll("/", "-")}.json`,
 						`/${name}/.web-block/${value.path?.replaceAll("/", "-")}.json`,

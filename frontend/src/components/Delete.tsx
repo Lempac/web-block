@@ -9,7 +9,7 @@ export default function Delete({ parent }: { parent: string }) {
 		const [name, file] = id.split("|*|");
 		const path = `/${name}/${file}` as const;
 		const stat = await pfs.lstat(path);
-		console.log(name, file)
+		// console.log(name, file)
 		await pfs.unlink(`/${name}/.web-block/${file?.replaceAll("/", "-")}.json`)
 		if(stat.isDirectory()){
 			await clearDirectory(path)

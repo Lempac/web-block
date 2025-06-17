@@ -6395,16 +6395,16 @@
         },
         {
             "name": "swagger-api/swagger-ui",
-            "version": "v5.24.1",
+            "version": "v5.24.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/swagger-api/swagger-ui.git",
-                "reference": "f2c454a65227388889994fd80d53fa28bd2831d9"
+                "reference": "bf7b19dd23765d72b2027dee560a5b6dd737f4f2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/swagger-api/swagger-ui/zipball/f2c454a65227388889994fd80d53fa28bd2831d9",
-                "reference": "f2c454a65227388889994fd80d53fa28bd2831d9",
+                "url": "https://api.github.com/repos/swagger-api/swagger-ui/zipball/bf7b19dd23765d72b2027dee560a5b6dd737f4f2",
+                "reference": "bf7b19dd23765d72b2027dee560a5b6dd737f4f2",
                 "shasum": ""
             },
             "type": "library",
@@ -6450,9 +6450,9 @@
             ],
             "support": {
                 "issues": "https://github.com/swagger-api/swagger-ui/issues",
-                "source": "https://github.com/swagger-api/swagger-ui/tree/v5.24.1"
+                "source": "https://github.com/swagger-api/swagger-ui/tree/v5.24.2"
             },
-            "time": "2025-06-10T06:06:19+00:00"
+            "time": "2025-06-16T12:50:04+00:00"
         },
         {
             "name": "symfony/clock",
@@ -9627,16 +9627,16 @@
         },
         {
             "name": "filp/whoops",
-            "version": "2.18.2",
+            "version": "2.18.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filp/whoops.git",
-                "reference": "89dabca1490bc77dbcab41c2b20968c7e44bf7c3"
+                "reference": "59a123a3d459c5a23055802237cb317f609867e5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filp/whoops/zipball/89dabca1490bc77dbcab41c2b20968c7e44bf7c3",
-                "reference": "89dabca1490bc77dbcab41c2b20968c7e44bf7c3",
+                "url": "https://api.github.com/repos/filp/whoops/zipball/59a123a3d459c5a23055802237cb317f609867e5",
+                "reference": "59a123a3d459c5a23055802237cb317f609867e5",
                 "shasum": ""
             },
             "require": {
@@ -9686,7 +9686,7 @@
             ],
             "support": {
                 "issues": "https://github.com/filp/whoops/issues",
-                "source": "https://github.com/filp/whoops/tree/2.18.2"
+                "source": "https://github.com/filp/whoops/tree/2.18.3"
             },
             "funding": [
                 {
@@ -9694,7 +9694,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-06-11T20:42:19+00:00"
+            "time": "2025-06-16T00:02:10+00:00"
         },
         {
             "name": "hamcrest/hamcrest-php",

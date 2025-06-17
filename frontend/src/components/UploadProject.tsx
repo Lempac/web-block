@@ -23,7 +23,7 @@ export default function UploadProject({ position }: PanelProps) {
 	const { mutateAsync, isPending, isError } = useMutation({
 		mutationFn: async () => {
 			const project = getProject();
-			await git.commit({ fs, dir: `/${project?.name}` });
+			await git.commit({ fs, dir: `/${project?.name}`, author: {name: user.name, email: user.email} });
 		},
 	});
 
