@@ -132,7 +132,7 @@ export function useAddQuickCommand() {
 			origin: [0.5, 0.5], //uses center, but will through off all calculations
 		});
 	};
-	//HACK: remove the size of element, because element doesnt exist so only way is to update later
+	//HACK: remove the size of an element, because an element doesnt exist so only way is to update later
 	// updateNode("quickCommand", (node) => {
 	// console.log(getNode('quickCommand'), node, center.x - (node.width ?? 100) / 2)
 	// 	return ({

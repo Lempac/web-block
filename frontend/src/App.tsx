@@ -113,7 +113,7 @@ export default function App() {
 		? user?.settings.style.baseDarkTheme
 		: user?.settings.style.baseLightTheme;
 
-	//If new user create example project
+	//If a new user, create an example project
 	useEffect(() => {
 		if (!firstTime || isLoading) return;
 		const project = getProject();
