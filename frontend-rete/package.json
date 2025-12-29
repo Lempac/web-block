@@ -16,9 +16,17 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "daisyui": "^5.5.14",
     "pinia": "^3.0.4",
+    "rete": "^2.0.6",
+    "rete-area-plugin": "^2.1.5",
+    "rete-connection-plugin": "^2.0.5",
+    "rete-context-menu-plugin": "^2.0.6",
+    "rete-minimap-plugin": "^2.0.3",
     "rete-render-utils": "^2.0.3",
     "rete-vue-plugin": "^2.1.2",
+    "tailwindcss": "^4.1.18",
     "vue": "^3.5.26",
     "vue-router": "^4.6.4"
   },
@@ -36,7 +44,7 @@
     "npm-run-all2": "^8.0.4",
     "prettier": "3.7.4",
     "typescript": "~5.9.3",
-    "vite": "npm:rolldown-vite@latest",
+    "vite": "npm:rolldown-vite@^7.3.0",
     "vite-plugin-vue-devtools": "^8.0.5",
     "vue-tsc": "^3.2.1"
   }

@@ -1,13 +1,10 @@
-<script setup lang="ts">
-import { RouterView } from 'vue-router'
+<script lang="ts" setup>
+// import { RouterView } from 'vue-router'
 </script>
 
 <template>
-  <header>
-  </header>
-
-  <RouterView />
+  <div id="editor" class="w-svw h-svh" />
+  <!--  <RouterView />-->
 </template>
 
-<style scoped>
-</style>
+<style></style>
